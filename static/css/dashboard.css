@@ -1,0 +1,291 @@
+/* Grid rows */
+.box-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Equal flex sizing for all cards */
+.box-row > .common-box {
+  flex: 1 1 0;
+  min-width: 250px;
+}
+body.wide-mode .box-row > .common-box {
+  min-width: 0;
+}
+body.fitted-mode .box-row > .common-box {
+  flex: 0 1 300px;
+}
+
+/* Card container styling */
+.common-box {
+  border: 2px solid #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 1rem;
+}
+.common-box.light-mode {
+  background-color: #7db3f5;
+  color: var(--card-title-color, #fff);
+}
+.common-box.dark-mode {
+  background-color: var(--dark-page-bg-color, #3a3838);
+  color: var(--dark-page-text-color, #ddd);
+}
+
+/* MINI TABLE (POSITIONS) */
+.mini-table-box {
+  background-color: var(--card-background-color, #d0e7ff);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.mini-table-box table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--card-title-color, #000);
+}
+.mini-table-box thead th {
+  position: sticky;
+  top: 0;
+  background-color: rgba(255,255,255,0.2);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+.mini-table-box th {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+}
+.mini-table-box td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.mini-table-box tbody tr {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.mini-table-box tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+.positions-container {
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 1rem;
+}
+.positions-container::-webkit-scrollbar {
+  height: 8px;
+}
+.positions-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+.positions-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* ASSET + WALLET ICONS */
+.asset-icon,
+.wallet-icon {
+  width: 32px !important;
+  height: 32px !important;
+  object-fit: cover;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* LEDGER BOXES */
+.ledger-row {
+  display: flex;
+  gap: 1rem;
+}
+.ledger-box {
+  flex: 1;
+  border: 2px solid #fff;
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  font-size: 0.8rem;
+}
+.ledger-box .price-timer-container {
+  width: 20px;
+  height: 20px;
+  margin-top: 0.25rem;
+}
+.ledger-box .price-timer-container .dial {
+  border-width: 2px;
+}
+.ledger-box .price-timer-container .hand {
+  height: 35%;
+  width: 1px;
+}
+
+/* STATUS BAR */
+.status-bar {
+  display: flex;
+  gap: 0.5rem;
+  height: 50px;
+  padding: 8px 12px;
+}
+.status-pair {
+  flex: 1;
+  text-align: center;
+}
+.status-label {
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+.status-value {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* First row height override */
+.box-row:first-of-type > .common-box {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+/* Toggle SVG shrink */
+.toggle-container svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Liquidation Bar */
+.liquidation-box .liq-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.liquidation-box .wallet-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+}
+.progress.liquidation {
+  position: relative;
+  flex: 1;
+  height: 1.5rem;
+  background: #e0e0e0;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.progress.liquidation::before {
+  content: "";
+  position: absolute;
+  left: 25%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: rgba(0,0,0,0.7);
+  z-index: 5;
+}
+.liquidation-fill.striped {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255,255,255,0.15) 50%,
+    rgba(255,255,255,0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+}
+.heat-index-circle {
+  position: absolute;
+  top: -0.75rem;
+  right: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  font-size: 0.75rem;
+}
+.flame-icon-pos {
+  position: absolute;
+  top: -1rem;
+  right: -1.5rem;
+  font-size: 1.2rem;
+}
+
+/* Graph and Pie Fallback */
+.graph-box, .pie-box {
+  min-height: 300px;
+}
+
+/* Pie layout */
+.pie-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pie-col {
+  width: 48%;
+  text-align: center;
+}
+.chart-label {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+/* Spinner for loading */
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 5;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 📱 MOBILE POLISH */
+@media (max-width: 768px) {
+  .box-row {
+    flex-direction: column;
+  }
+  .status-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 8px;
+  }
+  .status-pair {
+    flex: 0 0 50%;
+    margin-bottom: 6px;
+  }
+  .mini-table-box table,
+  .mini-table-box thead,
+  .mini-table-box tbody,
+  .mini-table-box th,
+  .mini-table-box td,
+  .mini-table-box tr {
+    font-size: 0.75rem;
+  }
+  .mini-table-box th,
+  .mini-table-box td {
+    padding: 0.5rem;
+  }
+}
