@@ -140,11 +140,20 @@ def api_ledger_ages():
 # ---------------------------------
 # API: Get Alert Limits (for title bar timers)
 # ---------------------------------
+from config.config_constants import ALERT_LIMITS_PATH
+import json
+
 @dashboard_bp.route("/get_alert_limits")
 def get_alert_limits():
-    dl = DataLocker.get_instance()
     try:
-        return jsonify(dl.get_alert_limits())
+        with open(ALERT_LIMITS_PATH, 'r', encoding='utf-8') as f:
+            limits = json.load(f)
+        return jsonify({
+            "call_refractory_period": limits.get("call_refractory_period", 1800),
+            "call_refractory_start": limits.get("call_refractory_start"),
+            "snooze_countdown": limits.get("snooze_countdown", 300),
+            "snooze_start": limits.get("snooze_start")
+        })
     except Exception as e:
         return jsonify({
             "call_refractory_period": 1800,
