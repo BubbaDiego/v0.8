@@ -195,3 +195,41 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+
+  function applyFreshnessVisuals(boxId, iconId, ageSeconds) {
+    const box = document.getElementById(boxId);
+    const icon = document.getElementById(iconId);
+
+    if (!box || !icon) return;
+
+    if (ageSeconds < 5) {
+      box.classList.add('fresh-pulse', 'fresh-gradient');
+      icon.textContent = '✅';  // Fresh
+      icon.classList.add('text-success');
+    } else if (ageSeconds < 10) {
+      box.classList.add('warning-pulse', 'warning-gradient');
+      icon.textContent = '⚠️';  // Warning
+      icon.classList.add('text-warning');
+    } else {
+      box.classList.add('stale-pulse', 'stale-gradient');
+      icon.textContent = '🔥';  // Stale
+      icon.classList.add('text-danger');
+    }
+  }
+
+  function parseAge(text) {
+    if (text.includes('Fresh')) return 0;
+    if (text.includes('s ago')) return parseInt(text.replace('s ago', '').trim());
+    if (text.includes('m ago')) return parseInt(text.replace('m ago', '').trim()) * 60;
+    if (text.includes('h ago')) return parseInt(text.replace('h ago', '').trim()) * 3600;
+    return 9999;
+  }
+
+  applyFreshnessVisuals('priceBox', 'priceIcon', parseAge(document.getElementById('priceAge').textContent));
+  applyFreshnessVisuals('positionBox', 'positionIcon', parseAge(document.getElementById('positionAge').textContent));
+  applyFreshnessVisuals('cycloneBox', 'cycloneIcon', parseAge(document.getElementById('cycloneAge').textContent));
+
+});
+

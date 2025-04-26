@@ -1,23 +1,79 @@
 <!-- _ledger.html -->
 
 <link rel="stylesheet" href="../../static/css/dashboard.css">
-<div class="common-box light-mode ledger-box">
-  <h5 class="card-title mb-3">Ledger Freshness</h5>
 
-  <div class="ledger-row">
-    <div class="ledger-box ledger1 {{ 'fresh' if ledger_info.age_price < 5 else 'warning' if ledger_info.age_price < 10 else 'stale' }}">
-      <h6>Price Update</h6>
-      <p>{{ ledger_info.age_price }} sec</p>
-    </div>
+<div class="common-box light-mode ledger-row">
 
-    <div class="ledger-box ledger2 {{ 'fresh' if ledger_info.age_positions < 5 else 'warning' if ledger_info.age_positions < 10 else 'stale' }}">
-      <h6>Positions Update</h6>
-      <p>{{ ledger_info.age_positions }} sec</p>
-    </div>
-
-    <div class="ledger-box ledger3 {{ 'fresh' if ledger_info.age_cyclone < 5 else 'warning' if ledger_info.age_cyclone < 10 else 'stale' }}">
-      <h6>Cyclone Update</h6>
-      <p>{{ ledger_info.age_cyclone }} sec</p>
-    </div>
+  <!-- Price Box -->
+  <div id="priceBox" class="ledger-box common-box light-mode mx-2 my-2">
+    <div id="priceIcon" class="status-icon"></div>
+    <h6>Price Update</h6>
+    <p id="priceAge">{{ ledger_info.age_price }}</p>
   </div>
+
+  <!-- Positions Box -->
+  <div id="positionBox" class="ledger-box common-box light-mode mx-2 my-2">
+    <div id="positionIcon" class="status-icon"></div>
+    <h6>Positions Update</h6>
+    <p id="positionAge">{{ ledger_info.age_positions }}</p>
+  </div>
+
+  <!-- Cyclone Box -->
+  <div id="cycloneBox" class="ledger-box common-box light-mode mx-2 my-2">
+    <div id="cycloneIcon" class="status-icon"></div>
+    <h6>Cyclone Update</h6>
+    <p id="cycloneAge">{{ ledger_info.age_cyclone }}</p>
+  </div>
+
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  function applyFreshnessVisuals(boxId, iconId, ageSeconds) {
+    const box = document.getElementById(boxId);
+    const icon = document.getElementById(iconId);
+
+    if (!box || !icon) return;
+
+    box.classList.remove('fresh-pulse', 'warning-pulse', 'stale-pulse', 'fresh-gradient', 'warning-gradient', 'stale-gradient');
+    icon.classList.remove('text-success', 'text-warning', 'text-danger');
+
+    if (ageSeconds < 5) {
+      box.classList.add('fresh-pulse', 'fresh-gradient');
+      icon.textContent = '✅';
+      icon.classList.add('text-success');
+    } else if (ageSeconds < 10) {
+      box.classList.add('warning-pulse', 'warning-gradient');
+      icon.textContent = '⚠️';
+      icon.classList.add('text-warning');
+    } else {
+      box.classList.add('stale-pulse', 'stale-gradient');
+      icon.textContent = '🔥';
+      icon.classList.add('text-danger');
+    }
+  }
+
+  function refreshFreshness() {
+    fetch('/api/ledger_ages')  // <-- new small API we build next
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('priceAge').textContent = data.age_price;
+        document.getElementById('positionAge').textContent = data.age_positions;
+        document.getElementById('cycloneAge').textContent = data.age_cyclone;
+
+        applyFreshnessVisuals('priceBox', 'priceIcon', parseInt(data.age_price));
+        applyFreshnessVisuals('positionBox', 'positionIcon', parseInt(data.age_positions));
+        applyFreshnessVisuals('cycloneBox', 'cycloneIcon', parseInt(data.age_cyclone));
+      })
+      .catch(err => console.error('Error refreshing freshness:', err));
+  }
+
+  // First initial call
+  refreshFreshness();
+
+  // Refresh every 60 seconds
+  setInterval(refreshFreshness, 60000);
+
+});
+</script>

@@ -17,7 +17,8 @@ CONFIG_FILENAME = os.getenv("CONFIG_FILENAME", "sonic_config.json")
 
 # Construct the full paths using pathlib for cross-platform compatibility
 DB_PATH = BASE_DIR / "data" / DB_FILENAME
-CONFIG_PATH = BASE_DIR / CONFIG_FILENAME
+CONFIG_PATH = BASE_DIR / "config" / CONFIG_FILENAME
+
 
 # Add LOG_DIR constant (use pathlib for consistency)
 LOG_DIR = BASE_DIR / "logs"

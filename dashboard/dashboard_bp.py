@@ -127,6 +127,16 @@ def api_collateral_composition():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@dashboard_bp.route("/api/ledger_ages")
+def api_ledger_ages():
+    from monitor.ledger_reader import get_ledger_age_seconds
+    return jsonify({
+        "age_price": get_ledger_age_seconds('monitor/price_ledger.json'),
+        "age_positions": get_ledger_age_seconds('monitor/position_ledger.json'),
+        "age_cyclone": get_ledger_age_seconds('monitor/sonic_ledger.json')  # if sonic exists
+    })
+
+
 # ---------------------------------
 # API: Get Alert Limits (for title bar timers)
 # ---------------------------------

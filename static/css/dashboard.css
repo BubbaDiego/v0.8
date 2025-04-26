@@ -6,6 +6,55 @@
   flex-wrap: wrap;
 }
 
+/* --- Glow / Pulse Animations --- */
+.fresh-pulse {
+  animation: pulse-green 2s infinite;
+}
+.warning-pulse {
+  animation: pulse-yellow 2s infinite;
+}
+.stale-pulse {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 5px rgba(0,255,0,0.6); }
+  50% { box-shadow: 0 0 20px rgba(0,255,0,0.8); }
+  100% { box-shadow: 0 0 5px rgba(0,255,0,0.6); }
+}
+@keyframes pulse-yellow {
+  0% { box-shadow: 0 0 5px rgba(255,255,0,0.6); }
+  50% { box-shadow: 0 0 20px rgba(255,255,0,0.8); }
+  100% { box-shadow: 0 0 5px rgba(255,255,0,0.6); }
+}
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 5px rgba(255,0,0,0.6); }
+  50% { box-shadow: 0 0 20px rgba(255,0,0,0.8); }
+  100% { box-shadow: 0 0 5px rgba(255,0,0,0.6); }
+}
+
+/* --- Background Gradients --- */
+.fresh-gradient {
+  background: linear-gradient(90deg, #d4edda, #c3e6cb);
+}
+.warning-gradient {
+  background: linear-gradient(90deg, #fff3cd, #ffeeba);
+}
+.stale-gradient {
+  background: linear-gradient(90deg, #f8d7da, #f5c6cb);
+}
+
+/* --- Animated Icon Bounce --- */
+.status-icon {
+  font-size: 2rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 /* Equal flex sizing for all cards */
 .box-row > .common-box {
   flex: 1 1 0;

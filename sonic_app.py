@@ -54,7 +54,11 @@ from sonic_labs.sonic_labs_bp import sonic_labs_bp
 
 from cyclone.cyclone_bp import cyclone_bp
 
+from utils.startup_checker import verify_paths
 
+print(f"Expecting CONFIG_PATH at: {CONFIG_PATH}")
+verify_paths()
+# ⬆️ CHECK ALL PATHS ON BOOT
 
 
 # Setup logging
