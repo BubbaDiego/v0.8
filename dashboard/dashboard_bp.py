@@ -3,6 +3,10 @@
 from flask import Blueprint, render_template, jsonify, request
 from data.data_locker import DataLocker
 from positions.position_service import PositionService
+#from monitor.price_ledger import PriceLedger
+#from monitor.position_ledger import PositionLedger
+#from monitor.sonic_ledger import SonicLedger
+from monitor.ledger_reader import get_ledger_age_seconds
 from config.config_constants import DB_PATH, THEME_CONFIG_PATH
 import os, json
 
@@ -26,11 +30,11 @@ def dash_page():
 
     theme_mode = dl.get_theme_mode()
 
-    # Fake ledger_info for now (you can replace with real freshness timers later)
+    # ✅ Pull real freshness using ledger_reader
     ledger_info = {
-        "age_price": 0,
-        "age_positions": 0,
-        "age_cyclone": 0
+        "age_price": get_ledger_age_seconds('monitor/price_ledger.json'),
+        "age_positions": get_ledger_age_seconds('monitor/position_ledger.json'),
+        "age_cyclone": get_ledger_age_seconds('monitor/sonic_ledger.json')  # if sonic exists
     }
 
     return render_template(
@@ -80,28 +84,21 @@ def save_theme():
     return jsonify({"success": True})
 
 # ---------------------------------
-# API: Graph Data
+# API: Graph Data (Real portfolio history)
 # ---------------------------------
 @dashboard_bp.route("/api/graph_data")
 def api_graph_data():
-    timestamps = [
-        "2025-04-24T10:00:00Z",
-        "2025-04-24T11:00:00Z",
-        "2025-04-24T12:00:00Z",
-        "2025-04-24T13:00:00Z",
-        "2025-04-24T14:00:00Z"
-    ]
-    values = [1000, 1050, 980, 1020, 1100]
-    collaterals = [800, 810, 790, 800, 820]
+    dl = DataLocker.get_instance()
+    portfolio_history = dl.get_portfolio_history() or []
 
-    return jsonify({
-        "timestamps": timestamps,
-        "values": values,
-        "collateral": collaterals
-    })
+    timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
+    values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
+    collaterals = [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
+
+    return jsonify({"timestamps": timestamps, "values": values, "collateral": collaterals})
 
 # ---------------------------------
-# API: Size Composition Pie
+# API: Size Composition Pie (Real positions)
 # ---------------------------------
 @dashboard_bp.route("/api/size_composition")
 def api_size_composition():
@@ -116,7 +113,7 @@ def api_size_composition():
         return jsonify({"error": str(e)}), 500
 
 # ---------------------------------
-# API: Collateral Composition Pie
+# API: Collateral Composition Pie (Real positions)
 # ---------------------------------
 @dashboard_bp.route("/api/collateral_composition")
 def api_collateral_composition():
@@ -136,5 +133,12 @@ def api_collateral_composition():
 @dashboard_bp.route("/get_alert_limits")
 def get_alert_limits():
     dl = DataLocker.get_instance()
-    alert_limits = dl.get_alert_limits()
-    return jsonify(alert_limits)
+    try:
+        return jsonify(dl.get_alert_limits())
+    except Exception as e:
+        return jsonify({
+            "call_refractory_period": 1800,
+            "call_refractory_start": None,
+            "snooze_countdown": 300,
+            "snooze_start": None
+        })

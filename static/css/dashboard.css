@@ -137,11 +137,11 @@ body.fitted-mode .box-row > .common-box {
 }
 .status-label {
   font-weight: bold;
-  font-size: 0.75rem;
+  font-size: 1.1rem;
 }
 .status-value {
   margin-top: 0.25rem;
-  font-size: 0.85rem;
+  font-size: 1.1rem;
 }
 
 /* First row height override */
@@ -287,5 +287,17 @@ body.fitted-mode .box-row > .common-box {
   .mini-table-box th,
   .mini-table-box td {
     padding: 0.5rem;
+  }
+}
+
+/* --- Fade-in effect --- */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 1s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
   }
 }

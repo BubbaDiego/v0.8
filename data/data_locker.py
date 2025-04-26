@@ -670,6 +670,32 @@ class DataLocker:
             return dict(row)
         return None
 
+    # --- New Method to Get Alert Limits ---
+    def get_alert_limits(self):
+        try:
+            alert_limits_path = os.path.join(self.db_path, "..", "alert_limits.json")
+            alert_limits_path = os.path.abspath(alert_limits_path)  # Always use absolute path
+            with open(alert_limits_path, "r") as f:
+                data = json.load(f)
+
+            return {
+                "call_refractory_period": float(data.get("call_refractory_period", 1800)),  # default 30 min
+                "call_refractory_start": None,  # Optional, you can wire this later
+                "snooze_countdown": float(data.get("alert_config", {}).get("snooze_countdown", 300)),
+                # 5 min default
+                "snooze_start": None
+            }
+
+        except Exception as e:
+            print(f"[ERROR] Failed to load alert_limits.json: {e}")
+            # Return safe fallback if file missing or corrupt
+            return {
+                "call_refractory_period": 1800,
+                "call_refractory_start": None,
+                "snooze_countdown": 300,
+                "snooze_start": None
+            }
+
     def update_alert_conditions(self, alert_id: str, update_fields: dict) -> int:
         try:
             cursor = self.conn.cursor()

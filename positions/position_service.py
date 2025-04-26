@@ -50,62 +50,23 @@ class PositionService:
         evaluator.update_alert_for_position(pos)
 
     @staticmethod
+    @staticmethod
     def get_all_positions(db_path: str = DB_PATH) -> List[Dict[str, Any]]:
         """
         Retrieve all positions from the database, enrich each position,
-        update the current_price field using the latest market price from the DB,
-        and update the database with the enriched values.
+        but do NOT write back into the DB during the read.
         """
         try:
-            # Get the DataLocker instance and read raw positions.
             dl = DataLocker.get_instance(db_path)
             raw_positions = dl.read_positions()
             positions = []
-            # Enrich each position.
+
             for pos in raw_positions:
                 pos_dict = {key: pos[key] for key in pos.keys()}
                 enriched = PositionService.enrich_position(pos_dict)
                 positions.append(enriched)
 
-            # Update current_price for each position from the latest market price stored in DB.
-            for pos in positions:
-                asset_type = pos.get("asset_type")
-                if asset_type:
-                    latest_price_data = dl.get_latest_price(asset_type)
-                    if latest_price_data and "current_price" in latest_price_data:
-                        try:
-                            new_price = float(latest_price_data["current_price"])
-                            logger.debug(f"For asset {asset_type}, latest price from DB is {new_price}")
-                            pos["current_price"] = new_price
-                        except (ValueError, TypeError) as e:
-                            logger.error(f"Error converting latest price for asset {asset_type}: {e}")
-                            # Fallback to existing price if conversion fails.
-                            pos["current_price"] = pos.get("current_price", 0.0)
-                    else:
-                        logger.warning(f"No latest price found for asset type: {asset_type}")
-                else:
-                    logger.warning("Position missing 'asset_type' field.")
-
-            # Update the database with the enriched values.
-            for enriched in positions:
-                cursor = dl.conn.cursor()
-                cursor.execute("""
-                    UPDATE positions 
-                       SET travel_percent = ?,
-                           liquidation_distance = ?,
-                           heat_index = ?,
-                           current_heat_index = ?,
-                           current_price = ?
-                     WHERE id = ?
-                """, (
-                    float(enriched.get("travel_percent", 0.0)),
-                    float(enriched.get("liquidation_distance", 0.0)),
-                    float(enriched.get("heat_index", 0.0)),
-                    float(enriched.get("current_heat_index", 0.0)),
-                    float(enriched.get("current_price", 0.0)),
-                    enriched.get("id")
-                ))
-            dl.conn.commit()
+            # ✅ No database writes here
             return positions
 
         except Exception as e:

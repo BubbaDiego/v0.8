@@ -1,53 +1,33 @@
 // dashboard.js
 
-console.log('✅ Dashboard.js Loaded!'); // HEARTBEAT
+console.log('✅ Dashboard.js Loaded!');
 
 document.addEventListener('DOMContentLoaded', function () {
 
+  // === LOADING OVERLAY ===
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.id = "loadingOverlay";
+  loadingOverlay.style.position = "fixed";
+  loadingOverlay.style.top = 0;
+  loadingOverlay.style.left = 0;
+  loadingOverlay.style.width = "100%";
+  loadingOverlay.style.height = "100%";
+  loadingOverlay.style.background = "rgba(255,255,255,0.8)";
+  loadingOverlay.style.display = "flex";
+  loadingOverlay.style.alignItems = "center";
+  loadingOverlay.style.justifyContent = "center";
+  loadingOverlay.style.zIndex = 9999;
+  loadingOverlay.innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+  document.body.appendChild(loadingOverlay);
+
   // === THEME TOGGLE ===
   const toggleContainer = document.getElementById('toggleContainer');
-  const statusBar = document.getElementById('statusBar');
-  const pieBox = document.getElementById('pieBox');
-  const graphBox = document.getElementById('graphBox');
-  const miniTableBox = document.getElementById('miniTableBox');
-  const liquidationBox = document.getElementById('liquidationBox');
-
   if (toggleContainer) {
-    const sunIcon = `<svg viewBox="0 0 24 24" width="16" height="16" fill="white" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3" stroke="white" stroke-width="2"/><line x1="12" y1="21" x2="12" y2="23" stroke="white" stroke-width="2"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="white" stroke-width="2"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="white" stroke-width="2"/><line x1="1" y1="12" x2="3" y2="12" stroke="white" stroke-width="2"/><line x1="21" y1="12" x2="23" y2="12" stroke="white" stroke-width="2"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="white" stroke-width="2"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="white" stroke-width="2"/></svg>`;
-    const moonIcon = `<svg viewBox="0 0 24 24" width="16" height="16" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.79A9 9 0 0 1 11.21 3 A7 7 0 0 0 12 17 a7 7 0 0 0 9 -4.21 z"/></svg>`;
-
-    toggleContainer.innerHTML = moonIcon;
-
     toggleContainer.addEventListener('click', () => {
-      [statusBar, pieBox, graphBox, miniTableBox, liquidationBox].forEach(box => {
-        box.classList.toggle('dark-mode');
-        box.classList.toggle('light-mode');
-      });
-      toggleContainer.innerHTML = document.body.classList.contains('dark-bg') ? moonIcon : sunIcon;
-      document.body.classList.toggle('light-bg');
       document.body.classList.toggle('dark-bg');
+      document.body.classList.toggle('light-bg');
     });
   }
-
-  // === DISABLED: Countdown360 Plugin ===
-  /*
-  function startCountdown(selector, minutes, fillColor = '#8ac575') {
-    const seconds = minutes * 60;
-    $(selector).countdown360({
-      radius: 24,
-      seconds: seconds,
-      fillStyle: fillColor,
-      strokeStyle: '#477050',
-      fontColor: '#ffffff',
-      autostart: false,
-      onComplete: function () {
-        console.log(selector + ' countdown complete!');
-      }
-    }).start();
-  }
-  startCountdown('#sonic-timer-container', 5, '#b19cd9');
-  startCountdown('#den-timer-container', 10);
-  */
 
   // === Analog Price Timer ===
   (function priceAnalogTimer() {
@@ -55,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let timeLeft = totalTime;
     const hand = document.querySelector('#price-timer-container .hand');
     if (!hand) return;
-
     function updateHand() {
       const angle = (360 * (totalTime - timeLeft)) / totalTime;
       hand.style.transform = `rotate(${angle}deg)`;
@@ -64,13 +43,11 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(() => {
       timeLeft--;
       updateHand();
-      if (timeLeft <= 0) {
-        timeLeft = totalTime;
-      }
+      if (timeLeft <= 0) timeLeft = totalTime;
     }, 1000);
   })();
 
-  // === Table Sorting (Positions) ===
+  // === Table Sorting ===
   window.sortTable = function (tableId, colIndex) {
     let table = document.getElementById(tableId);
     let switching = true;
@@ -82,30 +59,33 @@ document.addEventListener('DOMContentLoaded', function () {
         let shouldSwitch = false;
         let x = rows[i].getElementsByTagName("TD")[colIndex];
         let y = rows[i + 1].getElementsByTagName("TD")[colIndex];
-        if (dir === "asc" && x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
-          shouldSwitch = true;
-          break;
-        }
-        if (dir === "desc" && x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
-          shouldSwitch = true;
+        if (dir === "asc" && x.innerText.toLowerCase() > y.innerText.toLowerCase()) shouldSwitch = true;
+        if (dir === "desc" && x.innerText.toLowerCase() < y.innerText.toLowerCase()) shouldSwitch = true;
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
           break;
         }
       }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      } else if (switching === false && dir === "asc") {
+      if (!switching && dir === "asc") {
         dir = "desc";
         switching = true;
       }
     }
-  }
+  };
 
-  // === Chart Render Functions ===
   const formatK = (num) => (num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toString());
 
   function renderGraphChart(timestamps, values, collaterals) {
-    if (!timestamps || !values) return;
+    const graphContainer = document.getElementById("graphChart");
+
+    if (!timestamps || timestamps.length === 0 || !values || values.length === 0) {
+      graphContainer.innerHTML = '<div style="text-align: center; padding: 2rem; font-weight: bold; color: #555;">No graph data available</div>';
+      graphContainer.classList.add("fade-in");
+      document.getElementById("graphLoader").style.display = "none";
+      return;
+    }
+
     const options = {
       chart: { type: 'line', height: 300 },
       series: [
@@ -125,26 +105,62 @@ document.addEventListener('DOMContentLoaded', function () {
       legend: { labels: { colors: '#fff' } },
       tooltip: { theme: 'dark' }
     };
-    const chart = new ApexCharts(document.querySelector("#graphChart"), options);
+
+    const chart = new ApexCharts(graphContainer, options);
     chart.render();
+    graphContainer.classList.add("fade-in");
+    document.getElementById("graphLoader").style.display = "none";
   }
 
   function renderPieCharts(size, collateral, longS, shortS, longC, shortC) {
-    const pieOptions = (series) => ({
-      chart: { type: 'pie', height: 200 },
-      series: series,
-      labels: ['Long', 'Short'],
-      legend: { labels: { colors: ['#fff'] } },
-      dataLabels: {
-        enabled: true,
-        style: { fontSize: '18px', colors: ['#fff'] },
-        formatter: val => Math.round(val) + '%'
-      }
-    });
-    new ApexCharts(document.querySelector("#pieChartSize"), pieOptions(size)).render();
-    new ApexCharts(document.querySelector("#pieChartCollateral"), pieOptions(collateral)).render();
-    document.getElementById("pieSizeTotals").innerText = `Long: ${formatK(longS)} / Short: ${formatK(shortS)}`;
-    document.getElementById("pieCollateralTotals").innerText = `Long: ${formatK(longC)} / Short: ${formatK(shortC)}`;
+    const sizeContainer = document.getElementById("pieChartSize");
+    const collContainer = document.getElementById("pieChartCollateral");
+
+    // --- Size Pie ---
+    if (!size || size.length === 0 || (size[0] === 0 && size[1] === 0)) {
+      sizeContainer.innerHTML = '<div style="text-align: center; padding: 2rem; font-weight: bold; color: #555;">No size data available</div>';
+    } else {
+      const sizeOptions = {
+        chart: { type: 'pie', height: 200 },
+        series: size,
+        labels: ['Long', 'Short'],
+        legend: { labels: { colors: ['#fff'] } },
+        dataLabels: {
+          enabled: true,
+          style: { fontSize: '18px', colors: ['#fff'] },
+          formatter: val => Math.round(val) + '%'
+        }
+      };
+      new ApexCharts(sizeContainer, sizeOptions).render();
+    }
+    sizeContainer.classList.add("fade-in");
+
+    // --- Collateral Pie ---
+    if (!collateral || collateral.length === 0 || (collateral[0] === 0 && collateral[1] === 0)) {
+      collContainer.innerHTML = '<div style="text-align: center; padding: 2rem; font-weight: bold; color: #555;">No collateral data available</div>';
+    } else {
+      const collOptions = {
+        chart: { type: 'pie', height: 200 },
+        series: collateral,
+        labels: ['Long', 'Short'],
+        legend: { labels: { colors: ['#fff'] } },
+        dataLabels: {
+          enabled: true,
+          style: { fontSize: '18px', colors: ['#fff'] },
+          formatter: val => Math.round(val) + '%'
+        }
+      };
+      new ApexCharts(collContainer, collOptions).render();
+    }
+    collContainer.classList.add("fade-in");
+
+    // Hide Pie spinners
+    document.getElementById("pieSizeLoader").style.display = "none";
+    document.getElementById("pieCollateralLoader").style.display = "none";
+
+    // Fill totals
+    document.getElementById("pieSizeTotals").innerText = `Long: ${longS} / Short: ${shortS}`;
+    document.getElementById("pieCollateralTotals").innerText = `Long: ${longC} / Short: ${shortC}`;
   }
 
   // === Fetch and Render Data ===
@@ -155,22 +171,27 @@ document.addEventListener('DOMContentLoaded', function () {
   ])
   .then(([graphData, sizeData, collData]) => {
     renderGraphChart(graphData.timestamps, graphData.values, graphData.collateral);
+
+    const longS = sizeData.series ? sizeData.series[0] : 0;
+    const shortS = sizeData.series ? sizeData.series[1] : 0;
+    const longC = collData.series ? collData.series[0] : 0;
+    const shortC = collData.series ? collData.series[1] : 0;
+
     renderPieCharts(
       sizeData.series || [0, 0],
       collData.series || [0, 0],
-      sizeData.longAmount || 0,
-      sizeData.shortAmount || 0,
-      collData.longAmount || 0,
-      collData.shortAmount || 0
+      longS,
+      shortS,
+      longC,
+      shortC
     );
-
-    // ✅ Hide Spinners
-    document.getElementById("graphLoader").style.display = "none";
-    document.getElementById("pieSizeLoader").style.display = "none";
-    document.getElementById("pieCollateralLoader").style.display = "none";
   })
   .catch(err => {
     console.error("Dashboard chart error:", err);
+  })
+  .finally(() => {
+    // ✅ Always remove loading overlay
+    loadingOverlay.remove();
   });
 
 });
