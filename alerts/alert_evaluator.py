@@ -1,7 +1,7 @@
 import logging
 import time
 from typing import Optional
-from config.unified_config_manager import UnifiedConfigManager
+from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 from utils.unified_logger import UnifiedLogger
 from utils.calc_services import CalcServices

@@ -25,7 +25,7 @@ try:
     from .alert_controller import AlertController
 except ImportError:
     # When running as a standalone script/module
-    from alert_controller import AlertController
+    from alerts.alert_controller import AlertController
 
 # And ensure your evaluator import is absolute
 from alerts.alert_evaluator import AlertEvaluator
