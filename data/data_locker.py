@@ -463,6 +463,14 @@ class DataLocker:
             raise
 
     def get_portfolio_history(self) -> List[dict]:
+
+        def get_portfolio_history(self):
+            return [
+                {"snapshot_time": "2025-04-24T10:00:00Z", "total_value": 1000, "total_collateral": 800},
+                {"snapshot_time": "2025-04-24T11:00:00Z", "total_value": 1100, "total_collateral": 850},
+                {"snapshot_time": "2025-04-24T12:00:00Z", "total_value": 950, "total_collateral": 780}
+            ]
+
         self._init_sqlite_if_needed()
         cursor = self.conn.cursor()
         cursor.execute("""

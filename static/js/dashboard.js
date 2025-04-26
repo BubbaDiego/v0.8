@@ -1,10 +1,10 @@
-// Dashboard.js
+// dashboard.js
 
 console.log('✅ Dashboard.js Loaded!'); // HEARTBEAT
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  // Theme Mode Toggle (Sun/Moon)
+  // === THEME TOGGLE ===
   const toggleContainer = document.getElementById('toggleContainer');
   const statusBar = document.getElementById('statusBar');
   const pieBox = document.getElementById('pieBox');
@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Countdown Timers (Sonic, Den Mother)
+  // === DISABLED: Countdown360 Plugin ===
+  /*
   function startCountdown(selector, minutes, fillColor = '#8ac575') {
     const seconds = minutes * 60;
     $(selector).countdown360({
@@ -46,8 +47,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   startCountdown('#sonic-timer-container', 5, '#b19cd9');
   startCountdown('#den-timer-container', 10);
+  */
 
-  // Analog Price Timer
+  // === Analog Price Timer ===
   (function priceAnalogTimer() {
     const totalTime = 60;
     let timeLeft = totalTime;
@@ -68,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 1000);
   })();
 
-  // Table Sorting (Positions)
+  // === Table Sorting (Positions) ===
   window.sortTable = function (tableId, colIndex) {
     let table = document.getElementById(tableId);
     let switching = true;
@@ -99,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Chart Loading
+  // === Chart Render Functions ===
   const formatK = (num) => (num >= 1000 ? (num / 1000).toFixed(1) + 'k' : num.toString());
 
   function renderGraphChart(timestamps, values, collaterals) {
@@ -145,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("pieCollateralTotals").innerText = `Long: ${formatK(longC)} / Short: ${formatK(shortC)}`;
   }
 
-  // ✅ Fetch and Render Data using global variables
+  // === Fetch and Render Data ===
   Promise.all([
     fetch(GRAPH_DATA_URL).then(r => r.json()),
     fetch(SIZE_COMPOSITION_URL).then(r => r.json()),
@@ -162,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
       collData.shortAmount || 0
     );
 
-    // ✅ Hide Spinners after charts render
+    // ✅ Hide Spinners
     document.getElementById("graphLoader").style.display = "none";
     document.getElementById("pieSizeLoader").style.display = "none";
     document.getElementById("pieCollateralLoader").style.display = "none";
