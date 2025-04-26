@@ -2,28 +2,26 @@
 
 <link rel="stylesheet" href="../../static/css/dashboard.css">
 
-<div class="common-box light-mode ledger-row">
+<div class="common-box light-mode d-flex justify-content-center flex-wrap">
 
-  <!-- Price Box -->
   <div id="priceBox" class="ledger-box common-box light-mode mx-2 my-2">
-    <div id="priceIcon" class="status-icon"></div>
-    <h6>Price Update</h6>
-    <p id="priceAge">{{ ledger_info.age_price }}</p>
-  </div>
+  <div class="icon">💵</div>
+  <small id="priceLast">Last: 9:30 AM</small>
+  <small id="priceCountdown">Next in: 2m 30s</small>
+</div>
 
-  <!-- Positions Box -->
-  <div id="positionBox" class="ledger-box common-box light-mode mx-2 my-2">
-    <div id="positionIcon" class="status-icon"></div>
-    <h6>Positions Update</h6>
-    <p id="positionAge">{{ ledger_info.age_positions }}</p>
-  </div>
+<div id="positionBox" class="ledger-box common-box light-mode mx-2 my-2">
+  <div class="icon">📊</div>
+  <small id="positionLast">Last: 9:25 AM</small>
+  <small id="positionCountdown">Next in: 1m 30s</small>
+</div>
 
-  <!-- Cyclone Box -->
-  <div id="cycloneBox" class="ledger-box common-box light-mode mx-2 my-2">
-    <div id="cycloneIcon" class="status-icon"></div>
-    <h6>Cyclone Update</h6>
-    <p id="cycloneAge">{{ ledger_info.age_cyclone }}</p>
-  </div>
+<div id="cycloneBox" class="ledger-box common-box light-mode mx-2 my-2">
+  <div class="icon">🌪️</div>
+  <small id="cycloneLast">Last: 8:55 AM</small>
+  <small id="cycloneCountdown">Next in: 0m 30s</small>
+</div>
+
 
 </div>
 
@@ -53,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
       icon.classList.add('text-danger');
     }
   }
+
 
   function refreshFreshness() {
     fetch('/api/ledger_ages')  // <-- new small API we build next

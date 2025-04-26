@@ -6,47 +6,16 @@ from positions.position_service import PositionService
 #from monitor.price_ledger import PriceLedger
 #from monitor.position_ledger import PositionLedger
 #from monitor.sonic_ledger import SonicLedger
-from monitor.ledger_reader import get_ledger_age_seconds
+#from monitor.ledger_reader import get_ledger_age_seconds
+from monitor.ledger_reader import get_ledger_status
+
+
 from config.config_constants import DB_PATH, THEME_CONFIG_PATH
 import os, json
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
-# ---------------------------------
-# Main Dashboard Page
-# ---------------------------------
-@dashboard_bp.route("/dash", endpoint="dash_page")
-def dash_page():
-    dl = DataLocker.get_instance()
-    all_positions = PositionService.get_all_positions(DB_PATH) or []
 
-    totals = {
-        "total_collateral": sum(float(p.get("collateral", 0)) for p in all_positions),
-        "total_value": sum(float(p.get("value", 0)) for p in all_positions),
-        "total_size": sum(float(p.get("size", 0)) for p in all_positions),
-        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
-        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
-    }
-
-    theme_mode = dl.get_theme_mode()
-
-    # ✅ Pull real freshness using ledger_reader
-    ledger_info = {
-        "age_price": get_ledger_age_seconds('monitor/price_ledger.json'),
-        "age_positions": get_ledger_age_seconds('monitor/position_ledger.json'),
-        "age_cyclone": get_ledger_age_seconds('monitor/sonic_ledger.json')  # if sonic exists
-    }
-
-    return render_template(
-        "dash.html",
-        theme_mode=theme_mode,
-        positions=all_positions,
-        liquidation_positions=all_positions,
-        portfolio_value="${:,.2f}".format(totals["total_value"]),
-        portfolio_change="N/A",
-        totals=totals,
-        ledger_info=ledger_info
-    )
 
 # ---------------------------------
 # Database Viewer
@@ -82,6 +51,43 @@ def save_theme():
     with open(THEME_CONFIG_PATH, "w") as f:
         json.dump(theme_data, f, indent=2)
     return jsonify({"success": True})
+
+# ---------------------------------
+# Main Dashboard Page
+# ---------------------------------
+@dashboard_bp.route("/dash", endpoint="dash_page")
+def dash_page():
+    dl = DataLocker.get_instance()
+    all_positions = PositionService.get_all_positions(DB_PATH) or []
+
+    totals = {
+        "total_collateral": sum(float(p.get("collateral", 0)) for p in all_positions),
+        "total_value": sum(float(p.get("value", 0)) for p in all_positions),
+        "total_size": sum(float(p.get("size", 0)) for p in all_positions),
+        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
+        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
+    }
+
+    theme_mode = dl.get_theme_mode()
+
+    ledger_info = {
+        "age_price": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
+        "age_positions": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
+        "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"]
+    }
+
+    return render_template(
+        "dash.html",
+        theme_mode=theme_mode,
+        positions=all_positions,
+        liquidation_positions=all_positions,
+        portfolio_value="${:,.2f}".format(totals["total_value"]),
+        portfolio_change="N/A",
+        totals=totals,
+        ledger_info=ledger_info
+    )
+
+
 
 # ---------------------------------
 # API: Graph Data (Real portfolio history)
@@ -129,12 +135,15 @@ def api_collateral_composition():
 
 @dashboard_bp.route("/api/ledger_ages")
 def api_ledger_ages():
-    from monitor.ledger_reader import get_ledger_age_seconds
     return jsonify({
-        "age_price": get_ledger_age_seconds('monitor/price_ledger.json'),
-        "age_positions": get_ledger_age_seconds('monitor/position_ledger.json'),
-        "age_cyclone": get_ledger_age_seconds('monitor/sonic_ledger.json')  # if sonic exists
+        "price_age": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
+        "price_last": get_ledger_status('monitor/price_ledger.json')["last_timestamp"],
+        "position_age": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
+        "position_last": get_ledger_status('monitor/position_ledger.json')["last_timestamp"],
+        "cyclone_age": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
+        "cyclone_last": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
     })
+
 
 
 # ---------------------------------

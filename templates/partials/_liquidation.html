@@ -1,4 +1,4 @@
-{# dashboard/templates/partials/_liquidation.html #}
+<link rel="stylesheet" href="../../static/css/dashboard.css">{# dashboard/templates/partials/_liquidation.html #}
 
 <div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %} liquidation-box">
   <div class="chart-label">Liquidation Bar</div>
@@ -9,34 +9,36 @@
     {% for pos in liquidation_positions %}
       {% if pos.travel_percent is defined and pos.travel_percent is not none %}
         <div class="liq-row">
-          {# Pick wallet if it exists, otherwise wallet_name, otherwise 'ObiVault' #}
+          {# Pick wallet if it exists, otherwise fallback #}
           {% set wallet = pos.wallet|default(pos.wallet_name|default('ObiVault')) %}
-
           <img
             class="wallet-icon"
             src="{{ url_for('static', filename=(wallet == 'R2Vault' and 'images/r2vault.jpg' or 'images/obivault.jpg')) }}"
             alt="{{ wallet }}"
           />
 
-          <div class="progress liquidation">
-            {% set pct = pos.travel_percent|float %}
-            {% if pct >= 0 %}
-              <div
-                class="liquidation-fill striped bg-success"
-                style="width: calc(({{ pct }} / 25) * 25%)"
-              ></div>
-            {% else %}
-              <div
-                class="liquidation-fill striped {{ 'bg-warning' if pct|abs <= 50 else 'bg-danger' }}"
-                style="width: calc(({{ pct|abs }} / 100) * 75%)"
-              ></div>
-            {% endif %}
+          <div class="liq-progress-bar">
+  <div class="liq-bar-container">
+    <div class="liq-midline"></div>
+    {% set pct = pos.travel_percent|float %}
+    {% if pct >= 0 %}
+      <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
+        <div class="travel-text">{{ pct|round(1) }}%</div>
+      </div>
+    {% else %}
+      <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
+        <div class="travel-text">{{ pct|round(1) }}%</div>
+      </div>
+    {% endif %}
+  </div>
 
-            <div class="heat-index-circle">
-              {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
-            </div>
-            <div class="flame-icon-pos">🔥</div>
-          </div>
+  <div class="liq-flame-container">
+    🔥
+    <span class="heat-index-number">
+      {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+    </span>
+  </div>
+</div>
         </div>
       {% else %}
         <p style="color:red;">⚠️ Skipping a position missing travel_percent</p>

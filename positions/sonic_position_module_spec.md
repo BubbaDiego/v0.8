@@ -116,7 +116,7 @@ Heat Index: Composite risk index.
 
 Liquidation Distance: Absolute difference between current and liquidation prices.
 
-Relationships:
+Relationships:[cyclone.py](../cyclone/cyclone.py)
 
 alert_reference_id for associated alerts.
 

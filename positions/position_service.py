@@ -117,6 +117,8 @@ class PositionService:
                 position['leverage'] = None
                 logger.debug("Collateral is zero or negative; leverage set to None.")
 
+            logger.debug(
+                f"[BEFORE travel_percent calc] ID={position.get('id', 'N/A')} | type={position.get('position_type')} | entry={position.get('entry_price')} | current={position.get('current_price')} | liquidation={position.get('liquidation_price')}")
             # Compute travel percent if relevant data exists
             if all(k in position for k in ['entry_price', 'current_price', 'liquidation_price']):
                 travel_percent = calc.calculate_travel_percent(
@@ -126,7 +128,11 @@ class PositionService:
                     position['liquidation_price']
                 )
                 position['travel_percent'] = travel_percent
-                logger.debug(f"Calculated travel_percent: {travel_percent}")
+                logger.debug(
+                    f"[AFTER travel_percent calc] ID={position.get('id', 'N/A')} | travel_percent={travel_percent:.2f}%")
+
+                # Final enriched position debug
+                logger.debug(f"[ENRICHED position] {position}")
             else:
                 position['travel_percent'] = None
                 logger.debug("Missing one of entry_price, current_price, or liquidation_price; travel_percent set to None.")

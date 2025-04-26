@@ -802,51 +802,77 @@ class DataLocker:
     # POSITIONS
     # ----------------------------------------------------------------
 
-    def create_position(self, pos_dict: dict):
-        if "id" not in pos_dict:
-            pos_dict["id"] = str(uuid4())
-        pos_dict.setdefault("asset_type", "BTC")
-        pos_dict.setdefault("position_type", "LONG")
-        pos_dict.setdefault("entry_price", 0.0)
-        pos_dict.setdefault("liquidation_price", 0.0)
-        pos_dict.setdefault("travel_percent", 0.0)
-        pos_dict.setdefault("value", 0.0)
-        pos_dict.setdefault("collateral", 0.0)
-        pos_dict.setdefault("size", 0.0)
-        pos_dict.setdefault("leverage", 0.0)
-        pos_dict.setdefault("wallet_name", "Default")
-        pos_dict.setdefault("last_updated", datetime.now().isoformat())
-        pos_dict.setdefault("alert_reference_id", None)
-        pos_dict.setdefault("hedge_buddy_id", None)
-        pos_dict.setdefault("current_price", 0.0)
-        pos_dict.setdefault("liquidation_distance", None)
-        pos_dict.setdefault("heat_index", 0.0)
-        pos_dict.setdefault("current_heat_index", 0.0)
-        pos_dict.setdefault("pnl_after_fees_usd", 0.0)
+    def create_position(self, pos_dict: dict) -> None:
+        """
+        Creates a new position record in the database.
+        Enforces that current_price must exist and be reasonable.
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # -- ENFORCEMENT BLOCK --
+
+        asset_type = pos_dict.get('asset_type')
+        current_price = pos_dict.get('current_price', 0.0)
+
+        if current_price in (None, 0, 0.0):
+            logger.debug(f"[CREATE_POSITION] No current_price for {asset_type}, attempting to fetch latest price...")
+            latest_price_data = self.get_latest_price(asset_type)
+
+            if latest_price_data and 'current_price' in latest_price_data:
+                pos_dict['current_price'] = float(latest_price_data['current_price'])
+                logger.debug(f"[CREATE_POSITION] Set current_price for {asset_type} to {pos_dict['current_price']}")
+            else:
+                # Fallback to entry_price if no market price available
+                fallback_price = pos_dict.get('entry_price', 0.0)
+                pos_dict['current_price'] = fallback_price
+                logger.warning(
+                    f"[CREATE_POSITION] No live price for {asset_type}; fallback to entry_price={fallback_price}")
+
+        # Force float
+        pos_dict['current_price'] = float(pos_dict.get('current_price', 0.0))
+
+        # FINAL ASSERTION (absolute enforcement)
+        assert pos_dict[
+                   'current_price'] > 0.0, f"[CREATE_POSITION] Cannot create position with invalid current_price for {asset_type}"
+
+        # -- NORMAL INSERT BLOCK --
+
         try:
-            self._init_sqlite_if_needed()
             cursor = self.conn.cursor()
-            cursor.execute("""
-                INSERT INTO positions (
-                    id, asset_type, position_type,
-                    entry_price, liquidation_price, travel_percent,
-                    value, collateral, size, wallet_name, leverage, last_updated,
-                    alert_reference_id, hedge_buddy_id, current_price,
-                    liquidation_distance, heat_index, current_heat_index,
-                    pnl_after_fees_usd
-                ) VALUES (
-                    :id, :asset_type, :position_type,
-                    :entry_price, :liquidation_price, :travel_percent,
-                    :value, :collateral, :size, :wallet_name, :leverage, :last_updated,
-                    :alert_reference_id, :hedge_buddy_id, :current_price,
-                    :liquidation_distance, :heat_index, :current_heat_index,
-                    :pnl_after_fees_usd
-                )
-            """, pos_dict)
+            cursor.execute(
+            """
+            INSERT
+            INTO
+            positions(
+                id, asset_type, position_type, entry_price, current_price, liquidation_price,
+                collateral, size, leverage, value, last_updated,
+                wallet_name, alert_reference_id, hedge_buddy_id, pnl_after_fees_usd
+            )
+            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                pos_dict.get('id'),
+                pos_dict.get('asset_type'),
+                pos_dict.get('position_type'),
+                pos_dict.get('entry_price'),
+                pos_dict.get('current_price'),
+                pos_dict.get('liquidation_price'),
+                pos_dict.get('collateral'),
+                pos_dict.get('size'),
+                pos_dict.get('leverage'),
+                pos_dict.get('value'),
+                pos_dict.get('last_updated'),
+                pos_dict.get('wallet_name'),
+                pos_dict.get('alert_reference_id'),
+                pos_dict.get('hedge_buddy_id'),
+                pos_dict.get('pnl_after_fees_usd')
+            )
+            )
             self.conn.commit()
-            self.logger.debug(f"Created position ID={pos_dict['id']}")
-        except Exception as ex:
-            self.logger.exception(f"Error creating position: {ex}")
+            logger.info(f"[CREATE_POSITION] Successfully created position for {asset_type}")
+        except Exception as e:
+            logger.error(f"[CREATE_POSITION] Failed to insert position: {e}", exc_info=True)
             raise
 
     def get_positions(self) -> List[dict]:

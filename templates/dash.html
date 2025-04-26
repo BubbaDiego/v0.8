@@ -1,4 +1,4 @@
-{% set hide_title_bar = True %}
+<link rel="stylesheet" href="../static/css/dashboard.css">{% set hide_title_bar = True %}
 {% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
@@ -27,6 +27,9 @@
   {% include "partials/_pie.html" %}
 </div>
 {% endblock %}
+
+<script src="{{ url_for('static', filename='js/freshness_timer.js') }}"></script>
+
 
 {% block extra_scripts %}
 {{ super() }}
