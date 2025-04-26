@@ -27,7 +27,7 @@ from positions.position_service import PositionService
 from utils.calc_services import CalcServices
 from utils.unified_logger import UnifiedLogger
 from config.config_constants import ALERT_LIMITS_PATH
-from utils.unified_log_viewer import UnifiedLogViewer
+#from utils.unified_log_viewer import UnifiedLogViewer
 
 logger = logging.getLogger("DashboardBlueprint")
 logger.setLevel(logging.CRITICAL)

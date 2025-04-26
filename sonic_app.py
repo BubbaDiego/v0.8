@@ -35,7 +35,7 @@ from cyclone.cyclone import Cyclone
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO, emit
 from config.config_constants import DB_PATH, CONFIG_PATH, BASE_DIR
-from config.unified_config_manager import UnifiedConfigManager
+from config.config_manager import UnifiedConfigManager
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager
 from positions.positions_bp import positions_bp
@@ -43,14 +43,14 @@ from alerts.alerts_bp import alerts_bp
 from prices.prices_bp import prices_bp
 from dashboard.dashboard_bp import dashboard_bp
 from portfolio.portfolio_bp import portfolio_bp
-from simulator.simulator_bp import simulator_bp as simulator_bp
-from jupiter.jupiter_bp import jupiter_bp
+#from simulator.simulator_bp import simulator_bp as simulator_bp
+#from jupiter.jupiter_bp import jupiter_bp
 from cyclone.cyclone_bp import cyclone_bp
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.sonic_labs_bp import sonic_labs_bp
 #from chat_gpt.chat_gpt_bp import chat_gpt_bp
-from aave.aave_bp import aave_bp
-from aave import aave_api
+#from aave.aave_bp import aave_bp
+#from aave import aave_api
 
 from cyclone.cyclone_bp import cyclone_bp
 
@@ -68,8 +68,8 @@ if not logger.handlers:
     logger.addHandler(ch)
 
 # Load configuration
-with open(CONFIG_PATH, "r") as f:
-    config = json.load(f)
+#with open(CONFIG_PATH, "r") as f:
+#    config = json.load(f)
 
 # Initialize Flask app and SocketIO
 app = Flask(__name__)
@@ -88,13 +88,13 @@ app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
 
 #app.register_blueprint(chat_gpt_bp, url_prefix='/chat_gpt')
-app.register_blueprint(aave_bp, url_prefix="/aave")
+#app.register_blueprint(aave_bp, url_prefix="/aave")
 
-app.register_blueprint(jupiter_bp, url_prefix="/jupiter")
+#app.register_blueprint(jupiter_bp, url_prefix="/jupiter")
 
 app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
 
-app.register_blueprint(simulator_bp, url_prefix="/simulator")
+#app.register_blueprint(simulator_bp, url_prefix="/simulator")
 
 
 unified_logger = UnifiedLogger()
@@ -111,7 +111,7 @@ if "dashboard.index" in app.view_functions:
 
 @app.route("/")
 def index():
-    # Currently redirects to dashboard.html
+    # Currently redirects to dash.html
 
     return redirect(url_for('dashboard.dash_page'))
 

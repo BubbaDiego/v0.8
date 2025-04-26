@@ -1,6 +1,7 @@
 <!-- title_bar.html -->
 
 <!-- Load custom Title Bar CSS -->
+<script src="../static/js/title_bar.js"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 
 <nav class="navbar navbar-expand-md navbar-dark gradient-navbar border-bottom">
@@ -91,6 +92,12 @@
     </div> <!-- /.navbar-collapse -->
   </div> <!-- /.container-fluid -->
 </nav>
+
+<!-- ✅ Inject global JS variables for API URLs -->
+<script>
+  var ALERT_LIMITS_URL = "{{ url_for('dashboard.get_alert_limits') }}";
+  var FULL_CYCLE_API_URL = "{{ url_for('cyclone.run_full_cycle_api') }}";
+</script>
 
 <!-- Load Title Bar JavaScript -->
 <script src="{{ url_for('static', filename='js/title_bar.js') }}"></script>

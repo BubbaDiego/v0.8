@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function updateTimers() {
-    fetch('{{ url_for("dashboard.get_alert_limits") }}')
+    fetch(ALERT_LIMITS_URL)
       .then(r => r.json())
       .then(data => {
         const callPeriod = data.call_refractory_period;
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   setupButton('updateJupiterBtn', '/positions/update_jupiter?source=User');
   setupButton('updatePricesBtn', '/prices/update?source=User');
-  setupButton('updateFullCycleBtn', '{{ url_for("cyclone.run_full_cycle_api") }}');
+  setupButton('updateFullCycleBtn', FULL_CYCLE_API_URL);
   setupButton('clearAllBtn', '/api/clear_all_data');
 
   // === LAYOUT TOGGLE (fluid/fixed container) ===

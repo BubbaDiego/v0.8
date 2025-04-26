@@ -5,7 +5,7 @@ import logging
 from flask import Blueprint, request, jsonify, render_template, current_app
 from config.config_constants import BASE_DIR, ALERT_LIMITS_PATH, R2VAULT_IMAGE
 from pathlib import Path
-from utils.operations_manager import OperationsLogger
+#from utils.operations_manager import OperationsLogger
 from utils.json_manager import JsonManager, JsonType
 from sonic_labs.hedge_manager import HedgeManager
 from cyclone.cyclone import Cyclone

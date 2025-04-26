@@ -145,11 +145,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("pieCollateralTotals").innerText = `Long: ${formatK(longC)} / Short: ${formatK(shortC)}`;
   }
 
-  // Fetch and Render Data
+  // ✅ Fetch and Render Data using global variables
   Promise.all([
-    fetch('/api/graph_data').then(r => r.json()),
-    fetch('/api/size_composition').then(r => r.json()),
-    fetch('/api/collateral_composition').then(r => r.json())
+    fetch(GRAPH_DATA_URL).then(r => r.json()),
+    fetch(SIZE_COMPOSITION_URL).then(r => r.json()),
+    fetch(COLLATERAL_COMPOSITION_URL).then(r => r.json())
   ])
   .then(([graphData, sizeData, collData]) => {
     renderGraphChart(graphData.timestamps, graphData.values, graphData.collateral);

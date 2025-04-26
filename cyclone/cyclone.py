@@ -10,7 +10,7 @@ from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager  # Import HedgeManager directly
 from positions.position_service import PositionService
 from alerts.alert_controller import AlertController
-from config.unified_config_manager import UnifiedConfigManager
+from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

@@ -20,7 +20,7 @@ from utils.calc_services import CalcServices
 from alerts.alert_evaluator import AlertEvaluator
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager
-from api.dydx_api import DydxAPI
+#from api.dydx_api import DydxAPI
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
