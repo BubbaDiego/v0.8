@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
-from config.unified_config_manager import UnifiedConfigManager
+from config.config_manager import UnifiedConfigManager
 from config.config_constants import DB_PATH, CONFIG_PATH, ALERT_LIMITS_PATH, BASE_DIR
 from pathlib import Path
 import inspect
