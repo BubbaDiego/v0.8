@@ -1,0 +1,20 @@
+{# dashboard/templates/partials/_pie.html #}
+
+<div class="common-box light-mode pie-box" id="pieBox">
+  <div class="pie-row">
+    <div class="pie-col">
+      <div class="chart-label">Size</div>
+      <div id="pieChartSize" style="height: 200px; position: relative;">
+        <div id="pieSizeLoader" class="spinner"></div>
+      </div>
+      <div id="pieSizeTotals" style="margin-top:5px; font-size:0.9rem; color:#fff;"></div>
+    </div>
+    <div class="pie-col">
+      <div class="chart-label">Collateral</div>
+      <div id="pieChartCollateral" style="height: 200px; position: relative;">
+        <div id="pieCollateralLoader" class="spinner"></div>
+      </div>
+      <div id="pieCollateralTotals" style="margin-top:5px; font-size:0.9rem; color:#fff;"></div>
+    </div>
+  </div>
+</div>

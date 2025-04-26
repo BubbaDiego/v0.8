@@ -1,0 +1,77 @@
+{# dashboard/templates/partials/_status.html #}
+<div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %}">
+  <div class="status-bar">
+    {# 1st column: Heat #}
+    <div class="status-pair">
+      <div class="status-label">🔥 Heat</div>
+      <div class="status-value">
+        {% set total_heat_index = totals.get('total_heat_index', 0) %}
+        {% if total_heat_index %}
+          {{ total_heat_index|int }}
+        {% else %}
+          N/A
+        {% endif %}
+      </div>
+    </div>
+
+    {# 2nd column: Value #}
+    <div class="status-pair">
+      <div class="status-label">💰 Value</div>
+      <div class="status-value">
+        {% if totals.get('total_value') %}
+          ${{ "{:,.2f}".format(totals.total_value) }}
+        {% else %}
+          $0.00
+        {% endif %}
+      </div>
+    </div>
+
+    {# 3rd column: Leverage #}
+    <div class="status-pair">
+      <div class="status-label">⚖️ Leverage</div>
+      <div class="status-value">
+        {% if totals.get('avg_leverage') %}
+          {{ "{:,.2f}".format(totals.avg_leverage) }}
+        {% else %}
+          N/A
+        {% endif %}
+      </div>
+    </div>
+
+    {# 4th column: Size #}
+    <div class="status-pair">
+      <div class="status-label">📊 Size</div>
+      <div class="status-value">
+        {% if totals.get('total_size') %}
+          ${{ "{:,.2f}".format(totals.total_size) }}
+        {% else %}
+          $0.00
+        {% endif %}
+      </div>
+    </div>
+
+    {# 5th column: VC Ratio #}
+    <div class="status-pair">
+      <div class="status-label">⚡ VC Ratio</div>
+      <div class="status-value">
+        {% if totals.get('total_collateral') and totals.total_collateral > 0 %}
+          {{ "{:,.2f}".format(totals.total_value / totals.total_collateral) }}
+        {% else %}
+          N/A
+        {% endif %}
+      </div>
+    </div>
+
+    {# 6th column: Travel % #}
+    <div class="status-pair">
+      <div class="status-label">✈️ Travel %</div>
+      <div class="status-value">
+        {% if totals.get('avg_travel_percent') %}
+          {{ "{:,.2f}".format(totals.avg_travel_percent) }}%
+        {% else %}
+          N/A
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

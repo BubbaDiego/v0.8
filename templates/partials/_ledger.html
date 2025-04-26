@@ -1,0 +1,23 @@
+{# dashboard/templates/partials/_ledger.html #}
+<div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %}">
+  <div class="ledger-row">
+    <!-- Price Ledger + analog timer -->
+    <div class="ledger-box ledger1 {{ 'fresh' if ledger_info.age_price < 5 else 'warning' if ledger_info.age_price < 10 else 'stale' }}">
+      📈 Price Ledger<br>
+      {{ ledger_info.formatted_time_price }}<br>
+      Loop: {{ ledger_info.loop_count_price }}
+      <div class="price-timer-container" style="margin-top:.5rem; width:40px; height:40px;">
+        <div class="dial"></div>
+        <div class="hand"></div>
+      </div>
+    </div>
+
+    <!-- Position Ledger + sonic countdown -->
+    <div class="ledger-box ledger2 {{ 'fresh' if ledger_info.age_pos < 5 else 'warning' if ledger_info.age_pos < 10 else 'stale' }}">
+      📌 Position Ledger<br>
+      {{ ledger_info.formatted_time_position }}<br>
+      Loop: {{ ledger_info.loop_count_position }}
+      <div class="sonic-timer-container" style="margin-top:.5rem; width:48px; height:48px;"></div>
+    </div>
+  </div>
+</div>

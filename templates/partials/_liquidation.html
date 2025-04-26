@@ -1,0 +1,48 @@
+{# dashboard/templates/partials/_liquidation.html #}
+
+<div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %} liquidation-box">
+  <div class="chart-label">Liquidation Bar</div>
+
+  {% if liquidation_positions %}
+    <p style="font-size:0.8rem; color:gray;">Loaded {{ liquidation_positions|length }} positions</p>
+
+    {% for pos in liquidation_positions %}
+      {% if pos.travel_percent is defined and pos.travel_percent is not none %}
+        <div class="liq-row">
+          {# Pick wallet if it exists, otherwise wallet_name, otherwise 'ObiVault' #}
+          {% set wallet = pos.wallet|default(pos.wallet_name|default('ObiVault')) %}
+
+          <img
+            class="wallet-icon"
+            src="{{ url_for('static', filename=(wallet == 'R2Vault' and 'images/r2vault.jpg' or 'images/obivault.jpg')) }}"
+            alt="{{ wallet }}"
+          />
+
+          <div class="progress liquidation">
+            {% set pct = pos.travel_percent|float %}
+            {% if pct >= 0 %}
+              <div
+                class="liquidation-fill striped bg-success"
+                style="width: calc(({{ pct }} / 25) * 25%)"
+              ></div>
+            {% else %}
+              <div
+                class="liquidation-fill striped {{ 'bg-warning' if pct|abs <= 50 else 'bg-danger' }}"
+                style="width: calc(({{ pct|abs }} / 100) * 75%)"
+              ></div>
+            {% endif %}
+
+            <div class="heat-index-circle">
+              {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+            </div>
+            <div class="flame-icon-pos">🔥</div>
+          </div>
+        </div>
+      {% else %}
+        <p style="color:red;">⚠️ Skipping a position missing travel_percent</p>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p style="color:orange;">⚠️ No liquidation positions to display.</p>
+  {% endif %}
+</div>

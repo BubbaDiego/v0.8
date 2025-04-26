@@ -1,0 +1,39 @@
+{% set hide_title_bar = True %}
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Row 1: Ledger + Status -->
+<div class="box-row" style="margin-top:0;">
+  {% include "partials/_ledger.html" %}
+  {% include "partials/_statusbar.html" %}
+</div>
+
+<!-- Row 2: Positions + Liquidation -->
+<div class="box-row">
+  {% include "partials/_positions.html" %}
+  {% include "partials/_liquidation.html" %}
+</div>
+
+<!-- Row 3: Graph + Pie Charts -->
+<div class="box-row">
+  {% include "partials/_graph.html" %}
+  {% include "partials/_pie.html" %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+
+<!-- ApexCharts (only needed on this page) -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- Dashboard Logic -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
