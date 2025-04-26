@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ledger Freshness Real-Time Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #eef2f5; }
+    .ledger-box {
+      width: 220px;
+      height: 120px;
+      border-radius: 12px;
+      padding: 0.5rem;
+      margin: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      background: white;
+      transition: background 0.5s, box-shadow 0.5s;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .icon {
+      font-size: 2rem;
+    }
+    .fresh-gradient { background: linear-gradient(90deg, #d4edda, #c3e6cb); }
+    .warning-gradient { background: linear-gradient(90deg, #fff3cd, #ffeeba); }
+    .stale-gradient { background: linear-gradient(90deg, #f8d7da, #f5c6cb); }
+  </style>
+</head>
+
+<body>
+
+<div class="container text-center mt-5">
+  <h2>Ledger Freshness - Real Countdown Demo</h2>
+
+  <div class="d-flex flex-wrap justify-content-center">
+
+    <!-- Price Box -->
+    <div id="priceBox" class="ledger-box fresh-gradient">
+      <div class="icon">💵</div>
+      <small id="priceLast">Last: 9:30 AM</small>
+      <small id="priceCountdown">Next in: 150s</small>
+    </div>
+
+    <!-- Position Box -->
+    <div id="positionBox" class="ledger-box warning-gradient">
+      <div class="icon">📊</div>
+      <small id="positionLast">Last: 9:25 AM</small>
+      <small id="positionCountdown">Next in: 90s</small>
+    </div>
+
+    <!-- Cyclone Box -->
+    <div id="cycloneBox" class="ledger-box stale-gradient">
+      <div class="icon">🌪️</div>
+      <small id="cycloneLast">Last: 8:55 AM</small>
+      <small id="cycloneCountdown">Next in: 30s</small>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Ledger Timers (canned starting seconds)
+let timers = {
+  price: 150,      // 2m30s
+  position: 90,    // 1m30s
+  cyclone: 30      // 30s
+};
+
+// Update countdown every second
+setInterval(() => {
+  for (let key in timers) {
+    if (timers[key] > 0) timers[key]--;
+
+    const countdownEl = document.getElementById(`${key}Countdown`);
+    if (countdownEl) {
+      let min = Math.floor(timers[key] / 60);
+      let sec = timers[key] % 60;
+      countdownEl.textContent = `Next in: ${min}m ${sec}s`;
+    }
+
+    const box = document.getElementById(`${key}Box`);
+    if (box) {
+      box.classList.remove('fresh-gradient', 'warning-gradient', 'stale-gradient');
+      if (timers[key] > 60) {
+        box.classList.add('fresh-gradient');
+      } else if (timers[key] > 30) {
+        box.classList.add('warning-gradient');
+      } else {
+        box.classList.add('stale-gradient');
+      }
+    }
+  }
+}, 1000);
+</script>
+
+</body>
+</html>

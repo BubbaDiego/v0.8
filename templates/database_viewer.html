@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Database Viewer{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/database_viewer.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title">Database Entries</h3>
+    <div>
+      <label for="tableSelect" class="me-2">Select Table:</label>
+      <select id="tableSelect" class="form-select form-select-sm d-inline-block" style="width: auto;">
+        {% for key in datasets.keys() %}
+          <option value="{{ key }}">{{ key|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table id="dataTable" class="table table-bordered table-hover">
+        <thead id="tableHeader"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <div class="mb-3">
+            <label for="editRefId" class="form-label">Ref ID (Short)</label>
+            <input type="text" class="form-control" id="editRefId" name="ref_id" readonly>
+            <input type="hidden" id="editFullId" name="full_id">
+          </div>
+          <div class="mb-3">
+            <label for="editField1" class="form-label">Field 1</label>
+            <input type="text" class="form-control" id="editField1" name="field1">
+          </div>
+          <div class="mb-3">
+            <label for="editField2" class="form-label">Field 2</label>
+            <input type="text" class="form-control" id="editField2" name="field2">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+
+<!-- Inject datasets variable -->
+<script>
+  window.datasets = {{ datasets|tojson }};
+</script>
+
+<!-- Load Database Viewer Scripts -->
+<script src="{{ url_for('static', filename='js/database_viewer.js') }}"></script>
+{% endblock %}
