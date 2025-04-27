@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<style>
+/* --- First Row Special Fix (Ledger + Statusbar) --- */
+.fixed-row {
+  display: flex;
+  flex-wrap: nowrap; /* ❗NO wrapping */
+  justify-content: center;
+  align-items: stretch;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.fixed-row > .common-box {
+  flex: 1 1 50%;
+  max-width: 50%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ledger-wrapper {
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.statusbar-wrapper {
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.ledger-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.ledger-box {
+  min-width: 100px;
+  max-width: 110px;
+  padding: 0.4rem 0.6rem;
+}
+
+.ledger-icon {
+  font-size: 1.4rem;
+}
+
+.ledger-label {
+  font-size: 0.5rem;
+}
+
+.ledger-time {
+  font-size: 0.7rem;
+}
+
+.status-container {
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .fixed-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  .fixed-row > .common-box {
+    flex: 0 0 300px;
+    max-width: 300px;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4">
+
+  <!-- ✅ Row 1: Ledger + Status (fixed now) -->
+  <div class="box-row fixed-row">
+    <div class="common-box ledger-wrapper">
+      {% include "partials/_ledger.html" %}
+    </div>
+    <div class="common-box statusbar-wrapper">
+      {% include "partials/_statusbar.html" %}
+    </div>
+  </div>
+
+  <!-- Row 2: Positions + Liquidation -->
+  <div class="box-row">
+    {% include "partials/_positions.html" %}
+    {% include "partials/_liquidation.html" %}
+  </div>
+
+  <!-- Row 3: Graph + Pie Charts -->
+  <div class="box-row">
+    {% include "partials/_graph.html" %}
+    {% include "partials/_pie.html" %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+
+<!-- ✅ API URLs -->
+<script>
+  var GRAPH_DATA_URL = "{{ url_for('dashboard.api_graph_data') }}";
+  var SIZE_COMPOSITION_URL = "{{ url_for('dashboard.api_size_composition') }}";
+  var COLLATERAL_COMPOSITION_URL = "{{ url_for('dashboard.api_collateral_composition') }}";
+</script>
+
+<!-- ✅ Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<!-- ✅ Page Specific JS -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/freshness_timer.js') }}"></script>
+{% endblock %}

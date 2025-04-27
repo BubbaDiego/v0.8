@@ -77,7 +77,7 @@ def dash_page():
     }
 
     return render_template(
-        "dash.html",
+        "dashboard.html",
         theme_mode=theme_mode,
         positions=all_positions,
         liquidation_positions=all_positions,

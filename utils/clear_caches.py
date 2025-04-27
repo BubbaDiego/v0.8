@@ -61,7 +61,6 @@ def clear_pycache_dirs(root_dir="."):
 
                 deleted_files += file_count
                 total_size += folder_size
-8
                 shutil.rmtree(full_path)
                 console.print(f"[green]✅ Deleted: {full_path} ({file_count} file(s), {human_readable_size(folder_size)})[/green]")
                 deleted_dirs += 1

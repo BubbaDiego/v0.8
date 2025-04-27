@@ -1,80 +1,81 @@
-<!-- _statusbar.html -->
+<!-- _statusbar.html (Production version based on Design 10 - Final Touches and Corrections) -->
 
-<div class="common-box">
-  <div class="status-bar">
+<style>
+.status-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px; margin-bottom: 20px; border-radius: 10px; background: var(--statusbar-bg, #eef2f7); }
+.status-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; white-space: nowrap; padding: 10px 12px 8px; font-size: 1.5rem; border-radius: 8px; min-width: 80px; text-align: center; background: var(--statuscard-bg, #ffffff); transition: transform 0.2s ease; color: var(--status-text-color, #000000); }
+.status-item:hover { transform: scale(1.05); }
+.status-item .label { font-size: 1rem; margin-top: 12px; line-height: 1.2; font-weight: bold; }
+.green { background-color: #d4edda; color: #155724; }
+.yellow { background-color: #fff3cd; color: #856404; }
+.red { background-color: #f8d7da; color: #721c24; }
 
-    <!-- Heat -->
-    <div class="status-pair">
-      <div class="status-label">🔥 Heat</div>
-      <div class="status-value">
-        {% set total_heat_index = totals.get('total_heat_index', 0) %}
-        {% if total_heat_index %}
-          {{ total_heat_index|int }}
-        {% else %}
-          N/A
-        {% endif %}
-      </div>
+/* Light/Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .status-container { --statusbar-bg: #2c2f36; }
+  .status-item { --statuscard-bg: #3c3f47; --status-text-color: #dddddd; }
+}
+</style>
+
+<div class="status-container">
+  <div class="status-item {{ 'green' if totals.get('total_heat_index', 0) < 50 else 'yellow' if totals.get('total_heat_index', 0) < 80 else 'red' }}">
+    🔥
+    <div class="label">
+      {% set total_heat_index = totals.get('total_heat_index', 0) %}
+      {% if total_heat_index %}
+        {{ total_heat_index|int }}
+      {% else %}
+        N/A
+      {% endif %}
     </div>
-
-    <!-- Value -->
-    <div class="status-pair">
-      <div class="status-label">💰 Value</div>
-      <div class="status-value">
-        {% if totals.get('total_value') %}
-          ${{ "{:,.2f}".format(totals.total_value) }}
-        {% else %}
-          $0.00
-        {% endif %}
-      </div>
+  </div>
+  <div class="status-item {{ 'green' if totals.get('total_value', 0) > 100000 else 'yellow' if totals.get('total_value', 0) > 50000 else 'red' }}">
+    💰
+    <div class="label">
+      {% if totals.get('total_value') %}
+        ${{ "{:,}".format(totals.total_value|int) }}
+      {% else %}
+        $0
+      {% endif %}
     </div>
-
-    <!-- Leverage -->
-    <div class="status-pair">
-      <div class="status-label">⚖️ Leverage</div>
-      <div class="status-value">
-        {% if totals.get('avg_leverage') %}
-          {{ "{:,.2f}".format(totals.avg_leverage) }}
-        {% else %}
-          N/A
-        {% endif %}
-      </div>
+  </div>
+  <div class="status-item {{ 'green' if totals.get('avg_leverage', 0) < 2 else 'yellow' if totals.get('avg_leverage', 0) < 5 else 'red' }}">
+    ⚖️
+    <div class="label">
+      {% if totals.get('avg_leverage') %}
+        {{ "{:,.2f}".format(totals.avg_leverage) }}
+      {% else %}
+        N/A
+      {% endif %}
     </div>
-
-    <!-- Size -->
-    <div class="status-pair">
-      <div class="status-label">📊 Size</div>
-      <div class="status-value">
-        {% if totals.get('total_size') %}
-          ${{ "{:,.2f}".format(totals.total_size) }}
-        {% else %}
-          $0.00
-        {% endif %}
-      </div>
+  </div>
+  <div class="status-item {{ 'green' if totals.get('total_size', 0) > 500000 else 'yellow' if totals.get('total_size', 0) > 100000 else 'red' }}">
+    📊
+    <div class="label">
+      {% if totals.get('total_size') %}
+        ${{ "{:,}".format(totals.total_size|int) }}
+      {% else %}
+        $0
+      {% endif %}
     </div>
-
-    <!-- VC Ratio -->
-    <div class="status-pair">
-      <div class="status-label">⚡ VC Ratio</div>
-      <div class="status-value">
-        {% if totals.get('total_collateral') and totals.total_collateral > 0 %}
-          {{ "{:,.2f}".format(totals.total_value / totals.total_collateral) }}
-        {% else %}
-          N/A
-        {% endif %}
-      </div>
+  </div>
+  <div class="status-item {{ 'green' if totals.get('total_value', 0) / totals.get('total_collateral', 1) < 2 else 'yellow' if totals.get('total_value', 0) / totals.get('total_collateral', 1) < 4 else 'red' }}">
+    ⚡
+    <div class="label">
+      {% if totals.get('total_collateral') and totals.total_collateral > 0 %}
+        {{ "{:,.2f}".format(totals.total_value / totals.total_collateral) }}
+      {% else %}
+        N/A
+      {% endif %}
     </div>
-
-    <!-- Travel % -->
-    <div class="status-pair">
-      <div class="status-label">✈️ Travel %</div>
-      <div class="status-value">
-        {% if totals.get('avg_travel_percent') %}
-          {{ "{:,.2f}".format(totals.avg_travel_percent) }}%
-        {% else %}
-          N/A
-        {% endif %}
-      </div>
+  </div>
+  <div class="status-item {{ 'green' if totals.get('avg_travel_percent', 0) < 10 else 'yellow' if totals.get('avg_travel_percent', 0) < 20 else 'red' }}">
+    ✈️
+    <div class="label">
+      {% if totals.get('avg_travel_percent') %}
+        {{ "{:,.2f}".format(totals.avg_travel_percent) }}%
+      {% else %}
+        N/A
+      {% endif %}
     </div>
-
   </div>
 </div>
