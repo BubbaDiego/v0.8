@@ -209,44 +209,58 @@ body.dark-bg .mini-table-box thead th {
   display: inline-block;
 }
 
-/* LEDGER BOXES */
+/* --- Ledger Row Compression and Flex Alignment --- */
 .ledger-row {
   display: flex;
-  gap: 1rem;
-}
-.ledger-box {
-  width: 220px;
-  height: 100px; /* Reduced from 150px */
-  border-radius: 12px;
-  padding: 0.5rem 0.5rem;
-  margin: 0.5rem;
-  display: flex;
-  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  transition: background 0.5s, box-shadow 0.5s;
-}
-.ledger-box .price-timer-container {
-  width: 20px;
-  height: 20px;
-  margin-top: 0.25rem;
-}
-.ledger-box .price-timer-container .dial {
-  border-width: 2px;
-}
-.ledger-box .price-timer-container .hand {
-  height: 35%;
-  width: 1px;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
-/* STATUS BAR */
+/* Ledger Box Redesign */
+.ledger-box {
+  display: flex;
+  flex-direction: row; /* horizontal icon + text */
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  height: 80px; /* reduced height */
+  background-color: var(--card-background-color, #d0e7ff);
+  border-radius: 0.75rem;
+  transition: background-color 0.5s, color 0.5s;
+}
+
+/* Ledger Icon (left) */
+.ledger-box .ledger-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 1rem;
+}
+
+/* Ledger Text (right) */
+.ledger-box .ledger-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Status Bar Minor Tightening */
 .status-bar {
   display: flex;
-  gap: 0.5rem;
-  height: 50px;
-  padding: 8px 12px;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 1rem;
+  height: 80px; /* match ledger box height */
+  padding: 0.5rem 1rem;
 }
+
 .status-pair {
   flex: 1;
   text-align: center;

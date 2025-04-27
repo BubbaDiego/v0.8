@@ -79,6 +79,53 @@
   to { transform: rotate(360deg); }
 }
 
+/* Light/Dark mode awareness */
+body.light-bg .gradient-navbar {
+  background: linear-gradient(90deg, #4a90e2, #7db3f5);
+}
+
+body.dark-bg .gradient-navbar {
+  background: linear-gradient(90deg, #2c3e50, #4a90e2);
+}
+
+body.light-bg .asset-panel {
+  background-color: #f8f9fa;
+  color: #000;
+}
+
+body.dark-bg .asset-panel {
+  background-color: #333;
+  color: #ddd;
+}
+
+body.light-bg .timer-box {
+  background: #ddd;
+  color: #000;
+}
+
+body.dark-bg .timer-box {
+  background: #222;
+  color: #ddd;
+}
+
+body.light-bg #updateJupiterBtn,
+body.light-bg #updatePricesBtn,
+body.light-bg #updateFullCycleBtn,
+body.light-bg #clearAllBtn {
+  background: #f8f9fa;
+  color: black;
+}
+
+body.dark-bg #updateJupiterBtn,
+body.dark-bg #updatePricesBtn,
+body.dark-bg #updateFullCycleBtn,
+body.dark-bg #clearAllBtn {
+  background: #444;
+  color: white;
+}
+
+
+
 /* Small Tweaks for Mobile */
 @media (max-width: 768px) {
   .asset-panel {

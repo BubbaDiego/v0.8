@@ -1,78 +1,114 @@
-<!-- _ledger.html -->
+<!-- _ledger.html (FINAL CENTERED VERSION) -->
 
 <link rel="stylesheet" href="../../static/css/dashboard.css">
+<link rel="stylesheet" href="../../static/css/title_bar.css">
+<div class="common-box">
+  <div class="ledger-row">
 
-<div class="common-box light-mode d-flex justify-content-center flex-wrap">
+    <!-- Price Ledger Box -->
+    <div id="priceBox" class="ledger-box">
+      <div class="ledger-icon">💵</div>
+      <div id="priceLast" class="ledger-text">Last Update: --</div>
+    </div>
 
-  <div id="priceBox" class="ledger-box common-box light-mode mx-2 my-2">
-  <div class="icon">💵</div>
-  <small id="priceLast">Last: 9:30 AM</small>
-  <small id="priceCountdown">Next in: 2m 30s</small>
-</div>
+    <!-- Position Ledger Box -->
+    <div id="positionBox" class="ledger-box">
+      <div class="ledger-icon">📊</div>
+      <div id="positionLast" class="ledger-text">Last Update: --</div>
+    </div>
 
-<div id="positionBox" class="ledger-box common-box light-mode mx-2 my-2">
-  <div class="icon">📊</div>
-  <small id="positionLast">Last: 9:25 AM</small>
-  <small id="positionCountdown">Next in: 1m 30s</small>
-</div>
+    <!-- Cyclone Ledger Box -->
+    <div id="cycloneBox" class="ledger-box">
+      <div class="ledger-icon">🌪️</div>
+      <div id="cycloneLast" class="ledger-text">Last Update: --</div>
+    </div>
 
-<div id="cycloneBox" class="ledger-box common-box light-mode mx-2 my-2">
-  <div class="icon">🌪️</div>
-  <small id="cycloneLast">Last: 8:55 AM</small>
-  <small id="cycloneCountdown">Next in: 0m 30s</small>
-</div>
-
-
+  </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  function applyFreshnessVisuals(boxId, iconId, ageSeconds) {
-    const box = document.getElementById(boxId);
-    const icon = document.getElementById(iconId);
+  function formatTimestamp(isoString) {
+    const date = new Date(isoString);
+    const hours = date.getHours() % 12 || 12;
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
+    return `${hours}:${minutes} ${ampm}`;
+  }
 
-    if (!box || !icon) return;
+  function applyFreshnessVisuals(boxId, ageSeconds) {
+    const box = document.getElementById(boxId);
+    if (!box) return;
+
+    const ageMinutes = ageSeconds / 60;
 
     box.classList.remove('fresh-pulse', 'warning-pulse', 'stale-pulse', 'fresh-gradient', 'warning-gradient', 'stale-gradient');
-    icon.classList.remove('text-success', 'text-warning', 'text-danger');
 
-    if (ageSeconds < 5) {
+    if (ageMinutes < 5) {
       box.classList.add('fresh-pulse', 'fresh-gradient');
-      icon.textContent = '✅';
-      icon.classList.add('text-success');
-    } else if (ageSeconds < 10) {
+    } else if (ageMinutes < 10) {
       box.classList.add('warning-pulse', 'warning-gradient');
-      icon.textContent = '⚠️';
-      icon.classList.add('text-warning');
     } else {
       box.classList.add('stale-pulse', 'stale-gradient');
-      icon.textContent = '🔥';
-      icon.classList.add('text-danger');
     }
   }
 
-
   function refreshFreshness() {
-    fetch('/api/ledger_ages')  // <-- new small API we build next
+    fetch('/api/ledger_ages')
       .then(response => response.json())
       .then(data => {
-        document.getElementById('priceAge').textContent = data.age_price;
-        document.getElementById('positionAge').textContent = data.age_positions;
-        document.getElementById('cycloneAge').textContent = data.age_cyclone;
+        document.getElementById('priceLast').textContent = `Last Update: ${formatTimestamp(data.last_price_time || '')}`;
+        document.getElementById('positionLast').textContent = `Last Update: ${formatTimestamp(data.last_positions_time || '')}`;
+        document.getElementById('cycloneLast').textContent = `Last Update: ${formatTimestamp(data.last_cyclone_time || '')}`;
 
-        applyFreshnessVisuals('priceBox', 'priceIcon', parseInt(data.age_price));
-        applyFreshnessVisuals('positionBox', 'positionIcon', parseInt(data.age_positions));
-        applyFreshnessVisuals('cycloneBox', 'cycloneIcon', parseInt(data.age_cyclone));
+        applyFreshnessVisuals('priceBox', parseInt(data.age_price));
+        applyFreshnessVisuals('positionBox', parseInt(data.age_positions));
+        applyFreshnessVisuals('cycloneBox', parseInt(data.age_cyclone));
       })
       .catch(err => console.error('Error refreshing freshness:', err));
   }
 
-  // First initial call
   refreshFreshness();
-
-  // Refresh every 60 seconds
   setInterval(refreshFreshness, 60000);
 
 });
 </script>
+
+<style>
+.ledger-row {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem; /* More space between boxes horizontally */
+  max-width: 600px; /* smaller max-width! tighter row */
+  margin: 0 auto;
+}
+
+.ledger-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 180px; /* Set each box to fixed width */
+  padding: 0.5rem;
+  height: 50px;
+  border-radius: 0.75rem;
+  transition: background-color 0.5s, color 0.5s;
+}
+
+.ledger-icon {
+  font-size: 2.2rem;
+  margin-right: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.ledger-text {
+  font-size: 0.95rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+</style>

@@ -1,7 +1,9 @@
-{# dashboard/templates/partials/_status.html #}
-<div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %}">
+<!-- _statusbar.html -->
+
+<div class="common-box">
   <div class="status-bar">
-    {# 1st column: Heat #}
+
+    <!-- Heat -->
     <div class="status-pair">
       <div class="status-label">🔥 Heat</div>
       <div class="status-value">
@@ -14,7 +16,7 @@
       </div>
     </div>
 
-    {# 2nd column: Value #}
+    <!-- Value -->
     <div class="status-pair">
       <div class="status-label">💰 Value</div>
       <div class="status-value">
@@ -26,7 +28,7 @@
       </div>
     </div>
 
-    {# 3rd column: Leverage #}
+    <!-- Leverage -->
     <div class="status-pair">
       <div class="status-label">⚖️ Leverage</div>
       <div class="status-value">
@@ -38,7 +40,7 @@
       </div>
     </div>
 
-    {# 4th column: Size #}
+    <!-- Size -->
     <div class="status-pair">
       <div class="status-label">📊 Size</div>
       <div class="status-value">
@@ -50,7 +52,7 @@
       </div>
     </div>
 
-    {# 5th column: VC Ratio #}
+    <!-- VC Ratio -->
     <div class="status-pair">
       <div class="status-label">⚡ VC Ratio</div>
       <div class="status-value">
@@ -62,7 +64,7 @@
       </div>
     </div>
 
-    {# 6th column: Travel % #}
+    <!-- Travel % -->
     <div class="status-pair">
       <div class="status-label">✈️ Travel %</div>
       <div class="status-value">
@@ -73,5 +75,6 @@
         {% endif %}
       </div>
     </div>
+
   </div>
 </div>

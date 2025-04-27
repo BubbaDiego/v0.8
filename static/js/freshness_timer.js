@@ -24,26 +24,22 @@ document.addEventListener('DOMContentLoaded', function () {
     return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   }
 
-  function applyFreshnessVisuals(boxId, iconId, secondsLeft) {
-    const box = document.getElementById(boxId);
-    const icon = document.getElementById(iconId);
+  function applyFreshnessVisuals(boxId, ageSeconds) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
 
-    if (!box || !icon) return;
+  const ageMinutes = ageSeconds / 60;
 
-    box.classList.remove('fresh-pulse', 'warning-pulse', 'stale-pulse', 'fresh-gradient', 'warning-gradient', 'stale-gradient');
-    icon.classList.remove('text-success', 'text-warning', 'text-danger');
+  box.classList.remove('fresh-pulse', 'warning-pulse', 'stale-pulse', 'fresh-gradient', 'warning-gradient', 'stale-gradient');
 
-    if (secondsLeft > 60) {
-      box.classList.add('fresh-pulse', 'fresh-gradient');
-      icon.classList.add('text-success');
-    } else if (secondsLeft > 30) {
-      box.classList.add('warning-pulse', 'warning-gradient');
-      icon.classList.add('text-warning');
-    } else {
-      box.classList.add('stale-pulse', 'stale-gradient');
-      icon.classList.add('text-danger');
-    }
+  if (ageMinutes < 5) {
+    box.classList.add('fresh-pulse', 'fresh-gradient');
+  } else if (ageMinutes < 10) {
+    box.classList.add('warning-pulse', 'warning-gradient');
+  } else {
+    box.classList.add('stale-pulse', 'stale-gradient');
   }
+}
 
   function updateCountdowns() {
     for (let key in timers) {

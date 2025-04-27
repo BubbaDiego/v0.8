@@ -136,13 +136,14 @@ def api_collateral_composition():
 @dashboard_bp.route("/api/ledger_ages")
 def api_ledger_ages():
     return jsonify({
-        "price_age": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
-        "price_last": get_ledger_status('monitor/price_ledger.json')["last_timestamp"],
-        "position_age": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
-        "position_last": get_ledger_status('monitor/position_ledger.json')["last_timestamp"],
-        "cyclone_age": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
-        "cyclone_last": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
+        "age_price": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
+        "last_price_time": get_ledger_status('monitor/price_ledger.json')["last_timestamp"],
+        "age_positions": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
+        "last_positions_time": get_ledger_status('monitor/position_ledger.json')["last_timestamp"],
+        "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
+        "last_cyclone_time": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
     })
+
 
 
 

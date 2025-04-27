@@ -1,15 +1,12 @@
-<link rel="stylesheet" href="../../static/css/dashboard.css">{# dashboard/templates/partials/_liquidation.html #}
+<!-- _liquidation.html (FINAL CLEAN VERSION) -->
 
-<div class="common-box {% if theme_mode=='dark' %}dark-mode{% else %}light-mode{% endif %} liquidation-box">
+<div class="common-box liquidation-box">
   <div class="chart-label">Liquidation Bar</div>
 
   {% if liquidation_positions %}
-    <p style="font-size:0.8rem; color:gray;">Loaded {{ liquidation_positions|length }} positions</p>
-
     {% for pos in liquidation_positions %}
       {% if pos.travel_percent is defined and pos.travel_percent is not none %}
         <div class="liq-row">
-          {# Pick wallet if it exists, otherwise fallback #}
           {% set wallet = pos.wallet|default(pos.wallet_name|default('ObiVault')) %}
           <img
             class="wallet-icon"
@@ -18,27 +15,27 @@
           />
 
           <div class="liq-progress-bar">
-  <div class="liq-bar-container">
-    <div class="liq-midline"></div>
-    {% set pct = pos.travel_percent|float %}
-    {% if pct >= 0 %}
-      <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
-        <div class="travel-text">{{ pct|round(1) }}%</div>
-      </div>
-    {% else %}
-      <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
-        <div class="travel-text">{{ pct|round(1) }}%</div>
-      </div>
-    {% endif %}
-  </div>
+            <div class="liq-bar-container">
+              <div class="liq-midline"></div>
+              {% set pct = pos.travel_percent|float %}
+              {% if pct >= 0 %}
+                <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
+                  <div class="travel-text">{{ pct|round(1) }}%</div>
+                </div>
+              {% else %}
+                <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
+                  <div class="travel-text">{{ pct|round(1) }}%</div>
+                </div>
+              {% endif %}
+            </div>
 
-  <div class="liq-flame-container">
-    🔥
-    <span class="heat-index-number">
-      {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
-    </span>
-  </div>
-</div>
+            <div class="liq-flame-container">
+              🔥
+              <span class="heat-index-number">
+                {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+              </span>
+            </div>
+          </div>
         </div>
       {% else %}
         <p style="color:red;">⚠️ Skipping a position missing travel_percent</p>
@@ -48,3 +45,99 @@
     <p style="color:orange;">⚠️ No liquidation positions to display.</p>
   {% endif %}
 </div>
+
+<style>
+.liq-bar-container {
+  position: relative;
+  flex-grow: 1;
+  background: #e0e0e0;
+  height: 20px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.liq-bar-fill.positive {
+  background: repeating-linear-gradient(
+    45deg,
+    #28a745 0,
+    #28a745 10px,
+    #2ecc71 10px,
+    #2ecc71 20px
+  );
+}
+
+.liq-bar-fill.negative {
+  background: repeating-linear-gradient(
+    45deg,
+    #dc3545 0,
+    #dc3545 10px,
+    #e74c3c 10px,
+    #e74c3c 20px
+  );
+}
+
+.liq-bar-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.liq-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wallet-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.liq-midline {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #333;
+  z-index: 5;
+}
+
+.liq-flame-container {
+  position: relative;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff5722;
+  color: white;
+  font-weight: bold;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-left: 10px;
+}
+
+.heat-index-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+}
+
+.travel-text {
+  z-index: 10;
+  white-space: nowrap;
+}
+</style>
