@@ -1,0 +1,44 @@
+{% macro alert_card(alert) %}
+<div class="col-auto" style="margin-bottom: 1rem;">
+  <details class="info-box {{ alert.level|lower }}">
+    <summary class="info-header d-flex align-items-center">
+      <div class="icon-container me-2">
+        {% if alert.alert_type|upper == 'TRAVELPERCENT' %}
+          <i class="fas fa-rocket"></i>
+        {% elif alert.alert_type|upper == 'HEATINDEX' %}
+          <i class="fas fa-fire"></i>
+        {% elif alert.alert_type|upper == 'PROFIT' %}
+          <i class="fas fa-dollar-sign"></i>
+        {% elif alert.alert_type|upper == 'PRICETHRESHOLD' %}
+          <i class="fas fa-tag"></i>
+        {% else %}
+          <i class="fas fa-bell"></i>
+        {% endif %}
+      </div>
+      <div class="info-basic-container">
+        <div><strong>{{ alert.alert_type }}</strong></div>
+        <div>Trigger: {{ alert.trigger_value }}</div>
+        <div>Level: {{ alert.level }}</div>
+      </div>
+    </summary>
+    <div class="info-content p-2">
+      <div><strong>Current Value:</strong> {{ alert.evaluated_value }}</div>
+      <div><strong>Status:</strong> {{ alert.status }}</div>
+      <div><strong>Asset:</strong> {{ alert.asset_type }}</div>
+      <div><strong>ID:</strong> {{ alert.id }}</div>
+    </div>
+  </details>
+</div>
+{% endmacro %}
+
+{% macro hedge_row(hedge) %}
+<tr>
+  <td>{{ hedge.id }}</td>
+  <td>{{ hedge.total_long_size }}</td>
+  <td>{{ hedge.total_short_size }}</td>
+  <td>{{ hedge.long_heat_index }}</td>
+  <td>{{ hedge.short_heat_index }}</td>
+  <td>{{ hedge.total_heat_index }}</td>
+  <td>{{ hedge.notes }}</td>
+</tr>
+{% endmacro %}

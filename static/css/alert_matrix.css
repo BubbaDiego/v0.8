@@ -1,0 +1,87 @@
+:root {
+  --card-title-color: #007bff;
+  --text-color: #ffffff;
+  --card-background-color: #f8f9fa;
+  --border-color: #ccc;
+  --success-color: #198754;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+}
+
+/* Global Card Styles */
+.alert-matrix-card, .hedge-matrix-card {
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Card Headers */
+.alert-matrix-header, .hedge-matrix-card .card-header {
+  background-color: var(--card-title-color);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+
+/* Tools Section (refresh, create) */
+.card-tools a, .card-tools i {
+  color: var(--text-color);
+  margin-left: 12px;
+  font-size: 1.3rem;
+  text-decoration: none;
+}
+
+/* Toggle Switch */
+.header-toggle {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-toggle input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+/* Info Card (alert boxes) */
+.details-box, details.info-box {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  background-color: var(--card-background-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+details.info-box summary {
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+/* Alert Severity Colors */
+.info-box.normal { background-color: var(--card-background-color); }
+.info-box.low { background-color: var(--success-color); color: white; }
+.info-box.medium { background-color: var(--warning-color); color: black; }
+.info-box.high { background-color: var(--danger-color); color: white; }
+
+/* Hide Default Disclosure Arrow */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Icons & Containers */
+.icon-container i {
+  font-size: 1.5rem;
+  margin-right: 8px;
+}
+
+.info-basic-container div {
+  font-size: 0.9rem;
+}
