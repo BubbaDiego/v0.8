@@ -101,6 +101,32 @@ class OperationsMonitor(BaseMonitor):
             self.heartbeat(metadata)
             time.sleep(self.monitor_interval)
 
+    def run_health_check(self, test_file="tests/test_alert_controller.py"):
+        """Run health check against a specified test file."""
+        print(f"[🔄] Running health check: {test_file}")
+
+        os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+
+        start_time = datetime.now()
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", test_file],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        success = (result.returncode == 0)
+        duration = (datetime.now() - start_time).total_seconds()
+
+        if not success:
+            self.logger.error("[❌] Health check failed.")
+            self.logger.error(result.stdout.decode())
+            self.logger.error(result.stderr.decode())
+            if self.notifications_enabled:
+                self.send_alert_notification(f"Health check FAILED on {test_file}")
+        else:
+            print("[✅] Health check passed.")
+
+        return {"health_success": success, "duration_seconds": duration}
+
     def heartbeat(self, metadata: dict = None):
         """
         Log a simple heartbeat with optional metadata.

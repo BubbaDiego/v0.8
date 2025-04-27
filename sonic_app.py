@@ -58,7 +58,7 @@ from cyclone.cyclone_bp import cyclone_bp
 from utils.startup_checker import verify_paths
 
 print(f"Expecting CONFIG_PATH at: {CONFIG_PATH}")
-verify_paths()
+
 # ⬆️ CHECK ALL PATHS ON BOOT
 
 
@@ -408,7 +408,7 @@ def update_theme_context():
     return dict(theme=theme_config)
 
 @app.route('/test_twilio', methods=["POST"])
-def test_twilio():
+def send_test_twilio():
     from twilio_message_api import trigger_twilio_flow
     # Using UnifiedLogger here as well.
     unified_logger = UnifiedLogger()
