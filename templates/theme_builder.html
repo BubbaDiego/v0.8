@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Theme Builder{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<style>
+  .theme-editor {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .color-picker {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f1f1f1;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .color-picker input[type="color"] {
+    width: 80px;
+    height: 80px;
+    border: none;
+    border-radius: 50%;
+    margin-top: 0.5rem;
+    cursor: pointer;
+  }
+  .preset-controls {
+    margin-top: 2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Theme Builder 🎨</h1>
+
+  <div class="theme-editor">
+    <div class="color-picker">
+      <label>Background Color</label>
+      <input type="color" id="backgroundColor">
+    </div>
+    <div class="color-picker">
+      <label>Text Color</label>
+      <input type="color" id="textColor">
+    </div>
+    <div class="color-picker">
+      <label>Card Background</label>
+      <input type="color" id="cardBackground">
+    </div>
+    <div class="color-picker">
+      <label>Navbar Background</label>
+      <input type="color" id="navbarBackground">
+    </div>
+  </div>
+
+  <div class="preset-controls">
+    <div class="input-group mb-3">
+      <input type="text" id="presetName" class="form-control" placeholder="Preset Name">
+      <button id="savePresetBtn" class="btn btn-primary">Save Preset</button>
+    </div>
+
+    <div class="input-group mb-3">
+      <select id="presetList" class="form-select"></select>
+      <button id="setActiveBtn" class="btn btn-success">Set Active</button>
+      <button id="deletePresetBtn" class="btn btn-danger">Delete</button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/theme_builder.js') }}"></script>
+{% endblock %}

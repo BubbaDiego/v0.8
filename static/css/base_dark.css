@@ -1,0 +1,95 @@
+/* Gradient Navbar */
+.gradient-navbar {
+  background: linear-gradient(90deg, #7db3f5, #4a90e2);
+  border-bottom: 2px solid white;
+}
+
+/* Asset Panels (BTC, ETH, SOL) */
+.asset-panel {
+  background-color: #f8f9fa;
+  border: 2px solid white;
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.asset-panel img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Timer Box in Center */
+.timer-box {
+  background: #ddd;
+  border: 2px solid white;
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.timer-box span {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Update Buttons (Jupiter, Prices, Full Cycle, Clear) */
+#updateJupiterBtn, #updatePricesBtn, #updateFullCycleBtn, #clearAllBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.4rem;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+#updateJupiterBtn img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+/* Hover Effect for Buttons */
+#updateJupiterBtn:hover, #updatePricesBtn:hover, #updateFullCycleBtn:hover, #clearAllBtn:hover {
+  background-color: #e2e6ea;
+}
+
+/* Theme Toggle (Sun/Moon container) */
+#toggleContainer {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Spinning Animation for Loading */
+.spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Small Tweaks for Mobile */
+@media (max-width: 768px) {
+  .asset-panel {
+    padding: 0.2rem 0.3rem;
+  }
+  .timer-box {
+    gap: 0.5rem;
+  }
+  #updateJupiterBtn, #updatePricesBtn, #updateFullCycleBtn, #clearAllBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+}

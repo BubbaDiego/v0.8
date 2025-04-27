@@ -5,7 +5,7 @@ from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 from utils.unified_logger import UnifiedLogger
 from utils.calc_services import CalcServices
-from alerts.alert_enrichment import enrich_alert_data, update_trigger_value_FUCK_ME
+from alerts.alert_enrichment import enrich_alert_data
 from alerts.alert_controller import DummyPositionAlert
 from data.models import Alert, AlertType, AlertClass, NotificationType, Status
 from uuid import uuid4

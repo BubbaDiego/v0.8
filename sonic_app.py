@@ -30,6 +30,7 @@ from uuid import uuid4
 import asyncio
 from flask import jsonify
 from cyclone.cyclone import Cyclone
+from routes.theme_routes import theme_bp
 
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
@@ -90,6 +91,8 @@ app.register_blueprint(dashboard_bp)  # Dashboard-specific routes and API endpoi
 app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 #app.register_blueprint(cyclone_bp, url_prefix="/cyclone")
 app.register_blueprint(cyclone_bp)
+
+app.register_blueprint(theme_bp)
 
 #app.register_blueprint(chat_gpt_bp, url_prefix='/chat_gpt')
 #app.register_blueprint(aave_bp, url_prefix="/aave")
@@ -156,6 +159,11 @@ def index2():
 
     return redirect(url_for('dashboard.dashboard'))
 
+from flask import render_template
+
+@app.route('/theme-builder')
+def theme_builder_page():
+    return render_template('theme_builder.html')
 
 
 
