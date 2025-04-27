@@ -2,6 +2,7 @@
 
 console.log('✅ base.js loaded');
 
+// === Theme Handling ===
 (function() {
   const body = document.body;
   const themeToggleButton = document.getElementById('themeToggleButton');
@@ -15,7 +16,6 @@ console.log('✅ base.js loaded');
         themeIcon.classList.remove('fa-sun');
         themeIcon.classList.add('fa-moon');
       }
-      // Optional: darken navbar too
       const navbar = document.querySelector('.main-header.navbar');
       if (navbar) navbar.classList.remove('gradient-navbar');
     } else {
@@ -25,7 +25,6 @@ console.log('✅ base.js loaded');
         themeIcon.classList.remove('fa-moon');
         themeIcon.classList.add('fa-sun');
       }
-      // Optional: restore blue navbar gradient in light mode
       const navbar = document.querySelector('.main-header.navbar');
       if (navbar && !navbar.classList.contains('gradient-navbar')) {
         navbar.classList.add('gradient-navbar');
@@ -33,15 +32,13 @@ console.log('✅ base.js loaded');
     }
   }
 
-  // === INITIAL LOAD: Apply saved theme ===
   const savedTheme = localStorage.getItem('preferredThemeMode');
   if (savedTheme) {
     applyTheme(savedTheme);
   } else {
-    applyTheme('light'); // Default fallback
+    applyTheme('light');
   }
 
-  // === On button click: Toggle theme ===
   if (themeToggleButton) {
     themeToggleButton.addEventListener('click', function() {
       const currentTheme = body.classList.contains('dark-bg') ? 'dark' : 'light';
@@ -51,3 +48,61 @@ console.log('✅ base.js loaded');
     });
   }
 })();
+
+// === DOM Ready Logic ===
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('✅ DOM fully loaded and parsed');
+
+  // === Price Fetching for Title Bar ===
+  async function fetchAndUpdatePrices() {
+    const btcPriceSpan = document.getElementById('btcPrice');
+    const ethPriceSpan = document.getElementById('ethPrice');
+    const solPriceSpan = document.getElementById('solPrice');
+
+    function showLoading() {
+      if (btcPriceSpan) btcPriceSpan.textContent = 'Loading...';
+      if (ethPriceSpan) ethPriceSpan.textContent = 'Loading...';
+      if (solPriceSpan) solPriceSpan.textContent = 'Loading...';
+    }
+
+    function updatePriceElement(span, price) {
+      if (span) {
+        if (price !== undefined) {
+          span.textContent = `$${price.toFixed(2)}`;
+        } else {
+          span.textContent = '--';
+        }
+      }
+    }
+
+    showLoading();
+
+    try {
+      const response = await fetch('/prices/api/data');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.mini_prices) {
+        const btc = data.mini_prices.find(p => p.asset_type === 'BTC');
+        const eth = data.mini_prices.find(p => p.asset_type === 'ETH');
+        const sol = data.mini_prices.find(p => p.asset_type === 'SOL');
+
+        updatePriceElement(btcPriceSpan, btc?.current_price);
+        updatePriceElement(ethPriceSpan, eth?.current_price);
+        updatePriceElement(solPriceSpan, sol?.current_price);
+      }
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      if (btcPriceSpan) btcPriceSpan.textContent = '--';
+      if (ethPriceSpan) ethPriceSpan.textContent = '--';
+      if (solPriceSpan) solPriceSpan.textContent = '--';
+    }
+  }
+
+  // Fetch prices once after page load
+  fetchAndUpdatePrices();
+
+  // Optional: Refresh prices every 30 seconds
+  setInterval(fetchAndUpdatePrices, 30000);
+});

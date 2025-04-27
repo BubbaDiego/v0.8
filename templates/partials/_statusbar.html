@@ -1,4 +1,4 @@
-<!-- _statusbar.html (Production version based on Design 10 - Final Touches and Corrections) -->
+<!-- _statusbar.html (Production version based on Design 10 - Soft Pulse for Red Statuses) -->
 
 <style>
 .status-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px; margin-bottom: 20px; border-radius: 10px; background: var(--statusbar-bg, #eef2f7); }
@@ -7,7 +7,13 @@
 .status-item .label { font-size: 1rem; margin-top: 12px; line-height: 1.2; font-weight: bold; }
 .green { background-color: #d4edda; color: #155724; }
 .yellow { background-color: #fff3cd; color: #856404; }
-.red { background-color: #f8d7da; color: #721c24; }
+.red { background-color: #f8d7da; color: #721c24; animation: pulse 2s infinite; }
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 
 /* Light/Dark Mode Support */
 @media (prefers-color-scheme: dark) {
@@ -28,6 +34,7 @@
       {% endif %}
     </div>
   </div>
+
   <div class="status-item {{ 'green' if totals.get('total_value', 0) > 100000 else 'yellow' if totals.get('total_value', 0) > 50000 else 'red' }}">
     💰
     <div class="label">
@@ -38,6 +45,7 @@
       {% endif %}
     </div>
   </div>
+
   <div class="status-item {{ 'green' if totals.get('avg_leverage', 0) < 2 else 'yellow' if totals.get('avg_leverage', 0) < 5 else 'red' }}">
     ⚖️
     <div class="label">
@@ -48,6 +56,7 @@
       {% endif %}
     </div>
   </div>
+
   <div class="status-item {{ 'green' if totals.get('total_size', 0) > 500000 else 'yellow' if totals.get('total_size', 0) > 100000 else 'red' }}">
     📊
     <div class="label">
@@ -58,16 +67,19 @@
       {% endif %}
     </div>
   </div>
-  <div class="status-item {{ 'green' if totals.get('total_value', 0) / totals.get('total_collateral', 1) < 2 else 'yellow' if totals.get('total_value', 0) / totals.get('total_collateral', 1) < 4 else 'red' }}">
+
+  {% set collateral = totals.get('total_collateral', 0) %}
+  <div class="status-item {% if collateral > 0 %}{{ 'green' if totals.total_value / collateral < 2 else 'yellow' if totals.total_value / collateral < 4 else 'red' }}{% else %}red{% endif %}">
     ⚡
     <div class="label">
-      {% if totals.get('total_collateral') and totals.total_collateral > 0 %}
-        {{ "{:,.2f}".format(totals.total_value / totals.total_collateral) }}
+      {% if collateral > 0 %}
+        {{ "{:,.2f}".format(totals.total_value / collateral) }}
       {% else %}
         N/A
       {% endif %}
     </div>
   </div>
+
   <div class="status-item {{ 'green' if totals.get('avg_travel_percent', 0) < 10 else 'yellow' if totals.get('avg_travel_percent', 0) < 20 else 'red' }}">
     ✈️
     <div class="label">
