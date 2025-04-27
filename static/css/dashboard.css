@@ -426,6 +426,76 @@ body.fitted-mode .box-row > .common-box {
   }
 }
 
+/* ====== DARK MODE EXTENSIONS ====== */
+body.dark-bg {
+  background-color: #1c1c1c;
+  color: #ddd;
+}
+
+/* Override card backgrounds */
+body.dark-bg .common-box,
+body.dark-bg .mini-table-box,
+body.dark-bg .ledger-box {
+  background-color: #2a2a2a;
+  border-color: #444;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+
+/* Fresh, Warning, Stale Gradients Dark */
+body.dark-bg .fresh-gradient {
+  background: linear-gradient(90deg, #3c6e47, #345e3c);
+}
+body.dark-bg .warning-gradient {
+  background: linear-gradient(90deg, #8a7635, #7d6930);
+}
+body.dark-bg .stale-gradient {
+  background: linear-gradient(90deg, #8b3c3c, #7d2f2f);
+}
+
+/* Text color improvements */
+body.dark-bg h1,
+body.dark-bg h2,
+body.dark-bg h3,
+body.dark-bg h4,
+body.dark-bg h5,
+body.dark-bg p,
+body.dark-bg span,
+body.dark-bg td,
+body.dark-bg th {
+  color: #ddd;
+}
+
+/* Table head tweaks */
+body.dark-bg .mini-table-box thead th {
+  background-color: rgba(50,50,50,0.8);
+  border-bottom: 2px solid rgba(200,200,200,0.3);
+}
+
+/* Graph + Pie fallback text */
+body.dark-bg .graph-box,
+body.dark-bg .pie-box {
+  color: #ccc;
+}
+
+/* Spinner (loading) brighter for dark */
+body.dark-bg .spinner {
+  border-top: 3px solid #888;
+  border-right: 3px solid #666;
+}
+
+/* Status Icons brighter */
+body.dark-bg .status-icon {
+  color: #eee;
+}
+
+/* ApexCharts tooltips override */
+.apexcharts-tooltip {
+  background: #333 !important;
+  border: 1px solid #555 !important;
+  color: #eee !important;
+}
+
+
 /* --- Fade-in effect --- */
 .fade-in {
   opacity: 0;

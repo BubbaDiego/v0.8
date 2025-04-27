@@ -100,5 +100,37 @@
       wrapper.classList.add(mode === "fixed" ? "container" : "container-fluid");
     })();
   </script>
+
+<!-- Theme Mode Saver -->
+<script>
+(function() {
+  const body = document.body;
+
+  // On page load, apply saved theme mode
+  const savedTheme = localStorage.getItem('preferredThemeMode');
+  if (savedTheme) {
+    body.classList.remove('light-bg', 'dark-bg');
+    body.classList.add(savedTheme + '-bg');
+  }
+
+  // Attach listener to toggle
+  const toggle = document.getElementById('toggleContainer');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      if (body.classList.contains('light-bg')) {
+        body.classList.remove('light-bg');
+        body.classList.add('dark-bg');
+        localStorage.setItem('preferredThemeMode', 'dark');
+      } else {
+        body.classList.remove('dark-bg');
+        body.classList.add('light-bg');
+        localStorage.setItem('preferredThemeMode', 'light');
+      }
+    });
+  }
+})();
+</script>
+
+
 </body>
 </html>
