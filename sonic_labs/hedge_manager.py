@@ -68,7 +68,7 @@ class HedgeManager:
                 for p in pos_group:
                     position_type = str(p.get("position_type", "")).lower()
                     size = float(p.get("size", 0))
-                    heat_index = float(p.get("heat_index", 0))
+                    heat_index = float(p.get("heat_index") or 0.0)
                     if position_type == "long":
                         total_long += size
                         long_heat += heat_index

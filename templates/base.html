@@ -6,17 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- ✅ SHARED STYLES: All Pages -->
-  <!-- Bootstrap 5 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
-  <!-- AdminLTE 3.2 (depends on jQuery) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-
-  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
 
-  <!-- Your Custom Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <!-- Theme Light and Dark CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base_light.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base_dark.css') }}">
+
+  {% block extra_styles %}{% endblock %}
 
   <!-- Preload Important Assets -->
   <link rel="preload" href="{{ url_for('static', filename='images/btc_logo.png') }}" as="image">
@@ -25,14 +23,12 @@
   <link rel="preload" href="{{ url_for('static', filename='images/obivault.jpg') }}" as="image">
   <link rel="preload" href="{{ url_for('static', filename='images/r2vault.jpg') }}" as="image">
 
-  {% block extra_styles %}{% endblock %}
-
   <!-- Theme Debug Info -->
   <script>
     console.log("Theme config:", {{ theme|tojson|safe }});
   </script>
 
-  <!-- CSS Variables from Theme -->
+  <!-- CSS Variables for Theme Colors -->
   <style>
     :root {
       --title-bar-color: {{ theme.get('profiles', {}).get(theme.get('selected_profile', ''), {}).get('title bar', {}).get('color', '#007BFF') }};
@@ -84,7 +80,6 @@
   </div>
 
   <!-- ✅ SHARED SCRIPTS: All Pages -->
-  <!-- jQuery must load before AdminLTE -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 
@@ -101,36 +96,7 @@
     })();
   </script>
 
-<!-- Theme Mode Saver -->
-<script>
-(function() {
-  const body = document.body;
-
-  // On page load, apply saved theme mode
-  const savedTheme = localStorage.getItem('preferredThemeMode');
-  if (savedTheme) {
-    body.classList.remove('light-bg', 'dark-bg');
-    body.classList.add(savedTheme + '-bg');
-  }
-
-  // Attach listener to toggle
-  const toggle = document.getElementById('toggleContainer');
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      if (body.classList.contains('light-bg')) {
-        body.classList.remove('light-bg');
-        body.classList.add('dark-bg');
-        localStorage.setItem('preferredThemeMode', 'dark');
-      } else {
-        body.classList.remove('dark-bg');
-        body.classList.add('light-bg');
-        localStorage.setItem('preferredThemeMode', 'light');
-      }
-    });
-  }
-})();
-</script>
-
-
+  <!-- Theme Mode Handler -->
+  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
 </body>
 </html>

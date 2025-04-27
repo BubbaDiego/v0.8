@@ -20,14 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
   loadingOverlay.innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
   document.body.appendChild(loadingOverlay);
 
-  // === THEME TOGGLE ===
-  const toggleContainer = document.getElementById('toggleContainer');
-  if (toggleContainer) {
-    toggleContainer.addEventListener('click', () => {
-      document.body.classList.toggle('dark-bg');
-      document.body.classList.toggle('light-bg');
-    });
-  }
 
   // === Analog Price Timer ===
   (function priceAnalogTimer() {
