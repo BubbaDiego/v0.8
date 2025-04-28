@@ -1,4 +1,4 @@
-{# dashboard/templates/partials/_positions.html #}
+
 
 <div class="common-box light-mode mini-table-box" id="miniTableBox">
   <div class="chart-label" style="margin-bottom: 15px;">Positions</div>
@@ -31,14 +31,7 @@
           </td>
 
           <td>
-            {% set wallet = pos.wallet|default(pos.wallet_name|default('ObiVault')) %}
-            {% if wallet == 'ObiVault' %}
-              <img class="wallet-icon" src="{{ url_for('static', filename='images/obivault.jpg') }}" alt="ObiVault">
-            {% elif wallet == 'R2Vault' %}
-              <img class="wallet-icon" src="{{ url_for('static', filename='images/r2vault.jpg') }}" alt="R2Vault">
-            {% else %}
-              <img class="wallet-icon" src="{{ url_for('static', filename='images/obivault.jpg') }}" alt="Wallet">
-            {% endif %}
+            <img class="wallet-icon" src="{{ url_for('static', filename='images/' + pos.wallet_image) }}" alt="{{ pos.wallet }}">
           </td>
 
           <td>
@@ -70,3 +63,4 @@
     </table>
   </div>
 </div>
+

@@ -1,4 +1,4 @@
-<!-- _liquidation.html (FINAL CLEAN VERSION) -->
+<!-- _liquidation.html (UPDATED VERSION) -->
 
 <div class="common-box liquidation-box">
   <div class="chart-label">Liquidation Bar</div>
@@ -7,11 +7,10 @@
     {% for pos in liquidation_positions %}
       {% if pos.travel_percent is defined and pos.travel_percent is not none %}
         <div class="liq-row">
-          {% set wallet = pos.wallet|default(pos.wallet_name|default('ObiVault')) %}
           <img
             class="wallet-icon"
-            src="{{ url_for('static', filename=(wallet == 'R2Vault' and 'images/r2vault.jpg' or 'images/obivault.jpg')) }}"
-            alt="{{ wallet }}"
+            src="{{ url_for('static', filename='images/' + pos.wallet_image) }}"
+            alt="{{ pos.wallet }}"
           />
 
           <div class="liq-progress-bar">

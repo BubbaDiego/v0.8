@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   console.log('✅ Title Bar JS Loaded');
 
   // --- Universal POST with Spinner Helper ---
-  function postWithSpin(btn, url, msg) {
+  function postWithSpin(btn, url, msg, reloadOnSuccess = false) {
     if (!url) {
       console.warn('No URL provided for', btn);
       return;
@@ -15,6 +15,11 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(data => {
         console.log(msg, data);
         showToast('✅ ' + msg);
+        if (reloadOnSuccess) {
+          setTimeout(() => {
+            location.reload();
+          }, 1000); // Slight delay to allow toast to show
+        }
       })
       .catch(err => {
         console.error('Error:', err);
@@ -23,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .finally(() => btn.classList.remove('spin'));
   }
 
-  // --- Local Action Helper (for theme toggle etc) ---
+  // --- Local Action Helper (theme toggle, layout toggle) ---
   function localAction(fn, successMessage) {
     try {
       fn();
@@ -53,31 +58,36 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --- Utility Buttons ---
+
+  // Update Jupiter Positions
   const updateJupiterBtn = document.getElementById('updateJupiterBtn');
   if (updateJupiterBtn) {
     updateJupiterBtn.addEventListener('click', () =>
-      postWithSpin(updateJupiterBtn, API_ROUTES.positionUpdates, 'Positions Updated')
+      postWithSpin(updateJupiterBtn, API_ROUTES.positionUpdates, 'Positions Updated', true) // ✅ Reload needed
     );
   }
 
+  // Update Market Prices
   const updatePricesBtn = document.getElementById('updatePricesBtn');
   if (updatePricesBtn) {
     updatePricesBtn.addEventListener('click', () =>
-      postWithSpin(updatePricesBtn, API_ROUTES.marketUpdates, 'Prices Updated')
+      postWithSpin(updatePricesBtn, API_ROUTES.marketUpdates, 'Prices Updated', false) // ❌ No reload
     );
   }
 
+  // Run Full Cycle
   const updateFullCycleBtn = document.getElementById('updateFullCycleBtn');
   if (updateFullCycleBtn) {
     updateFullCycleBtn.addEventListener('click', () =>
-      postWithSpin(updateFullCycleBtn, API_ROUTES.fullCycle, 'Full Cycle Completed')
+      postWithSpin(updateFullCycleBtn, API_ROUTES.fullCycle, 'Full Cycle Completed', true) // ✅ Reload needed
     );
   }
 
+  // Clear All Data
   const clearAllBtn = document.getElementById('clearAllBtn');
   if (clearAllBtn) {
     clearAllBtn.addEventListener('click', () =>
-      postWithSpin(clearAllBtn, API_ROUTES.clearAllData, 'All Data Cleared')
+      postWithSpin(clearAllBtn, API_ROUTES.clearAllData, 'All Data Cleared', true) // ✅ Reload needed
     );
   }
 
@@ -101,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
   }
 
-  // --- Theme Toggle Button (now unified like other buttons) ---
+  // --- Theme Toggle Button ---
   const themeToggleButton = document.getElementById('themeToggleButton');
   if (themeToggleButton) {
     themeToggleButton.addEventListener('click', () =>

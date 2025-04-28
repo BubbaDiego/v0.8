@@ -17,6 +17,17 @@ dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
 
 
+# ✅ NEW WALLET IMAGE MAP
+WALLET_IMAGE_MAP = {
+    "ObiVault": "obivault.jpg",
+    "R2Vault": "r2vault.jpg",
+    "LandoVault": "landovault.jpg",
+    # You can add more specific wallets here if needed
+}
+DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
+
+
+
 # ---------------------------------
 # Database Viewer
 # ---------------------------------
@@ -60,12 +71,23 @@ def dash_page():
     dl = DataLocker.get_instance()
     all_positions = PositionService.get_all_positions(DB_PATH) or []
 
+    print("=== DEBUG WALLET IMAGES ===")
+    for idx, pos in enumerate(all_positions):
+        wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
+        image_filename = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
+        print(f"[{idx}] Wallet: {wallet_name} -> Image: {image_filename}")
+        pos["wallet_image"] = image_filename
+    print("=== END DEBUG ===")
+
+    positions = all_positions
+    liquidation_positions = all_positions
+
     totals = {
-        "total_collateral": sum(float(p.get("collateral", 0)) for p in all_positions),
-        "total_value": sum(float(p.get("value", 0)) for p in all_positions),
-        "total_size": sum(float(p.get("size", 0)) for p in all_positions),
-        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
-        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in all_positions) / len(all_positions)) if all_positions else 0,
+        "total_collateral": sum(float(p.get("collateral", 0)) for p in positions),
+        "total_value": sum(float(p.get("value", 0)) for p in positions),
+        "total_size": sum(float(p.get("size", 0)) for p in positions),
+        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
+        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
     }
 
     theme_mode = dl.get_theme_mode()
@@ -79,8 +101,8 @@ def dash_page():
     return render_template(
         "dashboard.html",
         theme_mode=theme_mode,
-        positions=all_positions,
-        liquidation_positions=all_positions,
+        positions=positions,
+        liquidation_positions=liquidation_positions,
         portfolio_value="${:,.2f}".format(totals["total_value"]),
         portfolio_change="N/A",
         totals=totals,

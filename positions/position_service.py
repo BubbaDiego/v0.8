@@ -23,7 +23,7 @@ from sonic_labs.hedge_manager import HedgeManager
 #from api.dydx_api import DydxAPI
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.CRITICAL)
 if not logger.handlers:
     import sys
     ch = logging.StreamHandler(sys.stdout)
