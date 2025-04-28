@@ -1,130 +1,72 @@
-from IPython.display import display, HTML
+<!-- 4 Monitors, Adjusted Layout -->
+<div style="background: #1f1f1f; padding: 1rem; border-radius: 1rem;">
+  <div style="text-align: center; font-weight: bold; font-size: 1rem; color: #eee; margin-bottom: 1rem;">Monitor</div>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
 
-# Generate HTML to display 5 different layout options side-by-side
-html_content = """
+    <div class="monitor-card muted-green">
+      <div class="label">Price</div>
+      <div class="monitor-icon">📈</div>
+      <div class="monitor-text">1:23 PM</div>
+    </div>
+
+    <div class="monitor-card muted-yellow">
+      <div class="label">Positions</div>
+      <div class="monitor-icon">📊</div>
+      <div class="monitor-text">1:30 PM</div>
+    </div>
+
+    <div class="monitor-card muted-green">
+      <div class="label">Operations</div>
+      <div class="monitor-icon">⚙️</div>
+      <div class="monitor-text">1:40 PM</div>
+    </div>
+
+    <div class="monitor-card muted-red">
+      <div class="label">Xcom</div>
+      <div class="monitor-icon">🛰️</div>
+      <div class="monitor-text">1:50 PM</div>
+    </div>
+
+  </div>
+</div>
+
 <style>
-.container {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    background: #f9f9f9;
-    overflow-x: auto;
+.monitor-card {
+  color: #eee;
+  width: 130px;
+  min-height: 75px;
+  border-radius: 1rem;
+  padding: 0.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.option {
-    background: #e6f0ff;
-    border: 2px solid #c0d7f5;
-    border-radius: 10px;
-    padding: 1rem;
-    flex: 0 0 220px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.monitor-icon {
+  font-size: 1.4rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
 }
-.option h4 {
-    margin-bottom: 0.75rem;
-    font-size: 1rem;
-    color: #333;
-}
-.box {
-    background: #fff;
-    padding: 0.5rem;
-    border-radius: 8px;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 80px;
-}
-.box.column {
-    flex-direction: column;
-}
-.box.small-gap {
-    gap: 0.25rem;
-}
-.icon {
-    font-size: 1.5rem;
-}
-.text-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    font-size: 0.7rem;
+.monitor-text {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 .label {
-    opacity: 0.6;
-    font-size: 0.6rem;
+  background: #555;
+  width: 80%;
+  font-size: 0.8rem;
+  padding: 0.3rem;
+  border-radius: 1rem;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 0.2rem;
 }
-.time {
-    font-weight: bold;
-    font-size: 0.8rem;
-}
-.center-stack {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.hide-on-mobile {
-    display: block;
-}
-@media (max-width: 768px) {
-    .hide-on-mobile {
-        display: none;
-    }
-}
+.muted-green { background: #66bb6a; }
+.muted-yellow { background: #ffd54f; }
+.muted-red { background: #ef5350; }
 </style>
-
-<div class="container">
-    <div class="option">
-        <h4>Option 1</h4>
-        <div class="box">
-            <div class="icon">💵</div>
-            <div class="text-stack">
-                <div class="label">Last Update:</div>
-                <div class="time">1:20 PM Apr 27</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="option">
-        <h4>Option 2</h4>
-        <div class="box small-gap">
-            <div class="icon">📊</div>
-            <div class="text-stack">
-                <div class="label">Last Update:</div>
-                <div class="time">1:20 PM Apr 27</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="option">
-        <h4>Option 3</h4>
-        <div class="box column">
-            <div class="icon">⚙️</div>
-            <div class="label">Last Update:</div>
-            <div class="time">1:20 PM<br>Apr 27</div>
-        </div>
-    </div>
-
-    <div class="option">
-        <h4>Option 4</h4>
-        <div class="box">
-            <div class="icon">💵</div>
-            <div class="time">1:20 PM Apr 27</div>
-        </div>
-    </div>
-
-    <div class="option">
-        <h4>Option 5</h4>
-        <div class="box center-stack">
-            <div class="icon">📊</div>
-            <div class="label">Last Update:</div>
-            <div class="time">1:20 PM Apr 27</div>
-        </div>
-    </div>
-</div>
-"""
-
-# Display HTML
-display(HTML(html_content))
-

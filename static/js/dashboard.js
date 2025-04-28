@@ -219,9 +219,5 @@ document.addEventListener('DOMContentLoaded', function () {
     return 9999;
   }
 
-  applyFreshnessVisuals('priceBox', 'priceIcon', parseAge(document.getElementById('priceAge').textContent));
-  applyFreshnessVisuals('positionBox', 'positionIcon', parseAge(document.getElementById('positionAge').textContent));
-  applyFreshnessVisuals('cycloneBox', 'cycloneIcon', parseAge(document.getElementById('cycloneAge').textContent));
-
 });
 

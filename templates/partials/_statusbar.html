@@ -1,29 +1,111 @@
-<!-- _statusbar.html (Production version based on Design 10 - Soft Pulse for Red Statuses) -->
-
 <style>
-.status-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px; margin-bottom: 20px; border-radius: 10px; background: var(--statusbar-bg, #eef2f7); }
-.status-item { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; white-space: nowrap; padding: 10px 12px 8px; font-size: 1.5rem; border-radius: 8px; min-width: 80px; text-align: center; background: var(--statuscard-bg, #ffffff); transition: transform 0.2s ease; color: var(--status-text-color, #000000); }
-.status-item:hover { transform: scale(1.05); }
-.status-item .label { font-size: 1rem; margin-top: 12px; line-height: 1.2; font-weight: bold; }
-.green { background-color: #d4edda; color: #155724; }
-.yellow { background-color: #fff3cd; color: #856404; }
-.red { background-color: #f8d7da; color: #721c24; animation: pulse 2s infinite; }
+.status-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: none;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  padding: 6px 10px 6px;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  min-width: 80px;
+  text-align: center;
+  background: var(--statuscard-bg, #ffffff);
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  color: var(--status-text-color, #000000);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.status-item:hover {
+  transform: scale(1.05);
+  background-color: rgba(240, 240, 240, 0.8);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.status-item .title {
+  background: none;
+  width: auto;
+  font-size: 0.8rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 0;
+  text-align: center;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+
+.status-item .label {
+  background: none;
+  width: auto;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 0;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0.2rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .status-container {
+    --statusbar-bg: #2c2f36;
+  }
+  .status-item {
+    --statuscard-bg: #3c3f47;
+    --status-text-color: #dddddd;
+    background: var(--statuscard-bg);
+    box-shadow: 0 2px 6px rgba(255,255,255,0.1);
+  }
+  .status-item:hover {
+    background-color: rgba(60, 60, 60, 0.8);
+    box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+  }
+  .status-item .title {
+    color: #aaa;
+  }
+  .status-item .label {
+    color: #ddd;
+  }
+}
+
+.green {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.yellow {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.red {
+  background-color: #f8d7da;
+  color: #721c24;
+  animation: pulse 2s infinite;
+}
 
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
-
-/* Light/Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .status-container { --statusbar-bg: #2c2f36; }
-  .status-item { --statuscard-bg: #3c3f47; --status-text-color: #dddddd; }
-}
 </style>
 
 <div class="status-container">
+
   <div class="status-item {{ 'green' if totals.get('total_heat_index', 0) < 50 else 'yellow' if totals.get('total_heat_index', 0) < 80 else 'red' }}">
+    <div class="title">Heat</div>
     🔥
     <div class="label">
       {% set total_heat_index = totals.get('total_heat_index', 0) %}
@@ -36,6 +118,7 @@
   </div>
 
   <div class="status-item {{ 'green' if totals.get('total_value', 0) > 100000 else 'yellow' if totals.get('total_value', 0) > 50000 else 'red' }}">
+    <div class="title">Value</div>
     💰
     <div class="label">
       {% if totals.get('total_value') %}
@@ -47,6 +130,7 @@
   </div>
 
   <div class="status-item {{ 'green' if totals.get('avg_leverage', 0) < 2 else 'yellow' if totals.get('avg_leverage', 0) < 5 else 'red' }}">
+    <div class="title">Leverage</div>
     ⚖️
     <div class="label">
       {% if totals.get('avg_leverage') %}
@@ -58,6 +142,7 @@
   </div>
 
   <div class="status-item {{ 'green' if totals.get('total_size', 0) > 500000 else 'yellow' if totals.get('total_size', 0) > 100000 else 'red' }}">
+    <div class="title">Size</div>
     📊
     <div class="label">
       {% if totals.get('total_size') %}
@@ -70,6 +155,7 @@
 
   {% set collateral = totals.get('total_collateral', 0) %}
   <div class="status-item {% if collateral > 0 %}{{ 'green' if totals.total_value / collateral < 2 else 'yellow' if totals.total_value / collateral < 4 else 'red' }}{% else %}red{% endif %}">
+    <div class="title">Ratio</div>
     ⚡
     <div class="label">
       {% if collateral > 0 %}
@@ -81,6 +167,7 @@
   </div>
 
   <div class="status-item {{ 'green' if totals.get('avg_travel_percent', 0) < 10 else 'yellow' if totals.get('avg_travel_percent', 0) < 20 else 'red' }}">
+    <div class="title">Travel</div>
     ✈️
     <div class="label">
       {% if totals.get('avg_travel_percent') %}
@@ -90,4 +177,5 @@
       {% endif %}
     </div>
   </div>
+
 </div>

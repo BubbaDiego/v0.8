@@ -6,7 +6,7 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <style>
-/* --- First Row Special Fix (Ledger + Statusbar) --- */
+/* --- First Row Special Fix (Monitor + Statusbar) --- */
 .fixed-row {
   display: flex;
   flex-wrap: nowrap; /* ❗NO wrapping */
@@ -37,39 +37,6 @@
   padding: 1rem;
 }
 
-.ledger-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.ledger-box {
-  min-width: 100px;
-  max-width: 110px;
-  padding: 0.4rem 0.6rem;
-}
-
-.ledger-icon {
-  font-size: 1.4rem;
-}
-
-.ledger-label {
-  font-size: 0.5rem;
-}
-
-.ledger-time {
-  font-size: 0.7rem;
-}
-
-.status-container {
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
 @media (max-width: 768px) {
   .fixed-row {
     flex-wrap: nowrap;
@@ -86,10 +53,10 @@
 {% block content %}
 <div class="container-fluid pt-4">
 
-  <!-- ✅ Row 1: Ledger + Status (fixed now) -->
+  <!-- ✅ Row 1: Monitors + Status (fixed now) -->
   <div class="box-row fixed-row">
     <div class="common-box ledger-wrapper">
-      {% include "partials/_ledger.html" %}
+      {% include "partials/_monitors.html" %}
     </div>
     <div class="common-box statusbar-wrapper">
       {% include "partials/_statusbar.html" %}

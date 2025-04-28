@@ -71,13 +71,10 @@ def dash_page():
     dl = DataLocker.get_instance()
     all_positions = PositionService.get_all_positions(DB_PATH) or []
 
-    print("=== DEBUG WALLET IMAGES ===")
     for idx, pos in enumerate(all_positions):
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         image_filename = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
-        print(f"[{idx}] Wallet: {wallet_name} -> Image: {image_filename}")
         pos["wallet_image"] = image_filename
-    print("=== END DEBUG ===")
 
     positions = all_positions
     liquidation_positions = all_positions
@@ -92,10 +89,18 @@ def dash_page():
 
     theme_mode = dl.get_theme_mode()
 
+    # ✅ Fetch full ledger status for timestamps and ages
+    price_status = get_ledger_status('monitor/price_ledger.json')
+    position_status = get_ledger_status('monitor/position_ledger.json')
+    cyclone_status = get_ledger_status('monitor/sonic_ledger.json')
+
     ledger_info = {
-        "age_price": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
-        "age_positions": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
-        "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"]
+        "age_price": price_status.get("age_seconds", 9999),
+        "last_price_time": price_status.get("last_timestamp", None),
+        "age_positions": position_status.get("age_seconds", 9999),
+        "last_positions_time": position_status.get("last_timestamp", None),
+        "age_cyclone": cyclone_status.get("age_seconds", 9999),
+        "last_cyclone_time": cyclone_status.get("last_timestamp", None),
     }
 
     return render_template(
@@ -106,10 +111,8 @@ def dash_page():
         portfolio_value="${:,.2f}".format(totals["total_value"]),
         portfolio_change="N/A",
         totals=totals,
-        ledger_info=ledger_info
+        ledger_info=ledger_info  # ✅ Pass full timestamps
     )
-
-
 
 # ---------------------------------
 # API: Graph Data (Real portfolio history)

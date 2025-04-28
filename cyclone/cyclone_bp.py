@@ -92,7 +92,9 @@ def clear_all_data():
 @cyclone_bp.route("/cyclone_logs", methods=["GET"])
 def api_cyclone_logs():
     try:
-        log_file = os.path.join(BASE_DIR, "operations_log.txt")
+        log_file = os.path.join(BASE_DIR, "monitor", "operations_log.txt")  # ✅ Monitor folder
+        if not os.path.exists(log_file):
+            return jsonify({"logs": []})  # Safe fallback if missing
         with open(log_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
         last_lines = lines[-50:]
@@ -101,3 +103,4 @@ def api_cyclone_logs():
     except Exception as e:
         current_app.logger.exception("Error reading Cyclone logs:", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
