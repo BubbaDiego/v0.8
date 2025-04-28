@@ -190,11 +190,12 @@ def update_prices_route():
 # (Optional) API Endpoint for Price Data
 # ---------------------------------------------------------------------------
 @prices_bp.route("/api/data", methods=["GET"])
+@prices_bp.route("/api/data", methods=["GET"])
 def prices_data_api():
     """
     Provides an API endpoint that returns:
       - Mini price data for each asset (BTC, ETH, SOL, SP500)
-      - Full price list and aggregated totals
+      - Full price list (top prices)
     """
     try:
         dl = DataLocker.get_instance(DB_PATH)
@@ -207,11 +208,10 @@ def prices_data_api():
                     "current_price": float(row["current_price"])
                 })
         prices_list = _get_top_prices_for_assets(DB_PATH, ASSETS_LIST)
-        totals = dl.read_api_counters()  # Or use a dedicated aggregator if available
         return jsonify({
             "mini_prices": mini_prices,
-            "prices": prices_list,
-            "totals": totals
+            "prices": prices_list
+            # Removed "totals" since not needed
         })
     except Exception as e:
         logger.error("Error in prices_data_api: %s", e, exc_info=True)

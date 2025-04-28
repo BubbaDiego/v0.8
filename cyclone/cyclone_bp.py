@@ -2,116 +2,108 @@
 """
 cyclone_bp.py
 Description:
-    Flask blueprint for the Cyclone dashboard and related routes.
-    - The main Cyclone view (cyclone.html).
-    - A log polling endpoint for real-time console updates.
-    - Routes for the various control actions.
-Usage:
-    Import and register this blueprint in your main application, e.g.:
-        from cyclone_bp import cyclone_bp
-        app.register_blueprint(cyclone_bp)
+    Flask blueprint for Cyclone API routes.
+    - Handles Market Updates, Position Updates, Clear All Data, Full Cycle, etc.
 """
 
+import asyncio
 import logging
 import os
 from flask import Blueprint, jsonify, render_template, current_app
 from config.config_constants import BASE_DIR
+from cyclone.cyclone import Cyclone  # Your core logic
 
+# --- Setup Blueprint ---
+cyclone_bp = Blueprint("cyclone", __name__, template_folder=".", url_prefix="/cyclone")
 logger = logging.getLogger("CycloneBlueprint")
-logger.setLevel(logging.CRITICAL)
+logger.setLevel(logging.INFO)
 
-cyclone_bp = Blueprint("cyclone", __name__, template_folder=".")
-
-@cyclone_bp.route("/cyclone.html")
+# --- Dashboard View ---
+@cyclone_bp.route("/dashboard", methods=["GET"])
 def cyclone_dashboard():
-    return render_template("cyclone.html")
+    return render_template("cyclone.html")  # Optional, if you have cyclone.html
 
-# --- Full Cycle Update Route ---
-import asyncio
-from .cyclone import Cyclone
-
-@cyclone_bp.route("/api/run_full_cycle", methods=["POST"], endpoint="run_full_cycle_api")
-def run_full_cycle():
-    """
-    Runs a full cycle of updates by invoking Cyclone's run_cycle() method.
-    """
+# --- Actual API Endpoints ---
+@cyclone_bp.route("/run_market_updates", methods=["POST"])
+def run_market_updates():
     try:
-        cyclone_instance = Cyclone(poll_interval=60)
-        # Run one complete cycle synchronously
-        asyncio.run(cyclone_instance.run_cycle())
-        return jsonify({"message": "Full Cycle Completed."}), 200
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_market_updates())
+        return jsonify({"message": "Market Updates Completed."}), 200
     except Exception as e:
+        logger.error(f"Market Updates Error: {e}")
         return jsonify({"error": str(e)}), 500
 
-# --- Other API Endpoints ---
+@cyclone_bp.route("/run_position_updates", methods=["POST"])
+def run_position_updates():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_position_updates())
+        return jsonify({"message": "Position Updates Completed."}), 200
+    except Exception as e:
+        logger.error(f"Position Updates Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
-@cyclone_bp.route("/api/cyclone_logs", methods=["GET"])
+@cyclone_bp.route("/run_dependent_updates", methods=["POST"])
+def run_dependent_updates():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_enrich_positions())
+        return jsonify({"message": "Dependent Updates Completed."}), 200
+    except Exception as e:
+        logger.error(f"Dependent Updates Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@cyclone_bp.route("/run_alert_evaluations", methods=["POST"])
+def run_alert_evaluations():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_alert_updates())
+        return jsonify({"message": "Alert Evaluations Completed."}), 200
+    except Exception as e:
+        logger.error(f"Alert Evaluations Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@cyclone_bp.route("/run_system_updates", methods=["POST"])
+def run_system_updates():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_system_updates())
+        return jsonify({"message": "System Updates Completed."}), 200
+    except Exception as e:
+        logger.error(f"System Updates Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@cyclone_bp.route("/run_full_cycle", methods=["POST"], endpoint="run_full_cycle_api")
+def run_full_cycle():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_cycle())
+        return jsonify({"message": "Full Cycle Completed."}), 200
+    except Exception as e:
+        logger.error(f"Full Cycle Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@cyclone_bp.route("/clear_all_data", methods=["POST"], endpoint="clear_all_data_api")
+def clear_all_data():
+    try:
+        cyclone = Cyclone(poll_interval=60)
+        asyncio.run(cyclone.run_clear_all_data())
+        return jsonify({"message": "All Data Cleared."}), 200
+    except Exception as e:
+        logger.error(f"Clear All Data Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# --- Optional: Log Fetching (for console) ---
+@cyclone_bp.route("/cyclone_logs", methods=["GET"])
 def api_cyclone_logs():
-    """
-    Returns the last 50 lines of operations_log.txt as JSON for the Cyclone console.
-    """
     try:
         log_file = os.path.join(BASE_DIR, "operations_log.txt")
         with open(log_file, "r", encoding="utf-8") as f:
             lines = f.readlines()
-        # Return the last 50 lines
         last_lines = lines[-50:]
-        # Strip trailing newlines
         cleaned = [line.rstrip("\n") for line in last_lines]
         return jsonify({"logs": cleaned})
     except Exception as e:
-        current_app.logger.exception("Error reading logs for cyclone:", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-# --- Placeholder Routes for Other Controls ---
-@cyclone_bp.route("/api/run_market_updates", methods=["POST"])
-def run_market_updates():
-    """
-    Placeholder for 'Market Updates'.
-    """
-    return jsonify({"message": "Market Updates Completed (placeholder)."}), 200
-
-@cyclone_bp.route("/api/run_position_updates", methods=["POST"])
-def run_position_updates():
-    """
-    Placeholder for 'Position Updates'.
-    """
-    return jsonify({"message": "Position Updates Completed (placeholder)."}), 200
-
-@cyclone_bp.route("/api/run_dependent_updates", methods=["POST"])
-def run_dependent_updates():
-    """
-    Placeholder for 'Dependent Updates'.
-    """
-    return jsonify({"message": "Dependent Updates Completed (placeholder)."}), 200
-
-@cyclone_bp.route("/api/run_alert_evaluations", methods=["POST"])
-def run_alert_evaluations():
-    """
-    Placeholder for 'Alert Evaluations'.
-    """
-    return jsonify({"message": "Alert Evaluations Completed (placeholder)."}), 200
-
-@cyclone_bp.route("/api/run_system_updates", methods=["POST"])
-def run_system_updates():
-    """
-    Placeholder for 'System Updates'.
-    """
-    return jsonify({"message": "System Updates Completed (placeholder)."}), 200
-
-import asyncio
-from .cyclone import Cyclone
-from flask import Blueprint, jsonify
-
-@cyclone_bp.route("/api/clear_all_data", methods=["POST"])
-def clear_all_data_api():
-    """
-    Clears alerts, prices, and positions via Cyclone.
-    """
-    try:
-        # instantiate and run the clear‐all task
-        cyclone = Cyclone(poll_interval=60)
-        asyncio.run(cyclone.run_clear_all_data())
-        return jsonify({"message": "All data cleared."}), 200
-    except Exception as e:
+        current_app.logger.exception("Error reading Cyclone logs:", exc_info=True)
         return jsonify({"error": str(e)}), 500

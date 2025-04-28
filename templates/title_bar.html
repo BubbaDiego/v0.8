@@ -1,9 +1,8 @@
-<!-- title_bar.html -->
-<script src="../static/js/title_bar.js"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+<!-- === title_bar.html === -->
 
 <nav class="navbar navbar-expand-md navbar-dark gradient-navbar border-bottom">
   <div class="container-fluid">
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -31,15 +30,15 @@
           <div class="d-flex gap-2 align-items-center">
             <div class="asset-panel">
               <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=023" alt="BTC">
-              <span id="btcPrice">${{ btc_price }}</span>
+              <span id="btcPrice">$--</span>
             </div>
             <div class="asset-panel">
               <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=023" alt="ETH">
-              <span id="ethPrice">${{ eth_price }}</span>
+              <span id="ethPrice">$--</span>
             </div>
             <div class="asset-panel">
               <img src="https://cryptologos.cc/logos/solana-sol-logo.png?v=023" alt="SOL">
-              <span id="solPrice">${{ sol_price }}</span>
+              <span id="solPrice">$--</span>
             </div>
           </div>
         </li>
@@ -47,8 +46,6 @@
 
       <!-- Right Side Controls -->
       <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
-
-        <!-- Utility Buttons -->
         <li class="nav-item me-2">
           <button id="updateJupiterBtn" class="btn btn-light btn-sm" title="Update Jupiter">
             <img src="{{ url_for('static', filename='images/jupiter.jpg') }}" alt="Jupiter" style="width:24px; height:24px;">
@@ -63,15 +60,11 @@
         <li class="nav-item me-2">
           <button id="clearAllBtn" class="btn btn-light btn-sm" title="Clear All">🗑️</button>
         </li>
-
-        <!-- Layout Toggle -->
         <li class="nav-item me-2">
           <button id="layoutToggleButton" class="btn btn-light btn-sm" title="Toggle Layout Mode">
             <i class="fas fa-arrows-alt-h"></i>
           </button>
         </li>
-
-        <!-- Theme Toggle -->
         <li class="nav-item me-2">
           <button id="themeToggleButton" class="btn btn-light btn-sm" title="Toggle Theme">
             <i id="themeIcon" class="fas fa-sun"></i>
@@ -88,24 +81,12 @@
             <li><a class="dropdown-item" href="{{ url_for('dashboard.theme_setup') }}"><i class="fas fa-palette me-1"></i> Theme Builder</a></li>
           </ul>
         </li>
-
       </ul>
 
     </div>
   </div>
 </nav>
 
-<!-- Global JS Variables -->
-<script>
-  var ALERT_LIMITS_URL = "{{ url_for('dashboard.get_alert_limits') }}";
-  var MARKET_UPDATES_URL = "{{ url_for('cyclone.run_market_updates') }}";
-  var POSITION_UPDATES_URL = "{{ url_for('cyclone.run_position_updates') }}";
-  var DEPENDENT_UPDATES_URL = "{{ url_for('cyclone.run_dependent_updates') }}";
-  var ALERT_EVALUATIONS_URL = "{{ url_for('cyclone.run_alert_evaluations') }}";
-  var SYSTEM_UPDATES_URL = "{{ url_for('cyclone.run_system_updates') }}";
-  var CLEAR_ALL_URL = "{{ url_for('cyclone.clear_all_data_api') }}";
-  var FULL_CYCLE_API_URL = "{{ url_for('cyclone.run_full_cycle_api') }}";
-</script>
-
-<!-- Title Bar Script -->
+<!-- Title Bar Scripts -->
 <script src="{{ url_for('static', filename='js/title_bar.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
