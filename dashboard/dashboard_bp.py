@@ -67,6 +67,7 @@ def save_theme():
 # Main Dashboard Page
 # ---------------------------------
 @dashboard_bp.route("/dash", endpoint="dash_page")
+@dashboard_bp.route("/dash", endpoint="dash_page")
 def dash_page():
     dl = DataLocker.get_instance()
     all_positions = PositionService.get_all_positions(DB_PATH) or []
@@ -93,6 +94,7 @@ def dash_page():
     price_status = get_ledger_status('monitor/price_ledger.json')
     position_status = get_ledger_status('monitor/position_ledger.json')
     cyclone_status = get_ledger_status('monitor/sonic_ledger.json')
+    operations_status = get_ledger_status('monitor/operations_ledger.json')  # ✅ Now included!
 
     ledger_info = {
         "age_price": price_status.get("age_seconds", 9999),
@@ -101,6 +103,8 @@ def dash_page():
         "last_positions_time": position_status.get("last_timestamp", None),
         "age_cyclone": cyclone_status.get("age_seconds", 9999),
         "last_cyclone_time": cyclone_status.get("last_timestamp", None),
+        "age_operations": operations_status.get("age_seconds", 9999),  # ✅ <<< Critical missing field
+        "last_operations_time": operations_status.get("last_timestamp", None),
     }
 
     return render_template(
@@ -111,8 +115,9 @@ def dash_page():
         portfolio_value="${:,.2f}".format(totals["total_value"]),
         portfolio_change="N/A",
         totals=totals,
-        ledger_info=ledger_info  # ✅ Pass full timestamps
+        ledger_info=ledger_info  # ✅ Pass full info to the template
     )
+
 
 # ---------------------------------
 # API: Graph Data (Real portfolio history)

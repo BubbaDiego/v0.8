@@ -1,5 +1,5 @@
 import asyncio
-from alerts.alert_controller import AlertController
+#from alerts.alert_controller import AlertController
 from cyclone import Cyclone
 
 class CycloneConsoleHelper:

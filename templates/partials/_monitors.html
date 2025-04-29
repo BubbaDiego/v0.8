@@ -46,13 +46,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.getElementById('price-monitor-time').textContent = formatTime("{{ ledger_info.last_price_time or '' }}");
   document.getElementById('positions-monitor-time').textContent = formatTime("{{ ledger_info.last_positions_time or '' }}");
-  document.getElementById('operations-monitor-time').textContent = formatTime("{{ ledger_info.last_cyclone_time or '' }}");
+  document.getElementById('operations-monitor-time').textContent = formatTime("{{ ledger_info.last_operations_time or '' }}");
   document.getElementById('xcom-monitor-time').textContent = formatTime("{{ ledger_info.last_cyclone_time or '' }}");
 
   const monitorAges = {
     'price-monitor': {{ ledger_info.age_price or 9999 }},
     'positions-monitor': {{ ledger_info.age_positions or 9999 }},
-    'operations-monitor': {{ ledger_info.age_cyclone or 9999 }},
+    'operations-monitor': {{ ledger_info.age_operations or 9999 }},
     'xcom-monitor': {{ ledger_info.age_cyclone or 9999 }}
   };
 

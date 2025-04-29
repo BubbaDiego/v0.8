@@ -7,6 +7,14 @@ from datetime import datetime
 from uuid import uuid4
 from config.config_constants import DB_PATH
 
+
+from alerts.alert_utils import (
+    normalize_alert_type,
+    normalize_condition,
+    normalize_notification_type
+)
+
+
 class DataLocker:
     """
     A synchronous DataLocker that manages database interactions using sqlite3.
@@ -543,56 +551,35 @@ class DataLocker:
     # ----------------------------------------------------------------
     # ALERTS
     # ----------------------------------------------------------------
+    from alerts.alert_utils import (
+        normalize_alert_type,
+        normalize_condition,
+        normalize_notification_type
+    )
+
     def create_alert(self, alert_obj) -> bool:
         try:
-            print("[DEBUG] Starting create_alert process.")
-            self.logger.debug("[DEBUG] Starting create_alert process.")
+            self.logger.debug("[DataLocker] Starting create_alert process.")
 
-            # Convert alert object to dictionary if needed.
             if not isinstance(alert_obj, dict):
                 alert_dict = alert_obj.to_dict()
-                print("[DEBUG] Converted alert object to dict.")
                 self.logger.debug("Converted alert object to dict.")
             else:
                 alert_dict = alert_obj
-                print("[DEBUG] Alert object is already a dict.")
                 self.logger.debug("Alert object is already a dict.")
 
-            # Print alert before normalization.
-            print(f"[DEBUG] Alert before normalization: {alert_dict}")
-            self.logger.debug(f"Alert before normalization: {alert_dict}")
+            # --- 🛡 Normalize critical fields
+            if "alert_type" in alert_dict:
+                alert_dict["alert_type"] = normalize_alert_type(alert_dict["alert_type"]).value
+            if "condition" in alert_dict:
+                alert_dict["condition"] = normalize_condition(alert_dict["condition"]).value
+            if "notification_type" in alert_dict:
+                alert_dict["notification_type"] = normalize_notification_type(alert_dict["notification_type"]).value
 
-            # Normalize alert_type.
-            if alert_dict.get("alert_type"):
-                normalized_type = alert_dict["alert_type"].upper().replace(" ", "").replace("_", "")
-                print(f"[DEBUG] Normalized alert_type: {normalized_type}")
-                self.logger.debug(f"Normalized alert_type: {normalized_type}")
-                if normalized_type == "PRICETHRESHOLD":
-                    normalized_type = "PRICE_THRESHOLD"
-                alert_dict["alert_type"] = normalized_type
-
-                # Set alert_class based on alert_type.
-                if normalized_type == "PRICE_THRESHOLD":
-                    alert_dict["alert_class"] = "Market"
-                else:
-                    alert_dict["alert_class"] = "Position"
-                print(f"[DEBUG] Set alert_class to: {alert_dict['alert_class']}")
-                self.logger.debug(f"Set alert_class to: {alert_dict['alert_class']}")
-            else:
-                self.logger.error("Alert missing alert_type.")
-                print("[ERROR] Alert missing alert_type.")
-                return False
-
-            # Initialize alert defaults.
+            # --- Initialize defaults
             alert_dict = self.initialize_alert_data(alert_dict)
-            print(f"[DEBUG] Alert after initializing defaults: {alert_dict}")
-            self.logger.debug(f"Alert after initializing defaults: {alert_dict}")
 
-            # Log the complete alert dictionary before insertion.
-            print(f"[DEBUG] Final alert_dict to insert: {alert_dict}")
-            self.logger.debug(f"Final alert_dict to insert: {alert_dict}")
-
-            # Insert alert into the database with updated column names.
+            # --- Insert into database
             cursor = self.conn.cursor()
             sql = """
                 INSERT INTO alerts (
@@ -639,26 +626,18 @@ class DataLocker:
                     :evaluated_value
                 )
             """
-            print(f"[DEBUG] Executing SQL: {sql}")
-            self.logger.debug(f"Executing SQL for alert creation: {sql}")
             cursor.execute(sql, alert_dict)
             self.conn.commit()
-            print(f"[DEBUG] Alert inserted successfully with ID: {alert_dict['id']}")
-            self.logger.debug(f"Alert inserted successfully with ID: {alert_dict['id']}")
+            cursor.close()
 
-            # Optionally, enrich alert after creation.
-            enriched_alert = self.enrich_alert(alert_dict)
-            print(f"[DEBUG] Alert after enrichment: {enriched_alert}")
-            self.logger.debug(f"Alert after enrichment: {enriched_alert}")
-
+            self.logger.debug(f"Alert created successfully with ID={alert_dict['id']}")
             return True
+
         except sqlite3.IntegrityError as ie:
-            self.logger.error("CREATE ALERT: IntegrityError creating alert: %s", ie, exc_info=True)
-            print(f"[ERROR] IntegrityError creating alert: {ie}")
+            self.logger.error(f"IntegrityError creating alert: {ie}", exc_info=True)
             return False
         except Exception as ex:
-            self.logger.exception("CREATE ALERT: Unexpected error in create_alert: %s", ex)
-            print(f"[ERROR] Unexpected error in create_alert: {ex}")
+            self.logger.exception(f"Unexpected error creating alert: {ex}")
             raise
 
     def get_alert(self, alert_id: str) -> Optional[dict]:
@@ -1252,6 +1231,23 @@ class DataLocker:
             "image_path": row["image_path"],
             "balance": row["balance"]
         }
+
+
+
+    def clear_alerts(self):
+        """
+        Delete all rows from the alerts table.
+        """
+        self._init_sqlite_if_needed()
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("DELETE FROM alerts")
+            self.conn.commit()
+            cursor.close()
+            self.logger.info("Cleared all alerts from database.")
+        except Exception as e:
+            self.logger.error(f"Error clearing alerts: {e}", exc_info=True)
+            raise
 
     def close(self):
         if self.conn:

@@ -1,72 +1,78 @@
-<!-- 4 Monitors, Adjusted Layout -->
-<div style="background: #1f1f1f; padding: 1rem; border-radius: 1rem;">
-  <div style="text-align: center; font-weight: bold; font-size: 1rem; color: #eee; margin-bottom: 1rem;">Monitor</div>
-  <div style="display: flex; gap: 1rem; justify-content: center;">
+<!-- Option 1: Classic Centered -->
+<div class="pie-box">
+  <div class="pie-chart" id="sizeChart1" style="height: 250px;"></div>
+  <div class="chart-info">Long: 65% / Short: 35%</div>
+</div>
 
-    <div class="monitor-card muted-green">
-      <div class="label">Price</div>
-      <div class="monitor-icon">📈</div>
-      <div class="monitor-text">1:23 PM</div>
-    </div>
+<!-- Option 2: Overlay Centered Text -->
+<div class="pie-box">
+  <div class="pie-chart" id="sizeChart2" style="height: 250px; position: relative;">
+    <div class="overlay-text">65% Long</div>
+  </div>
+  <div class="chart-info">Long: 65% / Short: 35%</div>
+</div>
 
-    <div class="monitor-card muted-yellow">
-      <div class="label">Positions</div>
-      <div class="monitor-icon">📊</div>
-      <div class="monitor-text">1:30 PM</div>
-    </div>
+<!-- Option 3: Split Bottom Row -->
+<div class="pie-box">
+  <div class="pie-chart" id="sizeChart3" style="height: 250px;"></div>
+  <div class="split-info">
+    <div>Long: 65%</div>
+    <div>Short: 35%</div>
+  </div>
+</div>
 
-    <div class="monitor-card muted-green">
-      <div class="label">Operations</div>
-      <div class="monitor-icon">⚙️</div>
-      <div class="monitor-text">1:40 PM</div>
-    </div>
-
-    <div class="monitor-card muted-red">
-      <div class="label">Xcom</div>
-      <div class="monitor-icon">🛰️</div>
-      <div class="monitor-text">1:50 PM</div>
-    </div>
-
+<!-- Option 4: Integrated Mini-Legend -->
+<div class="pie-box">
+  <div class="pie-chart" id="sizeChart4" style="height: 250px;"></div>
+  <div class="mini-legend">
+    <span class="long-dot"></span> Long: 65% &nbsp;|&nbsp; <span class="short-dot"></span> Short: 35%
   </div>
 </div>
 
 <style>
-.monitor-card {
-  color: #eee;
-  width: 130px;
-  min-height: 75px;
-  border-radius: 1rem;
-  padding: 0.2rem;
-  text-align: center;
+.pie-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: start;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-.monitor-icon {
-  font-size: 1.4rem;
-  margin-top: 0.3rem;
-  margin-bottom: 0.3rem;
-}
-.monitor-text {
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
-  font-weight: bold;
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-}
-.label {
-  background: #555;
-  width: 80%;
-  font-size: 0.8rem;
-  padding: 0.3rem;
+  justify-content: center;
+  margin: 1rem;
+  padding: 1rem;
+  background: #eef5ff;
   border-radius: 1rem;
-  text-align: center;
-  font-weight: bold;
-  margin-top: 0.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-.muted-green { background: #66bb6a; }
-.muted-yellow { background: #ffd54f; }
-.muted-red { background: #ef5350; }
+.chart-info, .split-info, .mini-legend {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.split-info {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+.mini-legend {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.long-dot, .short-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.long-dot { background: #008ffb; }
+.short-dot { background: #00e396; }
+.overlay-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
 </style>

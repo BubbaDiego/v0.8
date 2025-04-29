@@ -4,14 +4,16 @@ import sys
 import os
 
 from monitor.price_monitor import PriceMonitor
-from alerts.alert_manager import AlertManager
+
 from data.data_locker import DataLocker
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager  # Import HedgeManager directly
 from positions.position_service import PositionService
-from alerts.alert_controller import AlertController
+from alerts.alert_service_manager import AlertServiceManager
 from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
+from utils.console_logger import ConsoleLogger as log
+
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -25,9 +27,14 @@ class Cyclone:
         # Initialize core components
         self.data_locker = DataLocker.get_instance()
         self.price_monitor = PriceMonitor()  # Market Updates
-        self.alert_manager = AlertManager()    # Alert Updates
+        self.alert_service = AlertServiceManager.get_instance()    # Alert Updates
         self.config = UnifiedConfigManager(CONFIG_PATH).load_config()
-        # self.alert_evaluator = AlertEvaluator(self.config, self.data_locker)
+
+
+        from utils.console_logger import ConsoleLogger as log
+        log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
+        #log.banner("🌪️  CYCLONE ENGINE STARTUP 🌪️")
+        log.success("Cyclone orchestrator initialized.", source="Cyclone")
 
     async def run_market_updates(self):
         self.logger.info("Starting Market Updates")
@@ -139,77 +146,135 @@ class Cyclone:
                 file="cyclone.py"
             )
 
-    async def run_create_market_alerts(self):
-        self.logger.info("Creating Market Alerts via AlertController")
+    from utils.console_logger import ConsoleLogger as log
+
+    async def run_create_position_alerts(self):
+        """
+        Create position-based alerts (Heat Index, Profit, Travel Percent) for active positions.
+        """
+        log.info("Starting Position-Based Alert Creation", source="Cyclone")
         try:
-            ac = AlertController()
+            from uuid import uuid4
+            from data.data_locker import DataLocker
 
-            class DummyPriceAlert:
-                def __init__(self):
-                    from data.models import AlertType, AlertClass, Status
-                    from uuid import uuid4
-                    self.id = str(uuid4())
-                    self.alert_type = AlertType.PRICE_THRESHOLD.value
-                    self.alert_class = None
-                    self.asset_type = "BTC"
-                    self.trigger_value = 0.0
-                    self.condition = "ABOVE"
-                    self.notification_type = None
-                    self.level = "Normal"  # updated from "state" to "level"
-                    self.last_triggered = None
-                    self.status = None
-                    self.frequency = 1
-                    self.counter = 0
-                    self.liquidation_distance = 0.0
-                    self.target_travel_percent = 0.0
-                    self.liquidation_price = 0.0
-                    self.notes = "Market price alert created by Cyclone"
-                    self.position_reference_id = None
-                    self.evaluated_value = 0.0
+            data_locker = DataLocker.get_instance()
+            positions = data_locker.read_positions()
 
-                def to_dict(self):
-                    return {
-                        "id": self.id,
-                        "alert_type": self.alert_type,
-                        "alert_class": self.alert_class,
-                        "asset_type": self.asset_type,
-                        "trigger_value": self.trigger_value,
-                        "condition": self.condition,
-                        "notification_type": self.notification_type,
-                        "level": self.level,
-                        "last_triggered": self.last_triggered,
-                        "status": self.status,
-                        "frequency": self.frequency,
-                        "counter": self.counter,
-                        "liquidation_distance": self.liquidation_distance,
-                        "target_travel_percent": self.target_travel_percent,
-                        "liquidation_price": self.liquidation_price,
-                        "notes": self.notes,
-                        "position_reference_id": self.position_reference_id,
-                        "evaluated_value": self.evaluated_value
-                    }
+            if not positions:
+                log.warning("No positions found to create alerts for.", source="Cyclone")
+                return
 
-            dummy_alert = DummyPriceAlert()
-            if ac.create_alert(dummy_alert):
-                self.u_logger.log_cyclone(
-                    operation_type="Create Market Alerts",
-                    primary_text="Market alert created successfully via AlertController",
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-                print("Created market alert successfully.")
-            else:
-                self.u_logger.log_cyclone(
-                    operation_type="Create Market Alerts Failed",
-                    primary_text="Failed to create market alert via AlertController",
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-                print("Failed to create market alert.")
+            created_alerts = 0
+
+            for pos in positions:
+                position_id = pos.get("id") or pos.get("position_id")
+                asset = pos.get("asset_type") or pos.get("asset")
+                if not position_id or not asset:
+                    log.warning("Position missing id or asset_type. Skipping.", source="Cyclone")
+                    continue
+
+                base_alert_fields = {
+                    "position_reference_id": position_id,
+                    "asset_type": asset.upper(),
+                    "notification_type": "SMS",
+                    "level": "Normal",
+                    "last_triggered": None,
+                    "status": "Active",
+                    "frequency": 1,
+                    "counter": 0,
+                    "notes": "Auto-created by Cyclone",
+                    "description": f"Position-based alert for {asset}",
+                    "liquidation_distance": 0.0,
+                    "travel_percent": 0.0,
+                    "liquidation_price": 0.0,
+                    "evaluated_value": 0.0
+                }
+
+                # Heat Index Alert
+                heat_alert = {
+                    **base_alert_fields,
+                    "id": str(uuid4()),
+                    "alert_type": "HEAT_INDEX",
+                    "alert_class": "Position",
+                    "trigger_value": 50,
+                    "condition": "ABOVE",
+                }
+                data_locker.create_alert(heat_alert)
+                created_alerts += 1
+
+                # Profit Alert
+                profit_alert = {
+                    **base_alert_fields,
+                    "id": str(uuid4()),
+                    "alert_type": "PROFIT",
+                    "alert_class": "Position",
+                    "trigger_value": 1000,
+                    "condition": "ABOVE",
+                }
+                data_locker.create_alert(profit_alert)
+                created_alerts += 1
+
+                # Travel Percent Alert
+                travel_alert = {
+                    **base_alert_fields,
+                    "id": str(uuid4()),
+                    "alert_type": "TRAVEL_PERCENT_LIQUID",
+                    "alert_class": "Position",
+                    "trigger_value": -25,
+                    "condition": "BELOW",
+                }
+                data_locker.create_alert(travel_alert)
+                created_alerts += 1
+
+            log.success(f"✅ Created {created_alerts} position alerts successfully.", source="Cyclone")
+
         except Exception as e:
-            self.logger.error(f"Error creating market alerts: {e}", exc_info=True)
-            print(f"Error creating market alerts: {e}")
-        return
+            log.error(f"❌ Failed to create position alerts: {e}", source="Cyclone")
+
+
+    async def run_create_market_alerts(self):
+        """
+        Create a dummy sample market alert using DataLocker directly.
+        """
+        log.info("Creating Market Alerts via DataLocker directly", source="Cyclone")
+        try:
+            from uuid import uuid4
+            from data.data_locker import DataLocker
+
+            dummy_alert = {
+                "id": str(uuid4()),
+                "alert_type": "PRICE_THRESHOLD",
+                "alert_class": "Market",
+                "asset_type": "BTC",
+                "trigger_value": 60000,
+                "condition": "ABOVE",
+                "notification_type": "SMS",
+                "level": "Normal",
+                "last_triggered": None,
+                "status": "Active",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0.0,
+                "travel_percent": -10.0,
+                "liquidation_price": 50000,
+                "notes": "Sample market alert created by Cyclone",
+                "description": "Cyclone test alert",
+                "position_reference_id": None,
+                "evaluated_value": 59000
+            }
+
+            dl = DataLocker.get_instance()
+            success = dl.create_alert(dummy_alert)
+
+            if success:
+                log.success("✅ Market alert created successfully.", source="Cyclone")
+                print("✅ Market alert created successfully.")
+            else:
+                log.warning("⚠️ Failed to create market alert.", source="Cyclone")
+                print("⚠️ Failed to create market alert.")
+        except Exception as e:
+            log.error(f"❌ Error creating market alert: {e}", source="Cyclone")
+            print(f"❌ Error creating market alert: {e}")
 
     async def run_update_hedges(self):
         self.logger.info("Starting Hedge Update")
@@ -469,37 +534,27 @@ class Cyclone:
                 file="cyclone.py"
             )
 
-    async def run_create_position_alerts(self):
-        self.logger.info("Creating Position Alerts using AlertManager linking")
-        try:
-            # Call the new method from the AlertController that creates all alerts per position.
-            # This method should return a list of created alert dictionaries.
-            created_alerts = self.alert_manager.alert_controller.create_all_position_alerts()
-            count = len(created_alerts) if created_alerts else 0
-            self.logger.debug("run_create_position_alerts completed. Created {} alerts.".format(count))
-            print("Created {} position alerts.".format(count))
-        except Exception as e:
-            self.logger.error("Error in run_create_position_alerts: {}".format(e), exc_info=True)
-            print("Error in run_create_position_alerts: {}".format(e))
-
 
     async def run_create_system_alerts(self):
         self.logger.info("Creating System Alerts")
         return
 
     async def run_update_evaluated_value(self):
-        self.logger.info("Updating Evaluated Values for Alerts...")
+        """
+        Update evaluated values for all alerts via AlertService.
+        """
+        self.logger.info("Starting Evaluated Value Update for Alerts")
         try:
-            await asyncio.to_thread(self.alert_manager.alert_evaluator.update_alerts_evaluated_value)
+            await self.alert_service.process_all_alerts()
             self.u_logger.log_cyclone(
                 operation_type="Update Evaluated Value",
                 primary_text="Alert evaluated values updated successfully",
                 source="Cyclone",
                 file="cyclone.py"
             )
-            print("Alert evaluated values updated.")
+            print("✅ Alert evaluated values updated successfully.")
         except Exception as e:
-            self.logger.error(f"Updating evaluated values failed: {e}")
+            self.logger.error(f"Updating evaluated values failed: {e}", exc_info=True)
             self.u_logger.log_cyclone(
                 operation_type="Update Evaluated Value",
                 primary_text=f"Failed: {e}",
@@ -508,48 +563,17 @@ class Cyclone:
             )
 
     async def run_alert_updates(self):
-        self.logger.info("Starting Alert Evaluations")
+        """
+        Evaluate and process all alerts using the new AlertService.
+        """
+        log.info("Starting Alert Evaluations via AlertServiceManager", source="Cyclone")
         try:
-            positions = self.data_locker.read_positions()
-            combined_eval = self.alert_manager.alert_evaluator.evaluate_alerts(positions=positions, market_data={})
-            self.u_logger.log_cyclone(
-                operation_type="Alert Evaluations",
-                primary_text="Combined alert evaluations completed",
-                source="Cyclone",
-                file="cyclone.py"
-            )
-            market_alerts = self.alert_manager.alert_evaluator.evaluate_market_alerts(market_data={})
-            for msg in market_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="Market Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-            position_alerts = self.alert_manager.alert_evaluator.evaluate_position_alerts(positions)
-            for msg in position_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="Position Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-            system_alerts = self.alert_manager.alert_evaluator.evaluate_system_alerts()
-            for msg in system_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="System Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
+            await self.alert_service.process_all_alerts()
+            log.success("✅ Alert evaluations and notifications processed successfully.", source="Cyclone")
+            print("✅ Alert evaluations and notifications processed successfully.")
         except Exception as e:
-            self.logger.error(f"Alert Evaluations failed: {e}")
-            self.u_logger.log_cyclone(
-                operation_type="Alert Evaluations",
-                primary_text=f"Failed: {e}",
-                source="Cyclone",
-                file="cyclone.py"
-            )
+            log.error(f"❌ Alert Evaluations failed: {e}", source="Cyclone")
+            print(f"❌ Alert Evaluations failed: {e}")
 
     async def run_system_updates(self):
         self.logger.info("Starting System Updates")
@@ -774,62 +798,34 @@ class Cyclone:
             print(f"Error deleting position {position_id}: {e}")
 
     async def run_update_evaluated_value(self):
-        self.logger.info("Updating Evaluated Values for Alerts...")
+        """
+        Update evaluated values for all alerts via AlertService.
+        """
+        log.info("Starting Evaluated Value Update for Alerts", source="Cyclone")
         try:
-            await asyncio.to_thread(self.alert_manager.alert_evaluator.update_alerts_evaluated_value)
-            self.u_logger.log_cyclone(
-                operation_type="Update Evaluated Value",
-                primary_text="Alert evaluated values updated successfully",
-                source="Cyclone",
-                file="cyclone.py"
-            )
-            print("Alert evaluated values updated.")
+            await self.alert_service.process_all_alerts()
+            log.success("✅ Alert evaluated values updated successfully.", source="Cyclone")
+            print("✅ Alert evaluated values updated successfully.")
         except Exception as e:
-            self.logger.error(f"Updating evaluated values failed: {e}")
-            self.u_logger.log_cyclone(
-                operation_type="Update Evaluated Value",
-                primary_text=f"Failed: {e}",
-                source="Cyclone",
-                file="cyclone.py"
-            )
+            log.error(f"❌ Updating evaluated values failed: {e}", source="Cyclone")
+            print(f"❌ Updating evaluated values failed: {e}")
 
     async def run_alert_updates(self):
-        self.logger.info("Starting Alert Evaluations")
+        """
+        Evaluate and process all alerts using the new AlertService.
+        """
+        self.logger.info("Starting Alert Evaluations via AlertServiceManager")
         try:
-            positions = self.data_locker.read_positions()
-            combined_eval = self.alert_manager.alert_evaluator.evaluate_alerts(positions=positions, market_data={})
+            await self.alert_service.process_all_alerts()
             self.u_logger.log_cyclone(
                 operation_type="Alert Evaluations",
-                primary_text="Combined alert evaluations completed",
+                primary_text="Alert evaluations and notifications processed successfully",
                 source="Cyclone",
                 file="cyclone.py"
             )
-            market_alerts = self.alert_manager.alert_evaluator.evaluate_market_alerts(market_data={})
-            for msg in market_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="Market Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-            position_alerts = self.alert_manager.alert_evaluator.evaluate_position_alerts(positions)
-            for msg in position_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="Position Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
-            system_alerts = self.alert_manager.alert_evaluator.evaluate_system_alerts()
-            for msg in system_alerts:
-                self.u_logger.log_cyclone(
-                    operation_type="System Alert Evaluation",
-                    primary_text=msg,
-                    source="Cyclone",
-                    file="cyclone.py"
-                )
+            print("✅ Alert evaluations and notifications processed successfully.")
         except Exception as e:
-            self.logger.error(f"Alert Evaluations failed: {e}")
+            self.logger.error(f"Alert Evaluations failed: {e}", exc_info=True)
             self.u_logger.log_cyclone(
                 operation_type="Alert Evaluations",
                 primary_text=f"Failed: {e}",
