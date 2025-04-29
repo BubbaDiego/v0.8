@@ -155,7 +155,6 @@ class Cyclone:
         log.info("Starting Position-Based Alert Creation", source="Cyclone")
         try:
             from uuid import uuid4
-            from data.data_locker import DataLocker
 
             data_locker = DataLocker.get_instance()
             positions = data_locker.read_positions()
@@ -169,13 +168,17 @@ class Cyclone:
             for pos in positions:
                 position_id = pos.get("id") or pos.get("position_id")
                 asset = pos.get("asset_type") or pos.get("asset")
+                position_type = pos.get("position_type") or "UNKNOWN"
+
                 if not position_id or not asset:
-                    log.warning("Position missing id or asset_type. Skipping.", source="Cyclone")
+                    log.error(f"❌ Position missing id or asset_type. Skipping. Position={pos}", source="Cyclone")
                     continue
 
                 base_alert_fields = {
                     "position_reference_id": position_id,
+                    "asset": asset.upper(),
                     "asset_type": asset.upper(),
+                    "position_type": position_type,
                     "notification_type": "SMS",
                     "level": "Normal",
                     "last_triggered": None,
@@ -190,7 +193,7 @@ class Cyclone:
                     "evaluated_value": 0.0
                 }
 
-                # Heat Index Alert
+                # Create Heat Index Alert
                 heat_alert = {
                     **base_alert_fields,
                     "id": str(uuid4()),
@@ -200,9 +203,10 @@ class Cyclone:
                     "condition": "ABOVE",
                 }
                 data_locker.create_alert(heat_alert)
+                log.debug("Created Heat Index Alert", source="CreatePositionAlerts", payload=heat_alert)
                 created_alerts += 1
 
-                # Profit Alert
+                # Create Profit Alert
                 profit_alert = {
                     **base_alert_fields,
                     "id": str(uuid4()),
@@ -212,9 +216,10 @@ class Cyclone:
                     "condition": "ABOVE",
                 }
                 data_locker.create_alert(profit_alert)
+                log.debug("Created Profit Alert", source="CreatePositionAlerts", payload=profit_alert)
                 created_alerts += 1
 
-                # Travel Percent Alert
+                # Create Travel Percent Alert
                 travel_alert = {
                     **base_alert_fields,
                     "id": str(uuid4()),
@@ -224,13 +229,13 @@ class Cyclone:
                     "condition": "BELOW",
                 }
                 data_locker.create_alert(travel_alert)
+                log.debug("Created Travel Percent Alert", source="CreatePositionAlerts", payload=travel_alert)
                 created_alerts += 1
 
             log.success(f"✅ Created {created_alerts} position alerts successfully.", source="Cyclone")
 
         except Exception as e:
             log.error(f"❌ Failed to create position alerts: {e}", source="Cyclone")
-
 
     async def run_create_market_alerts(self):
         """
@@ -437,24 +442,16 @@ class Cyclone:
 
     async def run_alert_enrichment(self):
         """
-        Async method to enrich all alerts using the shared enrichment routine.
+        Re-enrich all active alerts using the new AlertEnrichmentService.
         """
         try:
-            from alerts.alert_enrichment import enrich_alert_data
-            alerts = self.data_locker.get_alerts()
-            enriched_alerts = []
-            for alert in alerts:
-                enriched = enrich_alert_data(
-                    alert,
-                    self.data_locker,
-                    self.logger,
-                    self.alert_manager.alert_controller
-                )
-                enriched_alerts.append(enriched)
-            self.logger.debug(f"Enriched {len(enriched_alerts)} alerts")
+            self.logger.info("Starting Alert Enrichment via AlertService")
+            await self.alert_service.process_all_alerts()
+            self.logger.info("✅ Alerts enriched and evaluated successfully.")
+            print("✅ Alerts enriched and evaluated successfully.")
         except Exception as e:
-            self.logger.error("Alert Data Enrichment failed: %s", e, exc_info=True)
-        return
+            self.logger.error(f"Alert Enrichment failed: {e}", exc_info=True)
+            print(f"❌ Alert Enrichment failed: {e}")
 
     async def run_enrich_positions(self):
         self.logger.info("Starting Position Enrichment")
