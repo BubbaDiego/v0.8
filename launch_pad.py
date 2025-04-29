@@ -13,6 +13,8 @@ from functools import wraps
 from time import time as timer_time
 from utils.console_logger import ConsoleLogger as log
 from tests.test_runner_manager import TestRunnerManager
+from utils.schema_validation_service import SchemaValidationService
+
 
 # --- Configuration ---
 CRITICAL_PACKAGES = [
@@ -138,6 +140,14 @@ def run_clear_caches():
     clear_screen()
 
 @timed_operation
+def run_schema_validation_service():
+    """Run the Schema Validation Service."""
+    log.info("Running Schema Validation Service...", source="LaunchPad")
+    SchemaValidationService.batch_validate()
+    input("\nPress ENTER to return to menu...")
+    clear_screen()
+
+@timed_operation
 def run_operations_monitor():
     """Run Operations Monitor Console."""
     log.info("Launching Operations Monitor Console...", source="LaunchPad")
@@ -153,43 +163,6 @@ def run_test_manager():
     """Run the Test Runner Manager (interactive menu)."""
     runner = TestRunnerManager(tests_folder="tests/")
     runner.interactive_menu()
-
-
-def show_launchpad_banner_lightning():
-    banner_lines = [
-        "=" * 60,
-        r"    __                             __      ____            __",
-        r"   / /  ____ ___  ________   _____/ /     / __ \____ _____/ /",
-        r"  / /  / __ `/ / / / / __ \/ ___/ __ \   / /_/ / __ `/ __  / ",
-        r" / /__/ /_/ / /_/ / / / / / /__/ / / /  / ____/ /_/ / /_/ /  ",
-        r"\____/\__,_/\__,_/_/ /_/\___  /_/ /_/  /_/    \__,_/\__,_/   ",
-        "".center(60),
-        "=" * 60
-    ]
-
-    for line in banner_lines:
-        print(line)
-        time.sleep(0.07)  # ~70 milliseconds between lines for lightning speed
-    print("\n")
-
-def thunder_crash():
-    flashes = [
-        "\033[97m⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡\033[0m",
-        "\033[90m⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡\033[0m",
-        "\033[97m⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡\033[0m",
-        "\033[90m⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡\033[0m",
-        "\033[97m⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡⚡\033[0m"
-    ]
-
-    for flash in flashes:
-        print(flash)
-        time.sleep(0.08)
-
-    time.sleep(0.2)
-    print("\n" + "⚡ CRASH ⚡".center(60))
-    time.sleep(0.7)  # <-- Dramatic pause here
-    print("\n")
-    time.sleep(0.3)  # Optional: Slight extra pause before menu appears
 
 def show_launchpad_banner():
     print("\n" + "=" * 60)
@@ -207,61 +180,62 @@ def show_launchpad_banner():
 # --- Menu ---
 
 def main_menu():
-    """Display the main LaunchPad menu."""
-    check_and_install_critical_packages()
     clear_screen()
+    log.banner("🚀 LAUNCH PAD - CONTROL CENTER 🚀")
 
-    show_launchpad_banner_lightning()
+    print("""
+🖥️  CORE SERVICES
+---------------------------
+1) 🚀 Start Flask App
+2) 🧪 Launch Test Manager
+3) 🛡️ Launch Operations Monitor
 
-    while True:
-        print(f"""
-🎛️ Launch Pad Control Center
-====================================
-1. 🧪 Run All Tests
-2. 🛡️ Run Path Audit
-3. 🚀 Start Flask App (🖥️ Console)
-4. 🩺 Run System Health Check
-5. 🌀 Run Cyclone System Tests
-6. 🧹 Clear Python Caches
-7. 🛡️ Launch Operations Monitor Console (🖥️ Console)
-8. 🧪 Launch Test Runner Manager (🖥️ Console)
-0. ❌ Exit
-====================================
+🛠️  UTILITIES
+---------------------------
+4) 🧹 Clear Python Caches
+5) 📋 Run Schema Validation Service
+
+🩺  SYSTEM HEALTH
+---------------------------
+6) 🩺 Run System Health Check
+7) 🌀 Run Cyclone System Tests
+
+❌  OTHER
+---------------------------
+0) ❌ Exit
 """)
 
-        choice = input("Select an option: ").strip()
+    choice = input("Enter your choice (0-7): ").strip()
 
-        if choice == "1":
-            clear_screen()
-            run_tests()
-        elif choice == "2":
-            clear_screen()
-            run_path_audit()
-        elif choice == "3":
-            clear_screen()
-            run_flask()
-        elif choice == "4":
-            clear_screen()
-            run_health_check()
-        elif choice == "5":
-            clear_screen()
-            run_cyclone_tests()
-        elif choice == "6":
-            clear_screen()
-            run_clear_caches()
-        elif choice == "7":
-            clear_screen()
-            run_operations_monitor()
-        elif choice == "8":
-            clear_screen()
-            run_test_manager()
-        elif choice == "0":
-            log.success("Goodbye! 👋", source="LaunchPad")
-            sys.exit(0)
-        else:
-            log.warning("Invalid selection. Please try again.", source="LaunchPad")
-            input("\nPress ENTER to continue...")
-            clear_screen()
+    if choice == "1":
+        clear_screen()
+        run_flask()
+    elif choice == "2":
+        clear_screen()
+        run_test_manager()
+    elif choice == "3":
+        clear_screen()
+        run_operations_monitor()
+    elif choice == "4":
+        clear_screen()
+        run_clear_caches()
+    elif choice == "5":
+        clear_screen()
+        run_schema_validation_service()
+    elif choice == "6":
+        clear_screen()
+        run_health_check()
+    elif choice == "7":
+        clear_screen()
+        run_cyclone_tests()
+    elif choice == "0":
+        log.success("Goodbye! 👋", source="LaunchPad")
+        sys.exit(0)
+    else:
+        log.warning("Invalid selection. Please try again.", source="LaunchPad")
+        input("\nPress ENTER to continue...")
+        clear_screen()
+
 
 if __name__ == "__main__":
     main_menu()

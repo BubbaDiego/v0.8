@@ -568,7 +568,7 @@ class DataLocker:
                 alert_dict = alert_obj
                 self.logger.debug("Alert object is already a dict.")
 
-            # 🛡 Normalize critical fields
+            # Normalize critical fields
             if "alert_type" in alert_dict:
                 alert_dict["alert_type"] = normalize_alert_type(alert_dict["alert_type"]).value
             if "condition" in alert_dict:
@@ -579,7 +579,7 @@ class DataLocker:
             # Initialize defaults
             alert_dict = self.initialize_alert_data(alert_dict)
 
-            # --- Corrected SQL to include position_type ---
+            # Correct SQL to include asset
             cursor = self.conn.cursor()
             sql = """
                 INSERT INTO alerts (
@@ -587,6 +587,7 @@ class DataLocker:
                     created_at,
                     alert_type,
                     alert_class,
+                    asset,
                     asset_type,
                     trigger_value,
                     condition,
@@ -605,12 +606,11 @@ class DataLocker:
                     evaluated_value,
                     position_type
                 ) VALUES (
-                    :id, :created_at, :alert_type, :alert_class, :asset_type,
+                    :id, :created_at, :alert_type, :alert_class, :asset, :asset_type,
                     :trigger_value, :condition, :notification_type, :level,
                     :last_triggered, :status, :frequency, :counter, :liquidation_distance,
                     :travel_percent, :liquidation_price, :notes, :description,
-                    :position_reference_id, :evaluated_value,
-                    :position_type
+                    :position_reference_id, :evaluated_value, :position_type
                 )
             """
             cursor.execute(sql, alert_dict)
@@ -661,6 +661,17 @@ class DataLocker:
                 "snooze_countdown": 300,
                 "snooze_start": None
             }
+
+    def get_position_by_reference_id(self, ref_id: str) -> Optional[dict]:
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM positions WHERE id=?", (ref_id,))
+        row = cursor.fetchone()
+        cursor.close()
+        return dict(row) if row else None
+
+    def get_current_timestamp(self) -> str:
+        from datetime import datetime
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def update_alert_conditions(self, alert_id: str, update_fields: dict) -> int:
         try:

@@ -40,7 +40,8 @@ async def test_portfolio_alert_data_creation():
             trigger_value=50,
             condition=Condition.ABOVE,
             evaluated_value=0.0,
-            position_reference_id="pos1"
+            position_reference_id="pos1",
+            position_type="LONG"
         ),
         Alert(
             id="profit-001",
@@ -49,7 +50,8 @@ async def test_portfolio_alert_data_creation():
             trigger_value=1000,
             condition=Condition.ABOVE,
             evaluated_value=0.0,
-            position_reference_id="pos1"
+            position_reference_id="pos1",
+            position_type="LONG"
         ),
         Alert(
             id="travel-percent-001",
@@ -58,7 +60,8 @@ async def test_portfolio_alert_data_creation():
             trigger_value=-25,
             condition=Condition.BELOW,
             evaluated_value=0.0,
-            position_reference_id="pos1"
+            position_reference_id="pos1",
+            position_type="LONG"
         )
     ]
 

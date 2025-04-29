@@ -1,5 +1,5 @@
 {
-  "alert_ranges": {
+  "alert_limits": {
     "liquidation_distance_ranges": {
       "enabled": true,
       "low": 10.0,
@@ -42,208 +42,31 @@
       }
     }
   },
-  "alert_cooldown_seconds": 133.0,
-  "call_refractory_period": 873.0,
-  "snooze_countdown": 300.0,
-  "call_refractory_start": null,
-  "snooze_start": null,
-  "global_alert_config": {
-    "enabled": false,
-    "data_fields": {
-      "price": true,
-      "profit": true,
-      "travel_percent": true,
-      "heat_index": false
-    },
-    "thresholds": {
-      "price": {
-        "BTC": 0.0,
-        "ETH": 0.0,
-        "SOL": 0.0
-      },
-      "profit": 101.0,
-      "travel_percent": -75.0,
-      "heat_index": 60.0
-    }
+  "cooldowns": {
+    "alert_cooldown_seconds": 300,
+    "call_refractory_period": 900,
+    "snooze_countdown": 300
   },
   "notifications": {
     "heat_index": {
-      "low": {
-        "enabled": true,
-        "notify_by": {
-          "call": true,
-          "sms": true,
-          "email": true
-        }
-      },
-      "medium": {
-        "enabled": true,
-        "notify_by": {
-          "call": true,
-          "sms": true,
-          "email": true
-        }
-      },
-      "high": {
-        "enabled": true,
-        "notify_by": {
-          "call": true,
-          "sms": true,
-          "email": true
-        }
-      }
+      "low": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}},
+      "medium": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}},
+      "high": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}}
     },
     "travel_percent_liquid": {
-      "low": {
-        "enabled": false,
-        "notify_by": {
-          "call": true,
-          "sms": false,
-          "email": true
-        }
-      },
-      "medium": {
-        "enabled": false,
-        "notify_by": {
-          "call": false,
-          "sms": false,
-          "email": false
-        }
-      },
-      "high": {
-        "enabled": false,
-        "notify_by": {
-          "call": true,
-          "sms": true,
-          "email": true
-        }
-      }
+      "low": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": true}},
+      "medium": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": true}},
+      "high": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}}
     },
     "profit": {
-      "low": {
-        "enabled": false,
-        "notify_by": {
-          "call": true,
-          "sms": false,
-          "email": false
-        }
-      },
-      "medium": {
-        "enabled": false,
-        "notify_by": {
-          "call": false,
-          "sms": true,
-          "email": false
-        }
-      },
-      "high": {
-        "enabled": false,
-        "notify_by": {
-          "call": false,
-          "sms": true,
-          "email": true
-        }
-      }
+      "low": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": false}},
+      "medium": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": false}},
+      "high": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": true}}
     },
     "price_alerts": {
-      "low": {
-        "notify_by": {
-          "call": true,
-          "sms": true,
-          "email": true
-        }
-      },
-      "medium": {
-        "notify_by": {
-          "call": false,
-          "sms": true,
-          "email": true
-        }
-      }
-    },
-    "snooze_countdown": 300.0
-  },
-  "alert_config": {
-    "notifications": {
-      "heat_index": {
-        "low": {
-          "enabled": false,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "medium": {
-          "enabled": false,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "high": {
-          "enabled": false,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        }
-      },
-      "travel_percent_liquid": {
-        "low": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "medium": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "high": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        }
-      },
-      "profit": {
-        "low": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "medium": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        },
-        "high": {
-          "enabled": true,
-          "notify_by": {
-            "call": false,
-            "sms": false,
-            "email": false
-          }
-        }
-      }
-    },
-    "snooze_countdown": 300.0
+      "low": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}},
+      "medium": {"enabled": true, "notify_by": {"call": false, "sms": true, "email": true}},
+      "high": {"enabled": true, "notify_by": {"call": true, "sms": true, "email": true}}
+    }
   }
 }

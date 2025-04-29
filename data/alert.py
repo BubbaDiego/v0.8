@@ -1,21 +1,19 @@
-from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
+from enum import Enum
+
+# --- Enums ---
 
 class AlertType(str, Enum):
     PriceThreshold = "PriceThreshold"
+    HeatIndex = "HeatIndex"
     Profit = "Profit"
     TravelPercentLiquid = "TravelPercentLiquid"
-    HeatIndex = "HeatIndex"
 
 class Condition(str, Enum):
     ABOVE = "ABOVE"
     BELOW = "BELOW"
-
-class NotificationType(str, Enum):
-    SMS = "SMS"
-    EMAIL = "Email"
-    PHONECALL = "PhoneCall"
 
 class AlertLevel(str, Enum):
     NORMAL = "Normal"
@@ -24,20 +22,33 @@ class AlertLevel(str, Enum):
     HIGH = "High"
 
 class Status(str, Enum):
-    Active = "Active"
-    Inactive = "Inactive"
-    Triggered = "Triggered"
+    ACTIVE = "Active"
+    INACTIVE = "Inactive"
 
-# ✅ Now add Alert BaseModel
+class NotificationType(str, Enum):
+    SMS = "SMS"
+    EMAIL = "EMAIL"
+    PHONECALL = "PHONECALL"
+
+# --- Main Alert Model ---
+
 class Alert(BaseModel):
     id: str
     alert_type: AlertType
     asset: str
     trigger_value: float
     condition: Condition
-    evaluated_value: float = 0.0
-    level: AlertLevel = AlertLevel.NORMAL
-    status: Status = Status.Active
-    last_triggered: Optional[str] = None
+    evaluated_value: Optional[float] = 0.0
     position_reference_id: Optional[str] = None
-    notification_type: NotificationType = NotificationType.SMS
+    position_type: Optional[str] = None  # ✅ Now officially supported
+    notification_type: Optional[NotificationType] = NotificationType.SMS
+    level: Optional[AlertLevel] = AlertLevel.NORMAL
+    last_triggered: Optional[datetime] = None
+    status: Optional[Status] = Status.ACTIVE
+    frequency: Optional[int] = 1
+    counter: Optional[int] = 0
+    liquidation_distance: Optional[float] = 0.0
+    travel_percent: Optional[float] = 0.0
+    liquidation_price: Optional[float] = 0.0
+    notes: Optional[str] = ""
+    description: Optional[str] = ""

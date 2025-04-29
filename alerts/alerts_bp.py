@@ -186,6 +186,38 @@ def config_page():
                            notifications=config_data.get("alert_config", {}).get("notifications", {}),
                            theme=config_data.get("theme_config", {}))
 
+# Add alias route for config_page so title bar link works
+@alerts_bp.route('/alert_config_page', methods=['GET'])
+def alert_config_page():
+    return config_page()  # calls existing config_page() handler
+
+
+# Matrix view route
+@alerts_bp.route('/alert_matrix', methods=['GET'])
+def alert_matrix_page():
+    try:
+        data_locker = DataLocker.get_instance()
+        alerts = data_locker.get_alerts()
+        positions = data_locker.read_positions()
+        json_manager = current_app.json_manager
+        alert_config = json_manager.load("alert_limits.json", json_type=JsonType.ALERT_LIMITS)
+        theme_config = current_app.config.get('theme', {})
+
+        for alert in alerts:
+            alert["cooldown_remaining"] = 0  # can extend later
+
+        return render_template("alert_matrix.html",
+                               theme=theme_config,
+                               alerts=alerts,
+                               alert_ranges=alert_config.get("alert_ranges", {}),
+                               hedges=[],
+                               asset_images={},
+                               wallet_default="")
+    except Exception as e:
+        logger.error(f"Error loading alert matrix: {e}", exc_info=True)
+        return "Error loading alert matrix", 500
+
+
 @alerts_bp.route('/update_config', methods=['POST'])
 def update_config():
     """
