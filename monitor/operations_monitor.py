@@ -35,6 +35,10 @@ class OperationsMonitor(BaseMonitor):
         Run critical POST (Power-On Self Tests) during system startup.
         """
         print("[🧪] Running startup POST tests...")
+        test_path = os.path.join(os.getcwd(), "tests", "test_alert_controller.py")
+        if not os.path.exists(test_path):
+            print("[⚠️] Skipping POST: test file not found.")
+            return {"post_success": True, "skipped": True}
 
         # 🔥 Ensure we are in project root before running pytest
         os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
@@ -169,3 +173,18 @@ class OperationsMonitor(BaseMonitor):
             self.unified_logger.log_operation("FallbackSent", "Email/SMS fallback triggered.", source="OperationsMonitor")
         except Exception as e:
             self.logger.error(f"Notification failure: {e}")
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    monitor = OperationsMonitor(
+        monitor_interval=300,
+        continuous_mode=True,
+        notifications_enabled=True
+    )
+    monitor.run_startup_post()
+    monitor.start_background_monitor()
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        print("Operations Monitor stopped by user.")

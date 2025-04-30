@@ -63,10 +63,25 @@ def save_theme():
         json.dump(theme_data, f, indent=2)
     return jsonify({"success": True})
 
+
+@dashboard_bp.route("/api/get_prices")
+def get_prices():
+    try:
+        dl = DataLocker.get_instance()
+        prices = dl.get_price_dict()  # Make sure this returns a dict with BTC/ETH/SOL keys
+        return jsonify({
+            "BTC": prices.get("BTC"),
+            "ETH": prices.get("ETH"),
+            "SOL": prices.get("SOL")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # ---------------------------------
 # Main Dashboard Page
 # ---------------------------------
-@dashboard_bp.route("/dash", endpoint="dash_page")
+
 @dashboard_bp.route("/dash", endpoint="dash_page")
 def dash_page():
     dl = DataLocker.get_instance()
