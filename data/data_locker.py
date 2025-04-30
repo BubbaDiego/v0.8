@@ -673,10 +673,9 @@ class DataLocker:
         from datetime import datetime
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Convert dataclasses or enums to plain types
-    def serialize_sql_values(vals):
+    def serialize_sql_values(self, values):
         result = []
-        for v in vals:
+        for v in values:
             if hasattr(v, "value"):  # Enum
                 result.append(v.value)
             elif hasattr(v, "to_dict"):  # Object
@@ -685,12 +684,11 @@ class DataLocker:
                 result.append(str(v) if not isinstance(v, (str, int, float)) else v)
         return result
 
-
     def update_alert_conditions(self, alert_id: str, update_fields: dict) -> int:
         try:
             cursor = self.conn.cursor()
             set_clause = ", ".join(f"{key}=?" for key in update_fields.keys())
-            values = serialize_sql_values(update_fields.values())
+            values = self.serialize_sql_values(update_fields.values())
             values.append(alert_id)
             sql = f"UPDATE alerts SET {set_clause} WHERE id=?"
             self.logger.debug("Executing SQL: %s with values: %s", sql, values)
