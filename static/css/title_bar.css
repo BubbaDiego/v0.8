@@ -4,6 +4,8 @@
   border-bottom: 2px solid white;
 }
 
+/* === title_bar.css === */
+
 /* Asset Panels (BTC, ETH, SOL) */
 .asset-panel {
   background-color: #f8f9fa;
@@ -17,6 +19,22 @@
 .asset-panel img {
   width: 20px;
   height: 20px;
+}
+.asset-panel span {
+  font-weight: bold;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Theme-aware background for asset panel */
+body.dark-bg .asset-panel {
+  background-color: #444;
+  color: #eee;
+}
+
+body.light-bg .asset-panel {
+  background-color: #f8f9fa;
+  color: #000;
 }
 
 /* Timer Box in Center */

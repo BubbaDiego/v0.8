@@ -30,15 +30,6 @@ console.log('✅ base.js loaded');
     }
   }
 
-  const savedTheme = localStorage.getItem('preferredThemeMode');
-  if (savedTheme) {
-    console.log(`🎨 Applying saved theme: ${savedTheme}`);
-    applyTheme(savedTheme);
-  } else {
-    console.log('🎨 No saved theme, applying light mode by default.');
-    applyTheme('light');
-  }
-
   if (themeToggleButton) {
     themeToggleButton.addEventListener('click', function() {
       const currentTheme = body.classList.contains('dark-bg') ? 'dark' : 'light';

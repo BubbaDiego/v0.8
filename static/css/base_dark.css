@@ -1,3 +1,35 @@
+/* === THEME VARIABLES === */
+:root {
+  /* Base Backgrounds */
+  --dark-bg-body: #222;
+  --dark-bg-wrapper: #333;
+
+  /* Text and Contrast */
+  --dark-text-main: #eee;
+  --dark-text-secondary: #ccc;
+
+  /* Navbar */
+  --dark-navbar-bg: #2c3e50;
+  --dark-navbar-border: #1c1c1c;
+
+  /* Panels, Cards, Boxes */
+  --dark-card-bg: #333;
+  --dark-card-border: #555;
+
+  /* Buttons */
+  --dark-btn-bg: #444;
+  --dark-btn-text: #fff;
+  --dark-btn-hover: #555;
+
+  /* Toasts */
+  --dark-toast-success: #28a745;
+  --dark-toast-error: #dc3545;
+
+  /* Spinner */
+  --dark-spinner-top: #28a745;
+  --dark-spinner-right: #1c7c2f;
+}
+
 /* Gradient Navbar */
 .gradient-navbar {
   background: linear-gradient(90deg, #7db3f5, #4a90e2);
@@ -83,7 +115,7 @@
   position: fixed;
   top: 1rem;
   right: 1rem;
-  background-color: #28a745;
+  background-color: var(--dark-toast-success);
   color: white;
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
@@ -93,7 +125,7 @@
   transition: opacity 0.5s ease;
 }
 .toast-notify.error {
-  background-color: #dc3545;
+  background-color: var(--dark-toast-error);
 }
 .toast-notify.show {
   opacity: 1;

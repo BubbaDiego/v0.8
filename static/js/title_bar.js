@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (reloadOnSuccess) {
           setTimeout(() => {
             location.reload();
-          }, 1000); // Slight delay to allow toast to show
+          }, 1000);
         }
       })
       .catch(err => {
@@ -57,37 +57,46 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 2500);
   }
 
-  // --- Utility Buttons ---
+  // --- Price Display Update ---
+  function formatIntWithCommas(value) {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 
-  // Update Jupiter Positions
+  fetch('/api/get_prices')
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('btcPrice').innerText = `$${formatIntWithCommas(Math.round(data.BTC))}`;
+      document.getElementById('ethPrice').innerText = `$${formatIntWithCommas(Math.round(data.ETH))}`;
+      document.getElementById('solPrice').innerText = `$${data.SOL?.toFixed(2) ?? '--'}`;
+    })
+    .catch(err => console.error("Failed to fetch prices", err));
+
+  // --- Utility Buttons ---
   const updateJupiterBtn = document.getElementById('updateJupiterBtn');
   if (updateJupiterBtn) {
     updateJupiterBtn.addEventListener('click', () =>
-      postWithSpin(updateJupiterBtn, API_ROUTES.positionUpdates, 'Positions Updated', true) // ✅ Reload needed
+      postWithSpin(updateJupiterBtn, API_ROUTES.positionUpdates, 'Positions Updated', true)
     );
   }
 
-  // Update Market Prices
   const updatePricesBtn = document.getElementById('updatePricesBtn');
   if (updatePricesBtn) {
     updatePricesBtn.addEventListener('click', () =>
-      postWithSpin(updatePricesBtn, API_ROUTES.marketUpdates, 'Prices Updated', false) // ❌ No reload
+      postWithSpin(updatePricesBtn, API_ROUTES.marketUpdates, 'Prices Updated', false)
     );
   }
 
-  // Run Full Cycle
   const updateFullCycleBtn = document.getElementById('updateFullCycleBtn');
   if (updateFullCycleBtn) {
     updateFullCycleBtn.addEventListener('click', () =>
-      postWithSpin(updateFullCycleBtn, API_ROUTES.fullCycle, 'Full Cycle Completed', true) // ✅ Reload needed
+      postWithSpin(updateFullCycleBtn, API_ROUTES.fullCycle, 'Full Cycle Completed', true)
     );
   }
 
-  // Clear All Data
   const clearAllBtn = document.getElementById('clearAllBtn');
   if (clearAllBtn) {
     clearAllBtn.addEventListener('click', () =>
-      postWithSpin(clearAllBtn, API_ROUTES.clearAllData, 'All Data Cleared', true) // ✅ Reload needed
+      postWithSpin(clearAllBtn, API_ROUTES.clearAllData, 'All Data Cleared', true)
     );
   }
 
@@ -130,5 +139,4 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 'Theme Changed')
     );
   }
-
 });

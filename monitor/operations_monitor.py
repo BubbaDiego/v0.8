@@ -10,7 +10,7 @@ from monitor.common_monitor_utils import BaseMonitor
 from utils.unified_logger import UnifiedLogger
 
 # Optional Notification Imports
-from alerts.alert_manager import trigger_twilio_flow
+#from alerts.alert_manager import trigger_twilio_flow
 from xcom.xcom import send_email, send_sms, load_com_config
 
 class OperationsMonitor(BaseMonitor):
