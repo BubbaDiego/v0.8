@@ -1,6 +1,6 @@
 <div class="universal-bar">
-  {% for item in universal_items %}
-    <div class="universal-item {{ item.color }} {% if item.title in ['Price', 'Positions', 'Operations', 'Xcom'] %}monitor{% endif %}">
+  {% for item in monitor_items %}
+    <div class="universal-item {{ item.color }} monitor">
       <div class="monitor-corner">🖥️</div>
       <div class="title">{{ item.title }}</div>
       <div class="icon">{{ item.icon }}</div>

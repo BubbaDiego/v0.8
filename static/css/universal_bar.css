@@ -7,6 +7,7 @@
 }
 
 .universal-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -17,7 +18,7 @@
   max-width: 180px;
   min-height: 100px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
 }
 
@@ -40,9 +41,30 @@
 .value {
   font-size: 1.1rem;
   font-weight: bold;
+  word-break: break-word;
 }
 
-/* Color Styles */
+/* Monitor icon in top-right */
+.monitor-corner {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Only show monitor icon if class 'monitor' is present */
+.universal-item.monitor .monitor-corner {
+  display: block;
+}
+
+/* Default hidden */
+.monitor-corner {
+  display: none;
+}
+
+/* Color styles */
 .green {
   background: #d4edda;
   color: #155724;
@@ -60,12 +82,12 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-/* Mobile Responsive: 2 per row */
+/* Responsive: 2-per row on mobile */
 @media (max-width: 768px) {
   .universal-item {
     flex: 1 1 45%;

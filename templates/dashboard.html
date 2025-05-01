@@ -5,11 +5,12 @@
 {% block extra_styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/universal_bar.css') }}">
 <style>
 /* --- First Row Special Fix (Monitor + Statusbar) --- */
 .fixed-row {
   display: flex;
-  flex-wrap: nowrap; /* ❗NO wrapping */
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: stretch;
   gap: 1rem;
@@ -37,6 +38,10 @@
   padding: 1rem;
 }
 
+.box-row.centered {
+  justify-content: center;
+}
+
 @media (max-width: 768px) {
   .fixed-row {
     flex-wrap: nowrap;
@@ -53,23 +58,23 @@
 {% block content %}
 <div class="container-fluid pt-4">
 
-  <!-- ✅ Row 1: Monitors + Status (fixed now) -->
-  <div class="box-row fixed-row">
-    <div class="common-box ledger-wrapper">
-      {% include "partials/_monitors.html" %}
-    </div>
-    <div class="common-box statusbar-wrapper">
-      {% include "partials/_statusbar.html" %}
-    </div>
+  <!-- Row 1: Stats (Value, Leverage, etc.) -->
+  <div class="box-row centered">
+    {% include "partials/_universal_status_bar.html" %}
   </div>
 
-  <!-- Row 2: Positions + Liquidation -->
+  <!-- Row 2: Monitors (centered) -->
+  <div class="box-row centered">
+    {% include "partials/_universal_monitor_bar.html" %}
+  </div>
+
+  <!-- Row 3: Positions + Liquidation -->
   <div class="box-row">
     {% include "partials/_positions.html" %}
     {% include "partials/_liquidation.html" %}
   </div>
 
-  <!-- Row 3: Graph + Pie Charts -->
+  <!-- Row 4: Graph + Pie Charts -->
   <div class="box-row">
     {% include "partials/_graph.html" %}
     {% include "partials/_pie.html" %}
@@ -80,18 +85,13 @@
 
 {% block extra_scripts %}
 {{ super() }}
-
-<!-- ✅ API URLs -->
 <script>
   var GRAPH_DATA_URL = "{{ url_for('dashboard.api_graph_data') }}";
   var SIZE_COMPOSITION_URL = "{{ url_for('dashboard.api_size_composition') }}";
   var COLLATERAL_COMPOSITION_URL = "{{ url_for('dashboard.api_collateral_composition') }}";
 </script>
-
-<!-- ✅ Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-<!-- ✅ Page Specific JS -->
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/freshness_timer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/universal_bar.js') }}"></script>
 {% endblock %}
