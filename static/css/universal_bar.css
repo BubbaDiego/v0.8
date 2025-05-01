@@ -6,7 +6,7 @@
   padding: 1rem 0;
 }
 
-.universal-item {
+.universal-item  {
   position: relative;
   display: flex;
   flex-direction: column;

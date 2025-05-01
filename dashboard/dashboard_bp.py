@@ -235,7 +235,7 @@ def dash_page():
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
     return render_template(
-        "dashboard.html",
+         "dashboard.html",
         theme_mode=theme_mode,
         positions=positions,
         liquidation_positions=liquidation_positions,
