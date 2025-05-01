@@ -1,13 +1,10 @@
-<link rel="stylesheet" href="../../static/css/universal_bar.css">
-<div class="universal-bar">
+<div class="card-row">
   {% for item in monitor_items %}
-    <div class="universal-item {{ item.color }} monitor">
-      <div class="monitor-corner">🖥️</div>
-      <div class="icon-title-row">
-        <span class="icon">{{ item.icon }}</span>
-        <span class="title">{{ item.title }}</span>
-      </div>
-      <div class="value">{{ item.value }}</div>
+    <div class="card {{ item.color }}">
+      <div class="icon">{{ item.icon }}</div>
+      <div class="value">{{ item.value }}</div>   {# Shows "Updated: 6:35 PM" or "N/A" #}
+      <div class="label">{{ item.title }}</div>
     </div>
   {% endfor %}
 </div>
+

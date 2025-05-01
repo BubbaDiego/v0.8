@@ -1,148 +1,102 @@
-<script src="../static/js/universal_bar.js"></script>{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block extra_styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/universal_bar.css') }}">
+
 <style>
-.fixed-row {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: stretch;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.fixed-row > .common-box {
-  flex: 1 1 50%;
-  max-width: 50%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.ledger-wrapper {
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.statusbar-wrapper {
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.box-row.centered {
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.universal-box-wrapper {
-  background-color: #d0e7ff;
-  border-radius: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.universal-box-wrapper .section-divider {
-  height: 1px;
-  background-color: rgba(0,0,0,0.1);
-  margin: 0.5rem auto;
-  width: 90%;
-}
-
-.universal-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0.2rem 0.4rem;
-  border-radius: 1rem;
-  min-width: 140px;
-  max-width: 180px;
-  height: 42px;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.universal-item .icon-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  margin-bottom: 0.15rem;
-}
-
-.universal-item .icon {
-  font-size: 0.85rem;
-}
-
-.universal-item .value {
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-@media (max-width: 768px) {
-  .fixed-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  .fixed-row > .common-box {
-    flex: 0 0 300px;
-    max-width: 300px;
-  }
-  .icon-title-row {
-    flex-direction: row;
-    flex-wrap: nowrap;
+  .card-row {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    gap: 1rem;
   }
-}
 
-/* ======================================
-   Optional Flash Effect on Value Change
-   ====================================== */
-@keyframes flash {
-  0% { background-color: #ffffcc; }
-  100% { background-color: inherit; }
-}
-.universal-item.flash-update {
-  animation: flash 1s ease-out;
-}
+  .card {
+    border-radius: 1rem;
+    width: 140px;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    text-align: center;
+    padding: 0.35rem 0.5rem;
+    transition: background-color 0.3s ease;
+  }
 
+  .card .icon {
+    font-size: 1.2rem;
+    margin-top: 0.35rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .card .value {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .card .label {
+    font-size: 0.7rem;
+  }
+
+  .universal-box-wrapper {
+    background-color: #eef5fc;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Color classes */
+  .card.red {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  .card.yellow {
+    background: #fff3cd;
+    color: #856404;
+  }
+  .card.green {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .box-row.centered {
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid pt-4">
 
-  <!-- Wrapped Universal Bar in a unified container -->
+  <!-- 📊 MONITOR METRICS -->
   <div class="universal-box-wrapper">
-    <div class="box-row centered">
-      {% include "partials/_universal_status_bar.html" %}
-    </div>
-    <div class="section-divider"></div>
     <div class="box-row centered">
       {% include "partials/_universal_monitor_bar.html" %}
     </div>
   </div>
 
-  <!-- Row 3: Positions + Liquidation -->
+  <!-- 💰 STATUS METRICS -->
+  <div class="universal-box-wrapper">
+    <div class="box-row centered">
+      {% include "partials/_universal_status_bar.html" %}
+    </div>
+  </div>
+
+  <!-- 🔻 POSITIONS + LIQUIDATION -->
   <div class="box-row">
     {% include "partials/_positions.html" %}
     {% include "partials/_liquidation.html" %}
   </div>
 
-  <!-- Row 4: Graph + Pie Charts -->
+  <!-- 📈 GRAPH + PIE -->
   <div class="box-row">
     {% include "partials/_graph.html" %}
     {% include "partials/_pie.html" %}
@@ -162,5 +116,4 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/freshness_timer.js') }}"></script>
-<script src="{{ url_for('static', filename='js/universal_bar.js') }}"></script>
 {% endblock %}

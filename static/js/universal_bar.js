@@ -1,6 +1,3 @@
-// universal_bar.js
-
-// Use limits passed from backend instead of hardcoding
 const portfolioLimits = window.TOTAL_PORTFOLIO_LIMITS || {};
 
 function getColor(value, thresholds, reverse = false) {
@@ -21,17 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const items = document.querySelectorAll('.universal-item');
 
   items.forEach(item => {
-    const title = item.querySelector('.title')?.textContent.trim().toLowerCase();
-    const valueEl = item.querySelector('.value');
-    if (!title || !valueEl || !(title in portfolioLimits)) return;
+    const title = item.dataset.title;
+    const raw = parseFloat(item.dataset.raw);
 
-    const valueText = valueEl.textContent.trim();
-    const numeric = parseFloat(valueText.replace(/[^0-9.\-]/g, ''));
-    if (isNaN(numeric)) return;
+    if (!title || isNaN(raw) || !(title in portfolioLimits)) return;
 
     const thresholds = portfolioLimits[title];
     const isReverse = ['travel'].includes(title);
-    const color = getColor(numeric, thresholds, isReverse);
+    const color = getColor(raw, thresholds, isReverse);
 
     item.classList.remove('green', 'yellow', 'red');
     item.classList.add(color);
