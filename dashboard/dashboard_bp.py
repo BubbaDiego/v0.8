@@ -105,6 +105,7 @@ def format_monitor_time(iso_str):
         return "N/A"
 
 @dashboard_bp.route("/dash", endpoint="dash_page")
+@dashboard_bp.route("/dash", endpoint="dash_page")
 def dash_page():
     dl = DataLocker.get_instance()
     all_positions = PositionService.get_all_positions(DB_PATH) or []
@@ -152,6 +153,16 @@ def dash_page():
             return "yellow"
         return "red"
 
+    def format_monitor_time(iso_str):
+        if not iso_str:
+            return "N/A"
+        try:
+            dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+            pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+            return pacific.strftime("Updated: %-I:%M %p %-m/%-d")
+        except Exception:
+            return "N/A"
+
     universal_items = [
         {
             "title": "Price",
@@ -193,7 +204,7 @@ def dash_page():
             "title": "Heat",
             "icon": "🔥",
             "value": "N/A",
-            "color": "red"  # placeholder logic
+            "color": "red"
         },
         {
             "title": "Size",
@@ -219,18 +230,9 @@ def dash_page():
         }
     ]
 
-    return render_template(
-        "dashboard.html",
-        theme_mode=theme_mode,
-        positions=positions,
-        liquidation_positions=liquidation_positions,
-        portfolio_value="${:,.2f}".format(totals["total_value"]),
-        portfolio_change="N/A",
-        totals=totals,
-        ledger_info=ledger_info,
-        universal_items=universal_items
-    )
-
+    monitor_titles = {"Price", "Positions", "Operations", "Xcom"}
+    monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
+    status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
     return render_template(
         "dashboard.html",
@@ -241,7 +243,8 @@ def dash_page():
         portfolio_change="N/A",
         totals=totals,
         ledger_info=ledger_info,
-        universal_items=universal_items
+        status_items=status_items,
+        monitor_items=monitor_items
     )
 
 

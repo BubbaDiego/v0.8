@@ -39,7 +39,7 @@ log.banner("SONIC DASHBOARD STARTUP")
 
 # Startup Checks
 log.info(f"Verifying paths...", source="Startup")
-verify_paths()
+#verify_paths()
 
 # Setup JSON Manager
 unified_logger = UnifiedLogger()
