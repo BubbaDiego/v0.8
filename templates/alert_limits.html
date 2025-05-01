@@ -23,7 +23,9 @@
 
 {% block content %}
 <div class="container-fluid pt-4">
-<form id="alertForm" method="POST" action="{{ url_for('alerts_bp.update_alert_config') }}">
+
+<form id="alertForm" method="POST" action="{{ url_for('alerts_bp.update_config') }}">
+
 
 <!-- 📈 Price Alerts -->
 <div class="card mb-4">
@@ -42,7 +44,7 @@
               <img src="https://cryptologos.cc/logos/ethereum-eth-logo.svg?v=023" style="width:40px;">
             {% elif asset == "SOL" %}
               <img src="https://cryptologos.cc/logos/solana-sol-logo.svg?v=023" style="width:40px;">
-            {% endif %}
+{% endif %}
             <h4 class="mt-2">{{ asset }}</h4>
 
             <label class="form-label mt-3">Trigger Value:</label>
@@ -67,7 +69,7 @@
           </div>
         </div>
       </div>
-      {% endfor %}
+{% endfor %}
     </div>
   </div>
 </div>
@@ -98,7 +100,7 @@
                    {% if global_alert_config.data_fields[field] %}checked{% endif %}>
             <label class="form-check-label text-capitalize">{{ field.replace('_',' ') }}</label>
           </div>
-          {% endfor %}
+{% endfor %}
         </div>
       </div>
     </div>
@@ -132,7 +134,7 @@
                    name="global_alert_config[thresholds][price][{{ asset }}]"
                    value="{{ global_alert_config.thresholds.price[asset] }}">
           </div>
-          {% endfor %}
+{% endfor %}
         </div>
       </div>
     </div>
@@ -141,3 +143,8 @@
 </div>
 
 <!-- (continues...) -->
+{% endif %}
+{% endif %}
+{% endif %}
+{% endblock %}
+{% endblock %}

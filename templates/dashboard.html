@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+<script src="../static/js/universal_bar.js"></script>{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
@@ -107,6 +107,18 @@
     align-items: center;
   }
 }
+
+/* ======================================
+   Optional Flash Effect on Value Change
+   ====================================== */
+@keyframes flash {
+  0% { background-color: #ffffcc; }
+  100% { background-color: inherit; }
+}
+.universal-item.flash-update {
+  animation: flash 1s ease-out;
+}
+
 </style>
 {% endblock %}
 
@@ -142,6 +154,7 @@
 {% block extra_scripts %}
 {{ super() }}
 <script>
+  window.TOTAL_PORTFOLIO_LIMITS = {{ portfolio_limits | tojson }};
   var GRAPH_DATA_URL = "{{ url_for('dashboard.api_graph_data') }}";
   var SIZE_COMPOSITION_URL = "{{ url_for('dashboard.api_size_composition') }}";
   var COLLATERAL_COMPOSITION_URL = "{{ url_for('dashboard.api_collateral_composition') }}";

@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="../../static/css/universal_bar.css">
+<div class="universal-bar">
+  {% for item in status_items %}
+    <div class="universal-item {{ item.color }}">
+      <div class="icon-title-row">
+        <span class="icon">{{ item.icon }}</span>
+        <span class="title">{{ item.title }}</span>
+      </div>
+      <div class="value">{{ item.value }}</div>
+    </div>
+  {% endfor %}
+</div>

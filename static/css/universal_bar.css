@@ -2,53 +2,82 @@
 .universal-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: center;
-  padding: 0.25rem 0;  /* smaller container height */
+  padding: 0.3rem 0;
 }
 
+/* ================================
+   Universal Box Container (Blue Box)
+   Adjusts height and spacing around the whole bar section
+   ================================ */
+.universal-box-wrapper {
+  background-color: #d0e7ff;
+  border-radius: 0.55rem;
+
+  /* ↓↓↓ Reduce height of the entire blue box wrapper ↓↓↓ */
+  padding: 0.3rem 0.3rem;
+
+  /* ↓↓↓ Add margin below to push apart liquidation/position ↓↓↓ */
+  margin-bottom: 1.25rem;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ================================
+   Status / Monitor Card Boxes
+   Controls size of individual cards
+   ================================ */
 .universal-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  /* ↓↓↓ Controls vertical spacing between icon, value, and title ↓↓↓ */
+  row-gap: 0.3rem;
+
+  /* ↓↓↓ Modify height of individual stat cards here ↓↓↓ */
+  min-height: 40px;
+  height: 80px;
+
   padding: 0.4rem 0.5rem;
   border-radius: 1.25rem;
   min-width: 140px;
   max-width: 180px;
-  min-height: 60px;
-  height: 80px;
   text-align: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
 }
 
-.icon-title-row {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-  margin-bottom: 0.2rem;
-}
-
+/* ================================
+   Icon / Value / Title Styling (Stacked)
+   ================================ */
 .icon {
-  font-size: 1.2rem;
-  line-height: 1;
+  font-size: 1.3rem;
+  line-height: 1.2;
 }
 
 .value {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: bold;
+  line-height: 1.2;
   word-break: break-word;
 }
 
-/* Monitor icon in bottom-right */
+.title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.75;
+  line-height: 1.2;
+}
+
+/* Monitor icon in bottom-right now */
 .monitor-corner {
   position: absolute;
-  bottom: 6px;
-  right: 8px;
+  bottom: 4px;
+  right: 6px;
   font-size: 0.7rem;
   opacity: 0.5;
   pointer-events: none;
