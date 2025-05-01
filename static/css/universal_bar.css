@@ -1,43 +1,41 @@
+
 .universal-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
-  padding: 1rem 0;
+  padding: 0.25rem 0;  /* smaller container height */
 }
 
-.universal-item  {
+.universal-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem 0.5rem;  /* Tighter vertical spacing */
+  padding: 0.4rem 0.5rem;
   border-radius: 1.25rem;
   min-width: 140px;
   max-width: 180px;
   min-height: 60px;
-  height: 80px;            /* Enforce max height */
+  height: 80px;
   text-align: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease;
 }
 
-
-.universal-item:hover {
-  transform: scale(1.05);
-}
-
-.title {
+.icon-title-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   font-size: 0.85rem;
-  color: #333;
-  opacity: 0.75;
-  font-weight: 600;
+  margin-bottom: 0.2rem;
 }
 
 .icon {
-  font-size: 1.5rem;
-  margin: 0.3rem 0;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .value {
@@ -46,37 +44,24 @@
   word-break: break-word;
 }
 
-/* Monitor icon in top-right */
+/* Monitor icon in bottom-right */
 .monitor-corner {
   position: absolute;
-  top: 6px;
+  bottom: 6px;
   right: 8px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   opacity: 0.5;
   pointer-events: none;
+  display: none;
 }
 
-/* Only show monitor icon if class 'monitor' is present */
 .universal-item.monitor .monitor-corner {
   display: block;
 }
 
-/* Default hidden */
-.monitor-corner {
-  display: none;
-}
-
 /* Color styles */
-.green {
-  background: #d4edda;
-  color: #155724;
-}
-
-.yellow {
-  background: #fff3cd;
-  color: #856404;
-}
-
+.green { background: #d4edda; color: #155724; }
+.yellow { background: #fff3cd; color: #856404; }
 .red {
   background: #f8d7da;
   color: #721c24;
@@ -89,7 +74,6 @@
   100% { transform: scale(1); }
 }
 
-/* Responsive: 2-per row on mobile */
 @media (max-width: 768px) {
   .universal-item {
     flex: 1 1 45%;

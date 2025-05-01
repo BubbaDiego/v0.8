@@ -2,9 +2,11 @@
   {% for item in monitor_items %}
     <div class="universal-item {{ item.color }} monitor">
       <div class="monitor-corner">🖥️</div>
-      <div class="title">{{ item.title }}</div>
-      <div class="icon">{{ item.icon }}</div>
+      <div class="icon-title-row">
+        <span class="icon">{{ item.icon }}</span>
+        <span class="title">{{ item.title }}</span>
+      </div>
       <div class="value">{{ item.value }}</div>
-     </div>
+    </div>
   {% endfor %}
 </div>

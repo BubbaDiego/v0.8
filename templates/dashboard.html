@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/universal_bar.css') }}">
 <style>
-/* --- First Row Special Fix (Monitor + Statusbar) --- */
 .fixed-row {
   display: flex;
   flex-wrap: nowrap;
@@ -40,7 +39,22 @@
 
 .box-row.centered {
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.universal-box-wrapper {
+  background-color: #d0e7ff;
+  border-radius: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.universal-box-wrapper .section-divider {
+  height: 1px;
+  background-color: rgba(0,0,0,0.1);
+  margin: 0.5rem auto;
+  width: 90%;
 }
 
 .universal-item {
@@ -48,32 +62,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: start;
-  padding: 0.35rem 0.5rem;
+  justify-content: center;
+  padding: 0.2rem 0.4rem;
   border-radius: 1rem;
   min-width: 140px;
   max-width: 180px;
-  height: 72px;
+  height: 42px;
   text-align: center;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
+.universal-item .icon-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.15rem;
+}
+
 .universal-item .icon {
-  font-size: 1.2rem;
-  margin-top: 0.35rem;
-  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
 }
 
 .universal-item .value {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin-bottom: 0.4rem;
-}
-
-.universal-item .title,
-.universal-item .label {
-  font-size: 0.7rem;
 }
 
 @media (max-width: 768px) {
@@ -85,6 +100,12 @@
     flex: 0 0 300px;
     max-width: 300px;
   }
+  .icon-title-row {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+  }
 }
 </style>
 {% endblock %}
@@ -92,14 +113,15 @@
 {% block content %}
 <div class="container-fluid pt-4">
 
-  <!-- Row 1: Stats (Value, Leverage, etc.) -->
-  <div class="box-row centered">
-    {% include "partials/_universal_status_bar.html" %}
-  </div>
-
-  <!-- Row 2: Monitors (centered) -->
-  <div class="box-row centered">
-    {% include "partials/_universal_monitor_bar.html" %}
+  <!-- Wrapped Universal Bar in a unified container -->
+  <div class="universal-box-wrapper">
+    <div class="box-row centered">
+      {% include "partials/_universal_status_bar.html" %}
+    </div>
+    <div class="section-divider"></div>
+    <div class="box-row centered">
+      {% include "partials/_universal_monitor_bar.html" %}
+    </div>
   </div>
 
   <!-- Row 3: Positions + Liquidation -->
