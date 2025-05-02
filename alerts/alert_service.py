@@ -12,7 +12,9 @@ class AlertService:
         """
         self.repository = repository
         self.enrichment_service = enrichment_service
-        self.evaluation_service = AlertEvaluationService(thresholds=config_loader().get("alert_ranges", {}))
+        #self.evaluation_service = AlertEvaluationService(thresholds=config_loader().get("alert_ranges", {}))
+        self.evaluation_service = AlertEvaluationService(thresholds=config_loader().get("alert_limits", {}))
+
         self.notification_service = NotificationService(config_loader)
 
     async def process_all_alerts(self):

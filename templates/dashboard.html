@@ -1,92 +1,40 @@
-{% extends "base.html" %}
+<link rel="stylesheet" href="../static/css/portfolio_status.css">{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block extra_styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-
-<style>
-  .card-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .card {
-    border-radius: 1rem;
-    width: 140px;
-    height: 72px;
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    align-items: center;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    text-align: center;
-    padding: 0.35rem 0.5rem;
-    transition: background-color 0.3s ease;
-  }
-
-  .card .icon {
-    font-size: 1.2rem;
-    margin-top: 0.35rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .card .value {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-  }
-
-  .card .label {
-    font-size: 0.7rem;
-  }
-
-  .universal-box-wrapper {
-    background-color: #eef5fc;
-    border-radius: 1rem;
-    padding: 1rem 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-
-  /* Color classes */
-  .card.red {
-    background: #f8d7da;
-    color: #721c24;
-  }
-  .card.yellow {
-    background: #fff3cd;
-    color: #856404;
-  }
-  .card.green {
-    background: #d4edda;
-    color: #155724;
-  }
-
-  .box-row.centered {
-    justify-content: center;
-    margin-bottom: 1.5rem;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portfolio_status.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid pt-4">
 
-  <!-- 📊 MONITOR METRICS -->
-  <div class="universal-box-wrapper">
-    <div class="box-row centered">
-      {% include "partials/_universal_monitor_bar.html" %}
+  <!-- 🧭 Balanced Status Cards (Portfolio + Monitor) -->
+  <div class="box-row centered balanced-status-row">
+    <div class="status-wrapper">
+      <div class="portfolio-status-container">
+        {% for item in status_items %}
+          <div class="status-card {{ item.color }}" data-raw-value="{{ item.raw_value }}">
+            <div class="icon">{{ item.icon }}</div>
+            <div class="value">{{ item.value }}</div>
+            <div class="label">{{ item.title }}</div>
+          </div>
+        {% endfor %}
+      </div>
     </div>
-  </div>
 
-  <!-- 💰 STATUS METRICS -->
-  <div class="universal-box-wrapper">
-    <div class="box-row centered">
-      {% include "partials/_universal_status_bar.html" %}
+    <div class="status-wrapper">
+      <div class="monitor-status-container">
+        {% for item in monitor_items %}
+          <div class="status-card {{ item.color }}" data-raw-value="{{ item.raw_value }}">
+            <div class="icon">{{ item.icon }}</div>
+            <div class="value">{{ item.value }}</div>
+            <div class="label">{{ item.title }}</div>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 
@@ -96,7 +44,7 @@
     {% include "partials/_liquidation.html" %}
   </div>
 
-  <!-- 📈 GRAPH + PIE -->
+  <!-- 📈 GRAPHS & PIE CHART -->
   <div class="box-row">
     {% include "partials/_graph.html" %}
     {% include "partials/_pie.html" %}

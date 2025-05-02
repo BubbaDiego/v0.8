@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
 import sqlite3
 import logging
 from typing import List, Dict, Optional
@@ -1262,3 +1266,13 @@ class DataLocker:
         if self.conn:
             self.conn.close()
             self.logger.debug("Database connection closed.")
+
+from data.data_locker import DataLocker
+
+def main():
+    print("🛠 Initializing database...")
+    locker = DataLocker()  # Will auto-call _initialize_database()
+    print("✅ Initialization complete.")
+
+if __name__ == "__main__":
+    main()

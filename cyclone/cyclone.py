@@ -2,6 +2,7 @@ import asyncio
 import logging
 import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from monitor.price_monitor import PriceMonitor
 
@@ -15,7 +16,7 @@ from config.config_constants import CONFIG_PATH
 from utils.console_logger import ConsoleLogger as log
 
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 class Cyclone:
     def __init__(self, poll_interval=60):

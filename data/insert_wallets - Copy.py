@@ -1,90 +1,69 @@
-from data.data_locker import DataLocker
-from utils.config_loader import save_config
-from datetime import datetime
-import uuid
+import sqlite3
+import os
+from pathlib import Path
 
-def reset_database_except_wallets():
-    dl = DataLocker.get_instance()
+# --- CONFIG ---
+BASE_DIR = Path(__file__).resolve().parent.parent  # adjust as needed
+DB_PATH = BASE_DIR / "data" / "mother_brain.db"
 
-    # Step 1: Get all table names except wallets
-    tables = dl.get_all_tables()
-    tables_to_clear = [t for t in tables if t.lower() != "wallets"]
+# --- Expected schema for alerts table ---
+ALERTS_COLUMNS = {
+    "id": "TEXT PRIMARY KEY",
+    "created_at": "DATETIME",
+    "alert_type": "TEXT",
+    "alert_class": "TEXT",
+    "asset": "TEXT",
+    "asset_type": "TEXT",
+    "trigger_value": "REAL",
+    "condition": "TEXT",
+    "notification_type": "TEXT",
+    "level": "TEXT",
+    "last_triggered": "DATETIME",
+    "status": "TEXT",
+    "frequency": "INTEGER",
+    "counter": "INTEGER",
+    "liquidation_distance": "REAL",
+    "travel_percent": "REAL",
+    "liquidation_price": "REAL",
+    "notes": "TEXT",
+    "description": "TEXT",
+    "position_reference_id": "TEXT",
+    "evaluated_value": "REAL",
+    "position_type": "TEXT"
+}
 
-    for table in tables_to_clear:
-        try:
-            dl.cursor.execute(f"DELETE FROM {table}")
-            print(f"✅ Cleared: {table}")
-        except Exception as e:
-            print(f"❌ Error clearing {table}: {e}")
+def ensure_alerts_table():
+    if not DB_PATH.exists():
+        print(f"⚠️ Database not found at {DB_PATH}. Creating new DB file...")
 
-    dl.conn.commit()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
 
-    # Step 2: Save default alert_limits.json
-    default_alert_config = {
-        "alert_ranges": {
-            "PriceThreshold": {
-                "LOW": 0.01,
-                "MEDIUM": 0.02,
-                "HIGH": 0.03
-            },
-            "Profit": {
-                "LOW": 50,
-                "MEDIUM": 100,
-                "HIGH": 250
-            },
-            "TravelPercentLiquid": {
-                "LOW": -5,
-                "MEDIUM": -10,
-                "HIGH": -15
-            }
-        },
-        "global_alert_config": {
-            "enabled": True,
-            "data_fields": {
-                "price": True,
-                "profit": True,
-                "travel_percent": True,
-                "heat_index": True
-            },
-            "thresholds": {
-                "profit": 100,
-                "travel_percent": -25,
-                "heat_index": 60,
-                "price": {
-                    "BTC": 60000,
-                    "ETH": 3000,
-                    "SOL": 200
-                }
-            }
-        }
-    }
-    save_config("alert_limits.json", default_alert_config)
+    # Check if table exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='alerts'")
+    exists = cursor.fetchone()
 
-    # Step 3: Insert sample positions
-    for asset in ["BTC", "ETH", "SOL"]:
-        position = {
-            "id": str(uuid.uuid4()),
-            "asset_type": asset,
-            "entry_price": 1000,
-            "liquidation_price": 500,
-            "position_type": "Long",
-            "current_price": 1100,
-            "pnl_after_fees_usd": 50.0,
-            "current_heat_index": 25
-        }
-        dl.create_position(position)
+    if not exists:
+        print("🚧 Creating 'alerts' table from scratch...")
+        columns_sql = ",\n    ".join(f"{col} {type}" for col, type in ALERTS_COLUMNS.items())
+        cursor.execute(f"CREATE TABLE alerts (\n    {columns_sql}\n)")
+        conn.commit()
+        print("✅ 'alerts' table created.")
+    else:
+        print("ℹ️ 'alerts' table exists. Checking columns...")
+        cursor.execute("PRAGMA table_info(alerts)")
+        existing_cols = {row["name"] for row in cursor.fetchall()}
+        for col, col_type in ALERTS_COLUMNS.items():
+            if col not in existing_cols:
+                print(f"➕ Adding missing column: {col}")
+                cursor.execute(f"ALTER TABLE alerts ADD COLUMN {col} {col_type}")
+        conn.commit()
+        print("✅ Schema check complete. All required columns are present.")
 
-    # Step 4: Insert fake prices
-    for asset in ["BTC", "ETH", "SOL"]:
-        price = {
-            "id": str(uuid.uuid4()),
-            "asset": asset,
-            "current_price": 1000,
-            "timestamp": datetime.now().isoformat()
-        }
-        dl.insert_price(price)
-
-    print("✅ Database reset and reconstructed successfully.")
+    cursor.close()
+    conn.close()
+    print("🏁 Done.")
 
 if __name__ == "__main__":
-    reset_database_except_wallets()
+    ensure_alerts_table()

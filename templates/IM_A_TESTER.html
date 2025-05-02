@@ -1,91 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Refined Layout v2 - Emphasis on Values</title>
+  <title>Dashboard Metrics (Half-Width Cards)</title>
   <style>
+    /* page & container */
     body {
-      font-family: sans-serif;
-      background: #f0f4f9;
+      background: #f2f2f2;
       padding: 2rem;
+      font-family: sans-serif;
+      margin: 0;
     }
-    h2 {
-      text-align: center;
-      margin: 2rem 0 1rem;
-    }
-    .demo-row {
+    .metrics-container {
       display: flex;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 1rem;
-      margin-bottom: 3rem;
     }
-    .wedge {
-      background: #f8d7da;
-      color: #721c24;
+
+    /* card base */
+    .card {
+      background: white;
       border-radius: 1rem;
-      width: 140px;
-      height: 72px;
-      display: flex;
-      flex-direction: column;
-      justify-content: start;
-      align-items: center;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 0.75rem 0.5rem;
       text-align: center;
-      padding: 0.35rem 0.5rem;
     }
-    .icon {
-      font-size: 1.2rem;
-      margin-top: 0.35rem;
-      margin-bottom: 0.4rem;
+    .card .icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
     }
-    .value {
-      font-size: 1rem;
+    .card .value {
+      font-size: 1.25rem;
       font-weight: 700;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.25rem;
     }
-    .label {
-      font-size: 0.7rem;
+    .card .label {
+      font-size: 0.85rem;
+      opacity: 0.75;
+    }
+
+    /* half-width sizing */
+    .half-width {
+      width: 75px;
     }
   </style>
 </head>
 <body>
 
-<h2>Refined Layout v2 – Emphasized Values + Vertical Rhythm</h2>
+  <div class="metrics-container">
+    <!-- Value -->
+    <div class="card half-width">
+      <div class="icon">💰</div>
+      <div class="value">$202</div>
+      <div class="label">Value</div>
+    </div>
 
-<div class="demo-row">
-  <div class="wedge">
-    <div class="icon">📈</div>
-    <div class="value">$123</div>
-    <div class="label">Price</div>
+    <!-- Leverage -->
+    <div class="card half-width">
+      <div class="icon">⚖️</div>
+      <div class="value">14.26</div>
+      <div class="label">Leverage</div>
+    </div>
+
+    <!-- Heat -->
+    <div class="card half-width">
+      <div class="icon">🔥</div>
+      <div class="value">N/A</div>
+      <div class="label">Heat</div>
+    </div>
+
+    <!-- Size -->
+    <div class="card half-width">
+      <div class="icon">📊</div>
+      <div class="value">$3,512</div>
+      <div class="label">Size</div>
+    </div>
+
+    <!-- Ratio -->
+    <div class="card half-width">
+      <div class="icon">⚡️</div>
+      <div class="value">0.81</div>
+      <div class="label">Ratio</div>
+    </div>
+
+    <!-- Travel -->
+    <div class="card half-width">
+      <div class="icon">✈️</div>
+      <div class="value">-20.85%</div>
+      <div class="label">Travel</div>
+    </div>
   </div>
-  <div class="wedge">
-    <div class="icon">⚖️</div>
-    <div class="value">12.5</div>
-    <div class="label">Leverage</div>
-  </div>
-  <div class="wedge">
-    <div class="icon">🔥</div>
-    <div class="value">N/A</div>
-    <div class="label">Heat</div>
-  </div>
-  <div class="wedge">
-    <div class="icon">📊</div>
-    <div class="value">$2,369</div>
-    <div class="label">Size</div>
-  </div>
-  <div class="wedge">
-    <div class="icon">⚡</div>
-    <div class="value">1.00</div>
-    <div class="label">Ratio</div>
-  </div>
-  <div class="wedge">
-    <div class="icon">✈️</div>
-    <div class="value">1.05%</div>
-    <div class="label">Travel</div>
-  </div>
-</div>
 
 </body>
 </html>

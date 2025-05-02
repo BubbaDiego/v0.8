@@ -17,7 +17,6 @@ class AlertEnrichmentService:
         self.data_locker = data_locker
         self.calc_services = CalcServices()
 
-
     async def enrich(self, alert):
         """
         Enrich the alert based on its type.
@@ -28,15 +27,23 @@ class AlertEnrichmentService:
 
             # 🚀 Dispatch based on AlertType
             if alert.alert_type == AlertType.TravelPercentLiquid:
+                log.debug(f"🚦 Dispatching TravelPercentLiquid enrichment for alert {alert.id}",
+                          source="AlertEnrichment")
                 return await self._enrich_travel_percent(alert)
+
             elif alert.alert_type == AlertType.PriceThreshold:
+                log.debug(f"🚦 Dispatching PriceThreshold enrichment for alert {alert.id}", source="AlertEnrichment")
                 return await self._enrich_price_threshold(alert)
+
             elif alert.alert_type == AlertType.HeatIndex:
+                log.debug(f"🚦 Dispatching HeatIndex enrichment for alert {alert.id}", source="AlertEnrichment")
                 return await self._enrich_heat_index(alert)
+
             elif alert.alert_type == AlertType.Profit:
+                log.debug(f"🚦 Dispatching Profit enrichment for alert {alert.id}", source="AlertEnrichment")
                 return await self._enrich_profit(alert)
 
-            # 🚨 Universal Fallback
+            # 🚨 Unknown alert type fallback
             log.error(
                 f"❌ ALERT: Unknown alert type during enrichment: {alert.alert_type}. Alert ID: {alert.id}",
                 source="AlertEnrichment"
@@ -44,7 +51,7 @@ class AlertEnrichmentService:
             return alert
 
         except Exception as e:
-            log.error(f"❌ Exception during enrichment: {e}", source="AlertEnrichment")
+            log.error(f"❌ Exception during enrichment of alert {alert.id}: {e}", source="AlertEnrichment")
             return alert
 
     async def _enrich_travel_percent(self, alert):

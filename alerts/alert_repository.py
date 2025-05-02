@@ -23,12 +23,21 @@ class AlertRepository:
 
         log.info(f"Loaded {len(alerts_raw)} alerts from database.", source="AlertRepository")
 
-        alerts = []
+        alerts = []  # ✅ you forgot this line
+
         for a in alerts_raw:
             try:
+                # Sanitize level string if needed
+                if "level" in a and isinstance(a["level"], str):
+                    val = a["level"].strip().capitalize()
+                    if val not in {"Normal", "Low", "Medium", "High"}:
+                        val = "Normal"  # fallback
+                    a["level"] = val
+
                 alerts.append(Alert(**a))
             except Exception as e:
                 log.error(f"Failed to parse alert record: {e}", source="AlertRepository")
+
         return alerts
 
     async def update_alert_level(self, alert_id: str, new_level: AlertLevel):

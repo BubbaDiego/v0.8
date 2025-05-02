@@ -4,38 +4,35 @@ from utils.config_loader import load_config
 
 class AlertEvaluationService:
     def __init__(self, config_path="alert_limits.json", thresholds=None):
-        """
-        If thresholds are provided explicitly (test overrides), use them.
-        Otherwise load from alert_limits.json.
-        """
         if thresholds:
             self.thresholds = thresholds
         else:
-            self.thresholds = load_config(config_path).get("alert_ranges", {})
+            self.thresholds = load_config(config_path).get("alert_limits", {})  # fixed key
 
     def evaluate(self, alert):
         """
         Evaluate an alert by comparing evaluated_value against dynamic thresholds.
         Sets alert.level accordingly.
         """
-
         try:
+            log.debug(f"🧪 Evaluating alert ID={alert.id}, Type={alert.alert_type}, Evaluated={alert.evaluated_value}", source="AlertEvaluation")
+
             if alert.evaluated_value is None:
                 log.error(f"❌ Cannot evaluate alert {alert.id} - evaluated_value is None.", source="AlertEvaluation")
                 alert.level = AlertLevel.NORMAL
                 return alert
 
-            alert_type_key = alert.alert_type.value if hasattr(alert.alert_type, "value") else str(alert.alert_type)
-            thresholds = self.thresholds.get(alert_type_key, {})
+            alert_type_key = alert.alert_type.value.lower() + "_ranges"
+            log.debug(f"🔑 Mapped alert_type to config key: {alert_type_key}", source="AlertEvaluation")
 
+            thresholds = self.thresholds.get(alert_type_key, {})
             if not thresholds:
                 log.warning(f"⚠️ No thresholds found for alert type {alert_type_key}. Defaulting to trigger_value.", source="AlertEvaluation")
-                # If no special thresholds, fall back to trigger_value
                 return self._simple_trigger_evaluation(alert)
 
-            low = thresholds.get("LOW")
-            medium = thresholds.get("MEDIUM")
-            high = thresholds.get("HIGH")
+            low = thresholds.get("low")
+            medium = thresholds.get("medium")
+            high = thresholds.get("high")
 
             if None in (low, medium, high):
                 log.warning(f"⚠️ Incomplete thresholds for alert type {alert_type_key}.", source="AlertEvaluation")
@@ -44,7 +41,10 @@ class AlertEvaluationService:
             evaluated = alert.evaluated_value
             condition = alert.condition
 
-            # 🚀 Evaluate depending on condition direction
+            log.debug(f"📊 Thresholds → low={low}, medium={medium}, high={high}", source="AlertEvaluation")
+            log.debug(f"📈 Value={evaluated}, Condition={condition}", source="AlertEvaluation")
+
+            # Evaluate level
             if condition == Condition.ABOVE:
                 if evaluated >= high:
                     alert.level = AlertLevel.HIGH
@@ -54,7 +54,6 @@ class AlertEvaluationService:
                     alert.level = AlertLevel.LOW
                 else:
                     alert.level = AlertLevel.NORMAL
-
             elif condition == Condition.BELOW:
                 if evaluated <= high:
                     alert.level = AlertLevel.HIGH
@@ -80,11 +79,12 @@ class AlertEvaluationService:
         """
         Fallback simple evaluation based only on alert.trigger_value.
         """
-
         try:
             evaluated = alert.evaluated_value
             trigger = alert.trigger_value
             condition = alert.condition
+
+            log.debug(f"📈 Simple Eval: Value={evaluated}, Trigger={trigger}, Condition={condition}", source="AlertEvaluation")
 
             if condition == Condition.ABOVE and evaluated >= trigger:
                 alert.level = AlertLevel.HIGH
