@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="../static/css/portfolio_status.css">{% extends "base.html" %}
+<link rel="stylesheet" href="../static/css/dashboard.css">{% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
 
@@ -13,7 +13,10 @@
 
   <!-- 🧭 Balanced Status Cards (Portfolio + Monitor) -->
   <div class="box-row centered balanced-status-row">
+
+    <!-- 💼 Portfolio Section -->
     <div class="status-wrapper">
+      <h5 class="section-title">Portfolio</h5>
       <div class="portfolio-status-container">
         {% for item in status_items %}
           <div class="status-card {{ item.color }}" data-raw-value="{{ item.raw_value }}">
@@ -25,7 +28,9 @@
       </div>
     </div>
 
+    <!-- 📡 Monitor Section -->
     <div class="status-wrapper">
+      <h5 class="section-title">Monitor</h5>
       <div class="monitor-status-container">
         {% for item in monitor_items %}
           <div class="status-card {{ item.color }}" data-raw-value="{{ item.raw_value }}">
@@ -36,6 +41,7 @@
         {% endfor %}
       </div>
     </div>
+
   </div>
 
   <!-- 🔻 POSITIONS + LIQUIDATION -->

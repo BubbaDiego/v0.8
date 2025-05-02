@@ -72,17 +72,6 @@ def save_theme():
         json.dump(theme_data, f, indent=2)
     return jsonify({"success": True})
 
-def format_monitor_time(iso_str):
-    if not iso_str:
-        return "N/A"
-    try:
-        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
-        pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        return pacific.strftime("Updated: %-I:%M %p %-m/%-d")
-    except Exception:
-        return "N/A"
-
-
 @dashboard_bp.route("/api/get_prices")
 def get_prices():
     try:
@@ -102,13 +91,20 @@ def get_prices():
 # ---------------------------------
 def format_monitor_time(iso_str):
     if not iso_str:
+        print("DEBUG: iso_str is None or empty")
         return "N/A"
     try:
+        print(f"DEBUG: Raw iso_str received: {iso_str}")
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
         pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        return pacific.strftime("%-I:%M %p")
-    except Exception:
+        formatted = pacific.strftime("Updated: %-I:%M %p %-m/%-d")
+        print(f"DEBUG: Parsed and formatted time: {formatted}")
+        return formatted
+    except Exception as e:
+        print(f"DEBUG: Exception occurred in format_monitor_time: {e}")
         return "N/A"
+
+
 
 def apply_color(metric_name, value, limits):
     thresholds = limits.get(metric_name.lower())
@@ -167,6 +163,12 @@ def dash_page():
         "last_operations_time": get_ledger_status('monitor/operations_ledger.json').get("last_timestamp", None),
     }
 
+    print("DEBUG: Last timestamps:")
+    print("Price:", ledger_info["last_price_time"])
+    print("Positions:", ledger_info["last_positions_time"])
+    print("Operations:", ledger_info["last_operations_time"])
+    print("Xcom:", ledger_info["last_cyclone_time"])
+
     def determine_color(age):
         if age < 300:
             return "green"
@@ -187,9 +189,15 @@ def dash_page():
         {"title": "Travel", "icon": "✈️", "value": "{:.2f}%".format(totals["avg_travel_percent"]), "color": apply_color("travel", totals["avg_travel_percent"], portfolio_limits), "raw_value": totals["avg_travel_percent"]}
     ]
 
-    monitor_titles = {"Price", "Positions", "Operations", "Xcom"}
+    monitor_titles = {"Heat", "Price", "Positions", "Operations", "Xcom"}
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
+
+    print("DEBUG: Last timestamps:")
+    print("Price:", ledger_info["last_price_time"])
+    print("Positions:", ledger_info["last_positions_time"])
+    print("Operations:", ledger_info["last_operations_time"])
+    print("Xcom:", ledger_info["last_cyclone_time"])
 
     return render_template(
         "dashboard.html",
