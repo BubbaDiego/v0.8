@@ -665,6 +665,14 @@ body.dark-bg .status-icon {
   color: inherit;
 }
 
+/* === Smaller time for monitor items === */
+.status-card .monitor-value {
+  font-size: 0.8rem !important;  /* 🔥 Force it to override */
+  font-weight: 600;
+  color: #000000;
+  opacity: 0.9;
+}
+
 
 
 

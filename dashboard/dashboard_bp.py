@@ -17,6 +17,8 @@ from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from dashboard.dashboard_service import get_dashboard_context
+
 
 
 from config.config_constants import DB_PATH, THEME_CONFIG_PATH
@@ -97,12 +99,22 @@ def format_monitor_time(iso_str):
         print(f"DEBUG: Raw iso_str received: {iso_str}")
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
         pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        formatted = pacific.strftime("Updated: %-I:%M %p %-m/%-d")
+
+        # Manual components to strip leading 0s
+        hour = pacific.strftime("%I").lstrip('0') or '0'
+        minute = pacific.strftime("%M")
+        ampm = pacific.strftime("%p")
+        month = str(pacific.month)
+        day = str(pacific.day)
+
+        formatted = f"{hour}:{minute} {ampm} {month}/{day}"
         print(f"DEBUG: Parsed and formatted time: {formatted}")
         return formatted
     except Exception as e:
         print(f"DEBUG: Exception occurred in format_monitor_time: {e}")
         return "N/A"
+
+
 
 
 
@@ -131,87 +143,9 @@ def apply_color(metric_name, value, limits):
 
 @dashboard_bp.route("/dash", endpoint="dash_page")
 def dash_page():
-    dl = DataLocker.get_instance()
-    all_positions = PositionService.get_all_positions(DB_PATH) or []
+    context = get_dashboard_context()
+    return render_template("dashboard.html", **context)
 
-    for pos in all_positions:
-        wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
-        image_filename = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
-        pos["wallet_image"] = image_filename
-
-    positions = all_positions
-    totals = {
-        "total_collateral": sum(float(p.get("collateral", 0)) for p in positions),
-        "total_value": sum(float(p.get("value", 0)) for p in positions),
-        "total_size": sum(float(p.get("size", 0)) for p in positions),
-        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
-    }
-
-    jm = JsonManager()
-    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
-    portfolio_limits = alert_limits.get("total_portfolio_limits", {})
-
-    ledger_info = {
-        "age_price": get_ledger_status('monitor/price_ledger.json').get("age_seconds", 9999),
-        "last_price_time": get_ledger_status('monitor/price_ledger.json').get("last_timestamp", None),
-        "age_positions": get_ledger_status('monitor/position_ledger.json').get("age_seconds", 9999),
-        "last_positions_time": get_ledger_status('monitor/position_ledger.json').get("last_timestamp", None),
-        "age_cyclone": get_ledger_status('monitor/sonic_ledger.json').get("age_seconds", 9999),
-        "last_cyclone_time": get_ledger_status('monitor/sonic_ledger.json').get("last_timestamp", None),
-        "age_operations": get_ledger_status('monitor/operations_ledger.json').get("age_seconds", 9999),
-        "last_operations_time": get_ledger_status('monitor/operations_ledger.json').get("last_timestamp", None),
-    }
-
-    print("DEBUG: Last timestamps:")
-    print("Price:", ledger_info["last_price_time"])
-    print("Positions:", ledger_info["last_positions_time"])
-    print("Operations:", ledger_info["last_operations_time"])
-    print("Xcom:", ledger_info["last_cyclone_time"])
-
-    def determine_color(age):
-        if age < 300:
-            return "green"
-        elif age < 900:
-            return "yellow"
-        return "red"
-
-    universal_items = [
-        {"title": "Price", "icon": "📈", "value": format_monitor_time(ledger_info["last_price_time"]), "color": determine_color(ledger_info["age_price"]), "raw_value": ledger_info["age_price"]},
-        {"title": "Positions", "icon": "📊", "value": format_monitor_time(ledger_info["last_positions_time"]), "color": determine_color(ledger_info["age_positions"]), "raw_value": ledger_info["age_positions"]},
-        {"title": "Operations", "icon": "⚙️", "value": format_monitor_time(ledger_info["last_operations_time"]), "color": determine_color(ledger_info["age_operations"]), "raw_value": ledger_info["age_operations"]},
-        {"title": "Xcom", "icon": "🚀", "value": format_monitor_time(ledger_info["last_cyclone_time"]), "color": determine_color(ledger_info["age_cyclone"]), "raw_value": ledger_info["age_cyclone"]},
-        {"title": "Value", "icon": "💰", "value": "${:,.0f}".format(totals["total_value"]), "color": apply_color("value", totals["total_value"], portfolio_limits), "raw_value": totals["total_value"]},
-        {"title": "Leverage", "icon": "⚖️", "value": "{:.2f}".format(totals["avg_leverage"]), "color": apply_color("leverage", totals["avg_leverage"], portfolio_limits), "raw_value": totals["avg_leverage"]},
-        {"title": "Heat", "icon": "🔥", "value": "N/A", "color": "red", "raw_value": 9999},
-        {"title": "Size", "icon": "📊", "value": "${:,.0f}".format(totals["total_size"]), "color": apply_color("size", totals["total_size"], portfolio_limits), "raw_value": totals["total_size"]},
-        {"title": "Ratio", "icon": "⚡", "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A", "color": apply_color("ratio", (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None, portfolio_limits), "raw_value": (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None},
-        {"title": "Travel", "icon": "✈️", "value": "{:.2f}%".format(totals["avg_travel_percent"]), "color": apply_color("travel", totals["avg_travel_percent"], portfolio_limits), "raw_value": totals["avg_travel_percent"]}
-    ]
-
-    monitor_titles = {"Heat", "Price", "Positions", "Operations", "Xcom"}
-    monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
-    status_items = [item for item in universal_items if item["title"] not in monitor_titles]
-
-    print("DEBUG: Last timestamps:")
-    print("Price:", ledger_info["last_price_time"])
-    print("Positions:", ledger_info["last_positions_time"])
-    print("Operations:", ledger_info["last_operations_time"])
-    print("Xcom:", ledger_info["last_cyclone_time"])
-
-    return render_template(
-        "dashboard.html",
-        theme_mode=dl.get_theme_mode(),
-        positions=positions,
-        liquidation_positions=positions,
-        portfolio_value="${:,.2f}".format(totals["total_value"]),
-        portfolio_change="N/A",
-        totals=totals,
-        ledger_info=ledger_info,
-        status_items=status_items,
-        monitor_items=monitor_items,
-        portfolio_limits=portfolio_limits
-    )
 
 # ---------------------------------
 # API: Graph Data (Real portfolio history)
