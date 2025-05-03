@@ -7,7 +7,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from monitor.monitor_utils import LedgerWriter
 from datetime import datetime, timezone
 from monitor.price_monitor import PriceMonitor
-
+from uuid import uuid4
+from datetime import datetime
+from data.alert import AlertType, Condition
+from alerts.alert_utils import log_alert_summary
 from data.data_locker import DataLocker
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager  # Import HedgeManager directly
@@ -16,7 +19,7 @@ from alerts.alert_service_manager import AlertServiceManager
 from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 from utils.console_logger import ConsoleLogger as log
-from alerts.alert_utils import log_alert_summary
+
 
 
 
@@ -146,12 +149,94 @@ class Cyclone:
                 file="cyclone.py"
             )
 
-    from utils.console_logger import ConsoleLogger as log
-
-    async def run_create_portfolio_alerts(self):
+    async def run_create_position_alerts(self):
+        """
+        Create HeatIndex, Profit, and TravelPercentLiquid alerts for all active positions.
+        """
         from uuid import uuid4
         from datetime import datetime
         from data.alert import AlertType, Condition
+        from alerts.alert_utils import log_alert_summary
+
+        data_locker = DataLocker.get_instance()
+        positions = data_locker.get_all_positions()
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        print(f"ℹ️ [{now}] [Cyclone] Starting Position-Based Alert Creation")
+
+        try:
+            for p in positions:
+                position_id = p["id"]
+                asset = p["asset_type"]
+                position_type = p["position_type"]
+
+                base = {
+                    "asset": asset,
+                    "asset_type": asset,
+                    "position_reference_id": position_id,
+                    "position_type": position_type,
+                    "notification_type": "SMS",
+                    "level": "Normal",
+                    "last_triggered": None,
+                    "status": "Active",
+                    "frequency": 1,
+                    "counter": 0,
+                    "notes": f"Auto-created by Cyclone",
+                    "description": f"Position-based alert for {asset}",
+                    "liquidation_distance": 0.0,
+                    "travel_percent": 0.0,
+                    "liquidation_price": 0.0,
+                    "evaluated_value": 0.0
+                }
+
+                heat_alert = {
+                    **base,
+                    "id": str(uuid4()),
+                    "created_at": now,
+                    "alert_type": AlertType.HeatIndex.value,
+                    "alert_class": "Position",
+                    "trigger_value": 50,
+                    "condition": Condition.ABOVE.value
+                }
+
+                profit_alert = {
+                    **base,
+                    "id": str(uuid4()),
+                    "created_at": now,
+                    "alert_type": AlertType.Profit.value,
+                    "alert_class": "Position",
+                    "trigger_value": 1000,
+                    "condition": Condition.ABOVE.value
+                }
+
+                travel_alert = {
+                    **base,
+                    "id": str(uuid4()),
+                    "created_at": now,
+                    "alert_type": AlertType.TravelPercentLiquid.value,
+                    "alert_class": "Position",
+                    "trigger_value": -25,
+                    "condition": Condition.BELOW.value
+                }
+
+                data_locker.create_alert(heat_alert)
+                log_alert_summary(heat_alert)
+
+                data_locker.create_alert(profit_alert)
+                log_alert_summary(profit_alert)
+
+                data_locker.create_alert(travel_alert)
+                log_alert_summary(travel_alert)
+
+            print(f"✅ [{now}] [Cyclone] ✅ Created {len(positions) * 3} position alerts successfully.")
+
+        except Exception as e:
+            print(f"❌ [{now}] [Cyclone] ❌ Failed to create position alerts: {e}")
+
+    async def run_create_portfolio_alerts(self):
+        """
+        Create portfolio alerts using specific alert types with class='Portfolio'.
+        """
 
         dl = DataLocker.get_instance()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -191,99 +276,9 @@ class Cyclone:
                 "position_type": None
             }
             dl.create_alert(alert)
-            log_alert_summary(alert)  # ✅ log it
+            log_alert_summary(alert)
 
-    async def run_create_position_alerts(self):
-        """
-        Create position-based alerts (Heat Index, Profit, Travel Percent) for active positions.
-        """
-        log.info("Starting Position-Based Alert Creation", source="Cyclone")
-        try:
-            from uuid import uuid4
-
-            data_locker = DataLocker.get_instance()
-            positions = data_locker.read_positions()
-
-            if not positions:
-                log.warning("No positions found to create alerts for.", source="Cyclone")
-                return
-
-            created_alerts = 0
-
-            for pos in positions:
-                position_id = pos.get("id") or pos.get("position_id")
-                asset = pos.get("asset_type") or pos.get("asset")
-                position_type = pos.get("position_type") or "UNKNOWN"
-
-                if not position_id or not asset:
-                    log.error(f"❌ Position missing id or asset_type. Skipping. Position={pos}", source="Cyclone")
-                    continue
-
-                base_alert_fields = {
-                    "asset": asset.upper(),  # ✅ now required
-                    "asset_type": asset.upper(),
-                    "position_reference_id": position_id,
-                    "position_type": position_type,
-                    "notification_type": "SMS",
-                    "level": "Normal",
-                    "last_triggered": None,
-                    "status": "Active",
-                    "frequency": 1,
-                    "counter": 0,
-                    "notes": "Auto-created by Cyclone",
-                    "description": f"Position-based alert for {asset}",
-                    "liquidation_distance": 0.0,
-                    "travel_percent": 0.0,
-                    "liquidation_price": 0.0,
-                    "evaluated_value": 0.0
-                }
-
-                # Create Heat Index Alert
-                heat_alert = {
-                    **base_alert_fields,
-                    "id": str(uuid4()),
-                    "alert_type": "HEAT_INDEX",
-                    "alert_class": "Position",
-                    "trigger_value": 50,
-                    "condition": "ABOVE",
-                }
-                data_locker.create_alert(heat_alert)
-                #OLD log.debug("Created Heat Index Alert", source="CreatePositionAlerts", payload=heat_alert)
-                log_alert_summary(alert)  # ✅ log it
-                created_alerts += 1
-
-                # Create Profit Alert
-                profit_alert = {
-                    **base_alert_fields,
-                    "id": str(uuid4()),
-                    "alert_type": "PROFIT",
-                    "alert_class": "Position",
-                    "trigger_value": 1000,
-                    "condition": "ABOVE",
-                }
-                data_locker.create_alert(profit_alert)
-                # OLD log.debug("Created Profit Alert", source="CreatePositionAlerts", payload=profit_alert)
-                log_alert_summary(alert)  # ✅ log it
-                created_alerts += 1
-
-                # Create Travel Percent Alert
-                travel_alert = {
-                    **base_alert_fields,
-                    "id": str(uuid4()),
-                    "alert_type": "TRAVEL_PERCENT_LIQUID",
-                    "alert_class": "Position",
-                    "trigger_value": -25,
-                    "condition": "BELOW",
-                }
-                data_locker.create_alert(travel_alert)
-                # OLD? log.debug("Created Travel Percent Alert", source="CreatePositionAlerts", payload=travel_alert)
-                log_alert_summary(alert)  # ✅ log it
-                created_alerts += 1
-
-            log.success(f"✅ Created {created_alerts} position alerts successfully.", source="Cyclone")
-
-        except Exception as e:
-            log.error(f"❌ Failed to create position alerts: {e}", source="Cyclone")
+        print(f"✅ [{now}] [Cyclone] ✅ Portfolio alerts created with typed alert_type and class='Portfolio'.")
 
     async def run_create_market_alerts(self):
         """

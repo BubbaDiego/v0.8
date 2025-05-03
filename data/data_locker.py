@@ -400,7 +400,7 @@ class DataLocker:
                 )
             """, price_dict)
             self.conn.commit()
-            self.logger.debug(f"Inserted price row with ID={price_dict['id']}")
+            #self.logger.debug(f"Inserted price row with ID={price_dict['id']}")
         except Exception as e:
             self.logger.exception(f"Unexpected error in insert_price: {e}")
             raise
@@ -424,7 +424,7 @@ class DataLocker:
                 """)
             rows = cursor.fetchall()
             price_list = [dict(r) for r in rows]
-            self.logger.debug(f"Retrieved {len(price_list)} price rows.")
+           # self.logger.debug(f"Retrieved {len(price_list)} price rows.")
             return price_list
         except sqlite3.Error as e:
             self.logger.error(f"Database error in get_prices: {e}", exc_info=True)
@@ -466,7 +466,7 @@ class DataLocker:
             cursor = self.conn.cursor()
             cursor.execute("DELETE FROM prices WHERE id=?", (price_id,))
             self.conn.commit()
-            self.logger.debug(f"Deleted price row ID={price_id}")
+          #  self.logger.debug(f"Deleted price row ID={price_id}")
         except sqlite3.Error as e:
             self.logger.error(f"Database error in delete_price: {e}", exc_info=True)
             raise
@@ -492,7 +492,7 @@ class DataLocker:
         """)
         rows = cursor.fetchall()
         portfolio_history = [dict(row) for row in rows]
-        self.logger.debug(f"Fetched {len(portfolio_history)} portfolio snapshots.")
+      #  self.logger.debug(f"Fetched {len(portfolio_history)} portfolio snapshots.")
         return portfolio_history
 
     def get_latest_portfolio_snapshot(self) -> Optional[dict]:
@@ -506,12 +506,12 @@ class DataLocker:
         """)
         row = cursor.fetchone()
         latest_snapshot = dict(row) if row else None
-        self.logger.debug("Retrieved latest portfolio snapshot." if latest_snapshot else "No portfolio snapshot found.")
+      #  self.logger.debug("Retrieved latest portfolio snapshot." if latest_snapshot else "No portfolio snapshot found.")
         return latest_snapshot
 
     def record_portfolio_snapshot(self, totals: dict):
         self.record_positions_totals_snapshot(totals)
-        self.logger.debug("Recorded portfolio snapshot via record_portfolio_snapshot.")
+    #    self.logger.debug("Recorded portfolio snapshot via record_portfolio_snapshot.")
 
     def initialize_alert_data(self, alert_data: dict = None) -> dict:
         from data.models import Status, AlertLevel
@@ -563,14 +563,14 @@ class DataLocker:
 
     def create_alert(self, alert_obj) -> bool:
         try:
-            self.logger.debug("[DataLocker] Starting create_alert process.")
+          #  self.logger.debug("[DataLocker] Starting create_alert process.")
 
             if not isinstance(alert_obj, dict):
                 alert_dict = alert_obj.to_dict()
-                self.logger.debug("Converted alert object to dict.")
+              #  self.logger.debug("Converted alert object to dict.")
             else:
                 alert_dict = alert_obj
-                self.logger.debug("Alert object is already a dict.")
+              #  self.logger.debug("Alert object is already a dict.")
 
             # Normalize critical fields
             if "alert_type" in alert_dict:
@@ -621,7 +621,7 @@ class DataLocker:
             self.conn.commit()
             cursor.close()
 
-            self.logger.debug(f"Alert created successfully with ID={alert_dict['id']}")
+         #   self.logger.debug(f"Alert created successfully with ID={alert_dict['id']}")
             return True
 
         except sqlite3.IntegrityError as ie:
@@ -695,11 +695,11 @@ class DataLocker:
             values = self.serialize_sql_values(update_fields.values())
             values.append(alert_id)
             sql = f"UPDATE alerts SET {set_clause} WHERE id=?"
-            self.logger.debug("Executing SQL: %s with values: %s", sql, values)
+        #    self.logger.debug("Executing SQL: %s with values: %s", sql, values)
             cursor.execute(sql, values)
             self.conn.commit()
             num_updated = cursor.rowcount
-            self.logger.info("Alert %s updated, rows affected: %s", alert_id, num_updated)
+       #     self.logger.info("Alert %s updated, rows affected: %s", alert_id, num_updated)
             return num_updated
         except Exception as ex:
             self.logger.error("Error updating alert conditions for %s: %s", alert_id, ex, exc_info=True)
@@ -712,7 +712,7 @@ class DataLocker:
             cursor.execute("SELECT * FROM alerts")
             rows = cursor.fetchall()
             alert_list = [dict(r) for r in rows]
-            self.logger.debug(f"Fetched {len(alert_list)} alerts.")
+           # self.logger.debug(f"Fetched {len(alert_list)} alerts.")
             return alert_list
         except sqlite3.Error as e:
             self.logger.error(f"Database error in get_alerts: {e}", exc_info=True)
@@ -731,7 +731,7 @@ class DataLocker:
                  WHERE id=?
             """, (new_status, alert_id))
             self.conn.commit()
-            self.logger.debug(f"Alert {alert_id} => status={new_status}")
+            #self.logger.debug(f"Alert {alert_id} => status={new_status}")
         except sqlite3.Error as e:
             self.logger.error(f"DB error update_alert_status: {e}", exc_info=True)
             raise
@@ -742,11 +742,11 @@ class DataLocker:
     def delete_alert(self, alert_id: str):
         try:
             self._init_sqlite_if_needed()
-            self.logger.debug(f"Preparing to delete alert with id: {alert_id}")
+       #     self.logger.debug(f"Preparing to delete alert with id: {alert_id}")
             cursor = self.conn.cursor()
             cursor.execute("DELETE FROM alerts WHERE id=?", (alert_id,))
             self.conn.commit()
-            self.logger.debug(f"Deleted alert with id: {alert_id} successfully.")
+         #   self.logger.debug(f"Deleted alert with id: {alert_id} successfully.")
         except sqlite3.Error as e:
             self.logger.error(f"SQLite error while deleting alert {alert_id}: {e}", exc_info=True)
             raise
@@ -808,12 +808,12 @@ class DataLocker:
         current_price = pos_dict.get('current_price', 0.0)
 
         if current_price in (None, 0, 0.0):
-            logger.debug(f"[CREATE_POSITION] No current_price for {asset_type}, attempting to fetch latest price...")
+          #  logger.debug(f"[CREATE_POSITION] No current_price for {asset_type}, attempting to fetch latest price...")
             latest_price_data = self.get_latest_price(asset_type)
 
             if latest_price_data and 'current_price' in latest_price_data:
                 pos_dict['current_price'] = float(latest_price_data['current_price'])
-                logger.debug(f"[CREATE_POSITION] Set current_price for {asset_type} to {pos_dict['current_price']}")
+              #  logger.debug(f"[CREATE_POSITION] Set current_price for {asset_type} to {pos_dict['current_price']}")
             else:
                 # Fallback to entry_price if no market price available
                 fallback_price = pos_dict.get('entry_price', 0.0)
@@ -874,7 +874,7 @@ class DataLocker:
             cursor.execute("SELECT * FROM positions")
             rows = cursor.fetchall()
             results = [dict(r) for r in rows]
-            self.logger.debug(f"Fetched {len(results)} positions.")
+         #   self.logger.debug(f"Fetched {len(results)} positions.")
             return results
         except sqlite3.Error as e:
             self.logger.error(f"DB error get_positions: {e}", exc_info=True)
@@ -882,6 +882,9 @@ class DataLocker:
         except Exception as ex:
             self.logger.exception(f"Error get_positions: {ex}")
             return []
+
+    def get_all_positions(self) -> List[dict]:
+        return self.get_positions()
 
     def read_positions(self) -> List[dict]:
         return self.get_positions()
@@ -892,7 +895,7 @@ class DataLocker:
             cursor = self.conn.cursor()
             cursor.execute("DELETE FROM positions WHERE id=?", (position_id,))
             self.conn.commit()
-            self.logger.debug(f"Deleted position ID={position_id}")
+         #   self.logger.debug(f"Deleted position ID={position_id}")
         except sqlite3.Error as e:
             self.logger.error(f"DB error delete_position: {e}", exc_info=True)
             raise
@@ -1081,13 +1084,13 @@ class DataLocker:
         self._init_sqlite_if_needed()
         results: List[Dict] = []
         try:
-            self.logger.debug("Reading positions raw...")
+           # self.logger.debug("Reading positions raw...")
             cursor = self.conn.cursor()
             cursor.execute("SELECT * FROM positions")
             rows = cursor.fetchall()
             for row in rows:
                 results.append(dict(row))
-            self.logger.debug(f"Fetched {len(results)} raw positions.")
+          #  self.logger.debug(f"Fetched {len(results)} raw positions.")
             return results
         except Exception as ex:
             self.logger.error(f"Error reading raw positions: {ex}", exc_info=True)
@@ -1115,7 +1118,7 @@ class DataLocker:
                 totals.get("avg_heat_index", 0.0)
             ))
             self.conn.commit()
-            self.logger.debug(f"Recorded positions totals snapshot with ID={snapshot_id}.")
+         #   self.logger.debug(f"Recorded positions totals snapshot with ID={snapshot_id}.")
         except Exception as e:
             self.logger.exception(f"Error recording positions totals snapshot: {e}")
             raise
@@ -1130,7 +1133,7 @@ class DataLocker:
                  WHERE id=?
             """, (new_size, position_id))
             self.conn.commit()
-            self.logger.debug(f"Updated position {position_id} => size={new_size}")
+        #    self.logger.debug(f"Updated position {position_id} => size={new_size}")
         except sqlite3.Error as ex:
             self.logger.error(f"DB error in update_position_size: {ex}", exc_info=True)
             raise
@@ -1173,7 +1176,7 @@ class DataLocker:
              VALUES (:id, :snapshot_time, :total_value)
          """, entry)
         self.conn.commit()
-        self.logger.debug(f"Inserted portfolio entry with ID={entry['id']}")
+      #  self.logger.debug(f"Inserted portfolio entry with ID={entry['id']}")
 
     def get_portfolio_entries(self) -> List[dict]:
         self._init_sqlite_if_needed()
@@ -1184,7 +1187,7 @@ class DataLocker:
          """)
         rows = cursor.fetchall()
         entries = [dict(row) for row in rows]
-        self.logger.debug(f"Retrieved {len(entries)} portfolio entries.")
+     #   self.logger.debug(f"Retrieved {len(entries)} portfolio entries.")
         return entries
 
     def get_portfolio_entry_by_id(self, entry_id: str) -> Optional[dict]:
@@ -1209,7 +1212,7 @@ class DataLocker:
               WHERE id=:id
          """, updated_fields)
         self.conn.commit()
-        self.logger.debug(f"Updated portfolio entry {entry_id} with fields {updated_fields}")
+      #  self.logger.debug(f"Updated portfolio entry {entry_id} with fields {updated_fields}")
 
     def delete_portfolio_entry(self, entry_id: str):
         self._init_sqlite_if_needed()
@@ -1219,7 +1222,7 @@ class DataLocker:
              WHERE id = ?
          """, (entry_id,))
         self.conn.commit()
-        self.logger.debug(f"Deleted portfolio entry with ID={entry_id}")
+      #  self.logger.debug(f"Deleted portfolio entry with ID={entry_id}")
 
     def get_wallet_by_name(self, wallet_name: str) -> Optional[dict]:
         self._init_sqlite_if_needed()

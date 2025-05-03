@@ -1,5 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from threading import Condition
-
 from data.alert import AlertType
 from data.alert import NotificationType
 
@@ -124,9 +126,11 @@ def log_alert_summary(alert):
     """
     from utils.console_logger import ConsoleLogger as log
 
-    alert_type = getattr(alert, "alert_type", None)
-    alert_class = getattr(alert, "alert_class", None)
-    trigger_value = getattr(alert, "trigger_value", None)
+    alert_type = alert.get("alert_type") if isinstance(alert, dict) else getattr(alert, "alert_type", None)
+    alert_class = alert.get("alert_class") if isinstance(alert, dict) else getattr(alert, "alert_class", None)
+    trigger_value = alert.get("trigger_value") if isinstance(alert, dict) else getattr(alert, "trigger_value", None)
+
+    print(f"📦 Alert Created → 🧭 Class: {alert_class} | 🏷️ Type: {alert_type} | 🎯 Trigger: {trigger_value}")
 
     if isinstance(alert, dict):
         alert_type = alert.get("alert_type")
