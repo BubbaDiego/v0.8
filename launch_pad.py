@@ -12,8 +12,10 @@ from datetime import datetime
 from functools import wraps
 from time import time as timer_time
 from utils.console_logger import ConsoleLogger as log
-from tests.test_runner_manager import TestRunnerManager
+#from tests.test_runner_manager import TestRunnerManager
 from utils.schema_validation_service import SchemaValidationService
+from tests.verification_console import VerificationConsole
+
 
 
 # --- Configuration ---
@@ -184,26 +186,27 @@ def main_menu():
     log.banner("🚀 LAUNCH PAD - CONTROL CENTER 🚀")
 
     print("""
-🖥️  CORE SERVICES
----------------------------
-1) 🚀 Start Flask App
-2) 🧪 Launch Test Manager
-3) 🛡️ Launch Operations Monitor
+    🖥️  CORE SERVICES
+    ---------------------------
+    1) 🚀 Start Flask App
+    2) 🧪 Launch Test Manager
+    3) 🧬 Launch Verification Console
+    4) 🛡️ Launch Operations Monitor
 
-🛠️  UTILITIES
----------------------------
-4) 🧹 Clear Python Caches
-5) 📋 Run Schema Validation Service
+    🛠️  UTILITIES
+    ---------------------------
+    5) 🧹 Clear Python Caches
+    6) 📋 Run Schema Validation Service
 
-🩺  SYSTEM HEALTH
----------------------------
-6) 🩺 Run System Health Check
-7) 🌀 Run Cyclone System Tests
+    🩺  SYSTEM HEALTH
+    ---------------------------
+    7) 🩺 Run System Health Check
+    8) 🌀 Run Cyclone System Tests
 
-❌  OTHER
----------------------------
-0) ❌ Exit
-""")
+    ❌  OTHER
+    ---------------------------
+    0) ❌ Exit
+    """)
 
     choice = input("Enter your choice (0-7): ").strip()
 
@@ -215,13 +218,13 @@ def main_menu():
         run_test_manager()
     elif choice == "3":
         clear_screen()
-        run_operations_monitor()
+        VerificationConsole().interactive_menu()
     elif choice == "4":
         clear_screen()
-        run_clear_caches()
+        run_operations_monitor()
     elif choice == "5":
         clear_screen()
-        run_schema_validation_service()
+        run_clear_caches()
     elif choice == "6":
         clear_screen()
         run_health_check()

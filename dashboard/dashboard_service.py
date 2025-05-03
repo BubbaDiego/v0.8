@@ -52,15 +52,6 @@ def determine_color(age):
         return "yellow"
     return "red"
 
-from data.data_locker import DataLocker
-from positions.position_service import PositionService
-from utils.json_manager import JsonManager, JsonType
-from monitor.ledger_reader import get_ledger_status
-from config.config_constants import DB_PATH, ALERT_LIMITS_PATH
-from utils.calc_services import CalcServices
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 def get_dashboard_context():
     dl = DataLocker.get_instance()
     positions = PositionService.get_all_positions(DB_PATH) or []
@@ -69,14 +60,12 @@ def get_dashboard_context():
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name
 
-    calc = CalcServices()
     totals = {
         "total_collateral": sum(float(p.get("collateral", 0)) for p in positions),
         "total_value": sum(float(p.get("value", 0)) for p in positions),
         "total_size": sum(float(p.get("size", 0)) for p in positions),
         "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
         "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_heat_index": calc.calculate_totals(positions).get("avg_heat_index", 0.0)  # ✅ critical fix
     }
 
     jm = JsonManager()
@@ -94,6 +83,22 @@ def get_dashboard_context():
         "last_xcom_time": get_ledger_status('monitor/xcom_ledger.json').get("last_timestamp", None),
     }
 
+    universal_items = [
+        {"title": "Price", "icon": "📈", "value": format_monitor_time(ledger_info["last_price_time"]), "color": determine_color(ledger_info["age_price"]), "raw_value": ledger_info["age_price"]},
+        {"title": "Positions", "icon": "📊", "value": format_monitor_time(ledger_info["last_positions_time"]), "color": determine_color(ledger_info["age_positions"]), "raw_value": ledger_info["age_positions"]},
+        {"title": "Operations", "icon": "⚙️", "value": format_monitor_time(ledger_info["last_operations_time"]), "color": determine_color(ledger_info["age_operations"]), "raw_value": ledger_info["age_operations"]},
+        {"title": "Xcom", "icon": "📡", "value": format_monitor_time(ledger_info["last_xcom_time"]), "color": determine_color(ledger_info["age_xcom"]), "raw_value": ledger_info["age_xcom"]},
+        {"title": "Value", "icon": "💰", "value": "${:,.0f}".format(totals["total_value"]), "color": apply_color("value", totals["total_value"], portfolio_limits), "raw_value": totals["total_value"]},
+        {"title": "Leverage", "icon": "⚖️", "value": "{:.2f}".format(totals["avg_leverage"]), "color": apply_color("leverage", totals["avg_leverage"], portfolio_limits), "raw_value": totals["avg_leverage"]},
+        {"title": "Size", "icon": "📊", "value": "${:,.0f}".format(totals["total_size"]), "color": apply_color("size", totals["total_size"], portfolio_limits), "raw_value": totals["total_size"]},
+        {"title": "Ratio", "icon": "⚖️", "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A", "color": apply_color("ratio", (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None, portfolio_limits), "raw_value": (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None},
+        {"title": "Travel", "icon": "✈️", "value": "{:.2f}%".format(totals["avg_travel_percent"]), "color": apply_color("travel", totals["avg_travel_percent"], portfolio_limits), "raw_value": totals["avg_travel_percent"]}
+    ]
+
+    monitor_titles = {"Price", "Positions", "Operations", "Xcom"}
+    monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
+    status_items = [item for item in universal_items if item["title"] not in monitor_titles]
+
     return {
         "theme_mode": dl.get_theme_mode(),
         "positions": positions,
@@ -102,8 +107,7 @@ def get_dashboard_context():
         "portfolio_change": "N/A",
         "totals": totals,
         "ledger_info": ledger_info,
-        "status_items": [],
-        "monitor_items": [],
+        "status_items": status_items,
+        "monitor_items": monitor_items,
         "portfolio_limits": portfolio_limits
     }
-

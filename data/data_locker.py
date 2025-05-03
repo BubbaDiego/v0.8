@@ -889,6 +889,10 @@ class DataLocker:
     def read_positions(self) -> List[dict]:
         return self.get_positions()
 
+    def delete_all_alerts(self):
+        """Alias for clear_alerts(), used by legacy/test code."""
+        return self.clear_alerts()
+
     def delete_position(self, position_id: str):
         try:
             self._init_sqlite_if_needed()
