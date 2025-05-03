@@ -775,6 +775,170 @@ body.dark-bg .status-icon {
   justify-content: center;
 }
 
+/* === CONTAINER: Wraps all rows vertically */
+.positions-liq-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* === EACH ROW (1 position + 1 bar) */
+.row-pair {
+  display: flex;
+  flex-wrap: wrap;               /* ✅ enables mobile stacking */
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding: 0.5rem 0;
+}
+
+/* === POSITION SIDE (left column) */
+.pos-col {
+  display: flex;
+  flex: 1 1 45%;                 /* desktop side-by-side */
+  justify-content: space-between;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.pos-cell {
+  flex: 1 1 20%;
+  text-align: center;
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+.asset-icon {
+  width: 14px;      /* was 16–20px */
+  height: 14px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* === LIQUIDATION BAR SIDE (right column) */
+.liq-col {
+  display: flex;
+  flex: 1 1 45%;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Main bar container */
+.liq-bar-container {
+  position: relative;
+  flex-grow: 1;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Center divider */
+.liq-midline {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: #333;
+  z-index: 2;
+}
+
+/* Fill bar - red or green */
+.liq-bar-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  padding: 0 4px;
+  min-width: 3.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+.liq-bar-fill.positive {
+  left: 50%;
+  background: repeating-linear-gradient(45deg, #28a745, #28a745 10px, #2ecc71 10px, #2ecc71 20px);
+}
+
+.liq-bar-fill.negative {
+  right: 50%;
+  background: repeating-linear-gradient(45deg, #dc3545, #dc3545 10px, #e74c3c 10px, #e74c3c 20px);
+}
+
+/* 🔥 Circular badge with heat index */
+.liq-heat-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ff5722;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* === MOBILE BREAKPOINT === */
+@media (max-width: 768px) {
+  .pos-col, .liq-col {
+    flex: 1 1 100%;             /* ⬅️ stack columns vertically */
+  }
+
+  .pos-cell {
+    flex: 1 1 50%;
+    padding: 0.25rem 0;
+  }
+}
+
+/* === HEADER ROW ABOVE GRID === */
+.liq-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* Match the layout structure of each row */
+.pos-header {
+  display: flex;
+  flex: 1 1 45%;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.pos-col-label {
+  flex: 1 1 20%;
+  text-align: center;
+}
+
+.liq-header {
+  display: flex;
+  flex: 1 1 45%;
+  align-items: center;
+  gap: 1rem;
+}
+
+.liq-col-label {
+  flex-grow: 1;
+  text-align: center;
+}
+
+.heat-label {
+  width: 30px;
+  text-align: center;
+}
+
 
 
 

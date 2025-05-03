@@ -45,11 +45,17 @@
   </div>
 
  <!-- 🔻 POSITIONS + LIQUIDATION -->
-<div class="positions-liq-grid">
-  {% for pos in liquidation_positions %}
-    {% include "partials/_position_liquidation_row.html" with context %}
-  {% endfor %}
+<div class="common-box liquidation-box">
+  <div class="positions-liq-grid">
+ {% for pos in liquidation_positions %}
+  {% set is_first = loop.index0 == 0 %}
+  {% include "partials/_position_liquidation_row.html" %}
+{% endfor %}
+
+
+  </div>
 </div>
+
 
 
   <!-- 📈 GRAPHS & PIE CHART -->
