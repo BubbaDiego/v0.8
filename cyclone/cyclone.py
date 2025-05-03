@@ -4,6 +4,8 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from monitor.monitor_utils import LedgerWriter
+from datetime import datetime, timezone
 from monitor.price_monitor import PriceMonitor
 
 from data.data_locker import DataLocker
@@ -71,9 +73,6 @@ class Cyclone:
             )
 
             # Also write to JSON ledger so dashboard picks it up
-            from monitor.common_monitor_utils import LedgerWriter
-            from datetime import datetime, timezone
-
             ledger = LedgerWriter()
             entry = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -93,7 +92,7 @@ class Cyclone:
                 source="Cyclone",
                 file="cyclone.py"
             )
-            from monitor.common_monitor_utils import LedgerWriter
+            from monitor.monitor_utils import LedgerWriter
             from datetime import datetime, timezone
 
             ledger = LedgerWriter()

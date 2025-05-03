@@ -157,3 +157,15 @@
 {"timestamp": "2025-05-01T19:18:57.972996", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.324932}}
 {"timestamp": "2025-05-01T19:23:59.004645", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.030131}}
 {"timestamp": "2025-05-01T19:29:00.029741", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.023356}}
+{"timestamp": "2025-05-03T01:34:03.158148", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 2.226195}}
+{"timestamp": "2025-05-03T01:34:49.540807", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.012403}}
+{"timestamp": "2025-05-03T01:39:50.558731", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.017299}}
+{"timestamp": "2025-05-03T01:44:51.544151", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 0.984386}}
+{"timestamp": "2025-05-03T01:49:21.537249", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 0.995319}}
+{"timestamp": "2025-05-03T01:51:54.989893", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.015768}}
+{"timestamp": "2025-05-03T01:54:20.480559", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.014439}}
+{"timestamp": "2025-05-03T01:57:39.593666", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.028232}}
+{"timestamp": "2025-05-03T01:59:54.268212", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": false, "duration_seconds": 1.007826}}
+{"timestamp": "2025-05-03T02:02:11.460289", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": true, "duration_seconds": 0}}
+{"timestamp": "2025-05-03T02:07:20.552496+00:00", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": true, "duration_seconds": 0}}
+{"timestamp": "2025-05-03T02:12:20.554174+00:00", "component": "operations_monitor", "operation": "heartbeat", "status": "OK", "metadata": {"health_success": true, "duration_seconds": 0}}

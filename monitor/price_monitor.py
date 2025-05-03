@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Dict
 
 import requests
-from monitor.common_monitor_utils import BaseMonitor
+from monitor.monitor_utils import BaseMonitor
 from data.data_locker import DataLocker
 from utils.unified_logger import UnifiedLogger
 

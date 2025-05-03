@@ -1,0 +1,158 @@
+/* === CONTAINER LAYOUTS FOR CARD GROUPS === */
+/* These wrap the status cards inside the portfolio/monitor panels */
+.portfolio-status-container,
+.monitor-status-container {
+  display: flex;
+  flex-wrap: wrap;         /* allows cards to wrap on small screens */
+  justify-content: space-evenly; /* center cards horizontally */
+  gap: 1.2rem;               /* spacing between individual cards */
+  padding: 1rem;           /* spacing inside the group */
+  background: transparent; /* panel background handled by wrapper */
+  border: none;
+  box-shadow: none;
+}
+
+
+/* === OUTER CONTAINERS FOR EACH PANEL (blue boxes) === */
+/* Controls how much space each side panel gets and how it stacks */
+.balanced-status-row {
+  display: flex;
+  flex-wrap: wrap;         /* enables stacking on small screens */
+  justify-content: center;
+  align-items: stretch;
+  gap: 2rem;               /* spacing between the two status sections */
+  margin-bottom: 1.5rem;
+}
+
+/* === TITLE STYLING FOR MONITOR + PORTFOLIO HEADERS === */
+.status-wrapper.portfolio .section-title {
+  color: #121211; /* 💼 Yellow or gold for Portfolio */
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.status-wrapper.monitor .section-title {
+  color: #edede9; /* 💼 Yellow or gold for Portfolio */
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+
+.status-wrapper {
+  flex: 0 0 48%;           /* each panel gets ~half the row on desktop */
+  max-width: 48%;
+  min-width: 320px;        /* won't shrink smaller than this */
+  border-radius: 0.75rem;  /* round outer corners */
+  padding: .6rem;           /* space around the cards 1 is good */
+  background-color: #d0e7ff; /* light blue panel background */
+  border: 2px solid #c0d7f5; /* panel border color */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* soft shadow */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* === PORTFOLIO BACKGROUND IMAGE OVERRIDE === */
+.status-wrapper.portfolio {
+ /* background-image: url('/static/images/wallpaper6.jpg');  /* 🔁 set your custom image path */
+  background-color: #d0e7ff;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal;  /* optional: blend for tone */
+}
+
+/* === MONITOR BACKGROUND IMAGE OVERRIDE === */
+.status-wrapper.monitor {
+  background-image: url('/static/images/wallpaper6.jpg');  /* 🖼️ path to your image */
+  background-size: cover;           /* Adjust to your image’s intent */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal;   /* Optional: blend with bg color */
+}
+
+
+/* Dark mode version */
+body.dark-bg .status-wrapper {
+  background-color: #2a2a2a; /* default = 2a2a2a */
+  color: #ddd;
+  border: 2px solid #444; /* default = #444 */
+}
+
+/* 📱 Responsive tweak: stack panels vertically on mobile */
+@media (max-width: 768px) {
+  .status-wrapper {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+
+
+/* === INDIVIDUAL STATUS CARD STYLE === */
+/* Change `height` below to control how tall the cards appear */
+.status-card {
+  border-radius: 0.5rem;       /* rounded corners */
+  border: 3px solid #ffffff;   /* solid white border */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* soft lift */
+  padding: 0.70rem 0.5rem;     /* inner spacing */
+  width: 80px;                 /* card width — adjust this for wider cards 90 is good  */
+  height: 100px;               /* 🆕 card height — adjust this! 110 is good*/
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+.status-card:hover {
+  transform: scale(1.03);
+}
+
+
+/* === TEXT + ICON SLOTS === */
+.status-card .icon {
+  font-size: 1.25rem;      /* change icon size here */
+  margin-bottom: 0.3rem;
+}
+
+.status-card .value {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #000000;  /* 🔧 You can change this to any desired color */
+}
+
+
+.status-card .label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-weight: bold;
+  color: #373535;  /* 🔧 Change this to any hex, rgb, or named color */
+}
+
+
+/* === STATUS COLOR BACKGROUNDS === */
+/* 🔴 FULL CARD BACKGROUND COLOR PER STATUS */
+.status-card.green {
+  background-color: #d4edda;  /* light green — change for custom themes */
+}
+.status-card.yellow {
+  background-color: #fff3cd;  /* light yellow */
+}
+.status-card.red {
+  background-color: #f8d7da;  /* light red/pink */
+}
+
+/* === MONITOR VALUE STYLE OVERRIDE === */
+/* Smaller value text only for monitor cards */
+.monitor-value {
+  font-size: 0.3rem;        /* 👈 smaller than the usual 1rem */
+  font-weight: 600;
+  color: #d61616;           /* or customize as needed */
+  opacity: 0.9;
+}
+
+
+/* 🧪 Optional darker tones:
+.status-card.green    { background-color: #c3e6cb; }
+.status-card.yellow   { background-color: #ffeeba; }
+.status-card.red      { background-color: #f5c6cb; }
+*/

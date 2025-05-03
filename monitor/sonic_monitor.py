@@ -11,6 +11,12 @@ hedge updates in a single always-on loop.
 """
 import os
 import sys
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+
 import time
 import asyncio
 import logging
@@ -18,7 +24,7 @@ from datetime import datetime, timezone
 
 import pytz
 from cyclone.cyclone import Cyclone
-from monitor.common_monitor_utils import load_timer_config, update_timer_config
+from monitor.monitor_utils import load_timer_config, update_timer_config
 
 # ——— Setup logging in PST ———
 PST = pytz.timezone("America/Los_Angeles")

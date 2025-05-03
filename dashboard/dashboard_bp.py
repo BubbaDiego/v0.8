@@ -154,7 +154,6 @@ def dash_page():
 def api_graph_data():
     dl = DataLocker.get_instance()
     portfolio_history = dl.get_portfolio_history() or []
-
     timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
     values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
     collaterals = [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
