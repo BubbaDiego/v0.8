@@ -1,124 +1,162 @@
-# Sonic Alert System Specification
+# Sonic Alert Component Specification
 
----
+## Overview
 
-## 📚 Table of Contents
+The **Sonic Alert Component** is a real-time, event-driven alerting system integrated into the trading platform. It continuously monitors trading positions and market data, evaluates alert conditions, enriches alerts with context, and dispatches notifications through multiple channels (SMS, Email, Phone Call). It uses dynamic threshold-based logic and supports extensible alert types.
 
-1. [Overview](#overview)
-2. [Key Components](#key-components)
-3. [Alert Lifecycle](#alert-lifecycle)
-4. [Alert Types and Enrichment Logic](#alert-types-and-enrichment-logic)
-5. [Evaluation and Alert Levels](#evaluation-and-alert-levels)
-6. [Notification Simulation](#notification-simulation)
-7. [Testing Infrastructure](#testing-infrastructure)
-8. [Directory Structure](#directory-structure)
-9. [Important Notes and Future Expansion](#important-notes-and-future-expansion)
+## Objectives
 
----
+* Define a robust alert processing pipeline
+* Support multiple alert types: PriceThreshold, Profit, HeatIndex, TravelPercentLiquid, Portfolio
+* Provide real-time evaluation and enrichment
+* Enable configurable thresholds and cooldown periods
+* Send notifications via multiple channels
+* Allow UI integration via Flask APIs
 
-## 📖 Overview
+## Architecture Components
 
-The Sonic Alert System is a modular, scalable backend service to:
+### 1. `Alert`
 
-- Create dynamic alerts for various assets/positions
-- Enrich alerts based on live market or system data
-- Evaluate alerts dynamically against thresholds
-- Trigger notifications if alerts meet conditions
-- Fully tested at unit, integration, and batch levels
+* **Model:** `data/alert.py`
+* **Fields:**
 
----
+  * `alert_type`, `trigger_value`, `evaluated_value`, `condition`, `level`, `frequency`, `counter`, `position_reference_id`, etc.
+* **Enums:** `AlertType`, `Condition`, `AlertLevel`, `Status`, `NotificationType`
 
-## 🛠 Key Components
+### 2. `AlertServiceManager`
 
-| Component | Description |
-|:---|:---|
-| `Alert` (Model) | Core object containing ID, type, asset, trigger_value, evaluated_value, level, etc. |
-| `AlertRepository` | Interface between business logic and DataLocker (alerts database) |
-| `AlertEnrichmentService` | Populates evaluated_value based on alert type and live data |
-| `AlertEvaluationService` | Compares evaluated_value against dynamic thresholds |
-| `AlertService` | Orchestrates full alert lifecycle (fetch, enrich, evaluate, update) |
-| `Notification Simulation` | Simulates triggering of notifications based on evaluated levels |
-| `DataLocker` | In-memory or persistent backend storage for alerts and supporting data |
-| `ConfigLoader` | Loads `alert_limits.json` for dynamic LOW, MEDIUM, HIGH thresholds |
+* **Singleton:** Instantiated once to coordinate services
+* **Composition:**
 
----
+  * `AlertService`
+  * `NotificationService`
+  * `AlertRepository`
+  * `AlertEnrichmentService`
 
-## 🔄 Alert Lifecycle
+### 3. `AlertService`
 
-1. **Create Alert**
-   - Populate fields like `id`, `alert_type`, `trigger_value`, etc.
-   - Insert into `DataLocker`.
+* **Function:**
 
-2. **Enrichment Phase**
-   - Populate `evaluated_value` based on live market/position data.
-   - Different enrichment strategies per alert type.
+  * Fetch active alerts
+  * Enrich alerts (via enrichment service)
+  * Evaluate them (using config thresholds)
+  * Trigger notifications
+  * Update DB with results
 
-3. **Evaluation Phase**
-   - Compare `evaluated_value` to thresholds loaded from `alert_limits.json`.
-   - Assign `AlertLevel` (`NORMAL`, `LOW`, `MEDIUM`, `HIGH`).
+### 4. `AlertEvaluationService`
 
-4. **Notification Simulation**
-   - Log notification event if alert reaches `MEDIUM` or `HIGH` level.
+* Evaluates alert against:
 
-5. **Persistence Update**
-   - Update the enriched and evaluated alert back into `DataLocker`.
+  * Config thresholds (`alert_limits.json`)
+  * Condition logic (`ABOVE`/`BELOW`)
+  * Default fallback if thresholds unavailable
 
----
+### 5. `AlertEnrichmentService`
 
-## 🚀 Alert Types and Enrichment Logic
+* Enriches alerts based on type:
 
-| Alert Type | Data Source | Enrichment Logic | Evaluated Value Meaning |
-|:---|:---|:---|:---|
-| `PriceThreshold` | Live price feed | Current price of asset | Price in USD |
-| `TravelPercentLiquid` | Position + price feed | Travel % toward liquidation | % traveled from entry |
-| `Profit` | Position data | Current realized/unrealized PnL | Profit/Loss in USD |
-| `HeatIndex` | Position risk data | Heat Index value | Risk exposure score |
+  * `PriceThreshold`: fetches current price
+  * `Profit`: reads `pnl_after_fees_usd`
+  * `TravelPercentLiquid`: computes distance to liquidation
+  * `HeatIndex`: derives custom heat metric
+  * `Portfolio`: injects aggregated portfolio metrics from `dashboard_service.get_dashboard_context()`
 
-✅ **Each enrichment function** lives in `AlertEnrichmentService` (`_enrich_price_threshold`, `_enrich_profit`, etc.)
+    * Evaluated fields:
 
----
+      * `total_value`, `total_collateral`, `total_size`, `avg_leverage`, `avg_travel_percent`, `heat_index`, `value_to_collateral_ratio`
 
-## 🔍 Evaluation and Alert Levels
+### 6. `AlertRepository`
 
-| Level | Description |
-|:---|:---|
-| `NORMAL` | No major deviation, alert is fine |
-| `LOW` | Early warning zone |
-| `MEDIUM` | Significant risk or movement detected |
-| `HIGH` | Critical alert, notification needed |
+* Interfaces with `DataLocker`
+* Handles fetch, create, update operations on alerts
 
-- **Thresholds dynamically loaded** from `alert_limits.json`.
-- **Supports per-alert-type thresholds** (different for Price, Profit, HeatIndex, TravelPercent).
+### 7. `DataLocker`
 
-✅ **Handled automatically inside `AlertEvaluationService`.**
+* SQLite3 storage for alerts, positions, prices, system vars
+* Centralized persistence layer
+* Tracks mappings between positions and alerts
 
----
+## API Interface
 
-## 📢 Notification Simulation
+### Flask Routes (`alerts_bp.py`)
 
-After evaluation:
+* `POST /alerts/refresh`: triggers reevaluation
+* `GET /alerts/monitor`: active alerts status
+* `POST /alerts/test_sms`: tests SMS channel
+* `GET /alerts/alert_matrix`: matrix UI
+* `POST /alerts/create_all`: create sample alerts
+* `POST /alerts/delete_all`: wipe all alerts
+* `GET /alerts/config`: serve configuration UI
+* `POST /alerts/update_config`: save new alert config
 
-- If `level` is `MEDIUM` or `HIGH`, simulate a notification.
-- Currently logged via `ConsoleLogger` (`📢 Notification Triggered for ...`).
-- No real external services (SMS/Email) are wired yet — ready for future.
+## Configuration File
 
-✅ Future-ready for pluggable NotificationService.
+* `alert_limits.json`
 
----
+  * `alert_ranges`: thresholds per alert type
+  * `alert_config`: notification parameters
+  * `global_alert_config`: general system settings
+  * `total_portfolio_limits`: thresholds for portfolio-level alerts
 
-## 🧪 Testing Infrastructure
+    * `total_value_limits`: `{low, medium, high}`
+    * `total_size_limits`: `{low, medium, high}`
+    * `total_leverage_limits`: `{low, medium, high}`
+    * `value_to_collateral_ratio_limits`: `{low, medium, high}`
+    * `avg_travel_percent_limits`: `{low, medium, high}`
+    * `total_heat_limits`: `{low, medium, high}`
+  * `notifications`: define how to notify per alert type and level (includes `portfolio` alert section)
 
-| Type | Description |
-|:---|:---|
-| Unit Tests | Isolated tests for Enrichment and Evaluation functions. |
-| System Tests | Full lifecycle tests: Create ➔ Enrich ➔ Evaluate ➔ Notify. |
-| Batch Stress Tests | 200+ alerts in pipeline tests to simulate production loads. |
-| HTML Reporting | `pytest-html` generates `last_test_report.html` after every run. |
-| Test Runner Manager | CLI system to run unit, system, health tests individually or together. |
+## Alert Lifecycle
 
-✅ **System tests auto-generate** an HTML report and auto-open it locally.
+1. **Created** → `create_alert()`
+2. **Enriched** → `AlertEnrichmentService.enrich()`
+3. **Evaluated** → `AlertEvaluationService.evaluate()`
+4. **Notified** → `NotificationService.send_alert()`
+5. **Updated** → `update_alert_level()`
 
----
+## Normalization Logic
 
-## 🗂 Directory Structure
+* File: `alert_utils.py`
+* Normalizes alert type, condition, and notification type strings into enums
 
+## Extensibility
+
+* To add a new alert type:
+
+  1. Extend `AlertType` enum with `Portfolio`
+  2. Add logic to `AlertEnrichmentService` to inject aggregated totals
+  3. Add evaluation rules in `AlertEvaluationService`
+  4. Configure thresholds in `alert_limits.json` under `total_portfolio_limits` using precise naming like `total_value_limits`
+
+## Error Handling
+
+* All critical components log to `ConsoleLogger`
+* Fallback to default behavior on evaluation/enrichment failure
+
+## Testability
+
+* Mock alerts can be created via `create_all_alerts()`
+* Alerts can be monitored live via `/monitor` endpoint
+* Manual enrichment and evaluation can be triggered through `AlertService`
+
+## UI Integration
+
+* Matrix view renders `alerts` with threshold coloring and metadata
+* Config editor loads/saves JSON config
+* Portfolio alert evaluations sourced from `dashboard_service.get_dashboard_context()`
+
+## Dependencies
+
+* Python 3.8+
+* Flask
+* SQLite3
+* Pydantic[alert.py](../data/alert.py)
+* Custom utils: `console_logger`, `json_manager`, `calc_services`
+
+## Future Enhancements
+
+* Add snooze/silence mechanism
+* WebSocket push for live updates
+* Notification retry policy
+* Richer templates for emails/SMS
+* Alert grouping and deduplication

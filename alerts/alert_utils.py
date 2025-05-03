@@ -61,6 +61,8 @@ def normalize_alert_type(alert_type_input):
     - If already an AlertType Enum, return as-is
     - If string, try to convert to AlertType Enum
     """
+    from data.alert import AlertType
+
     if isinstance(alert_type_input, AlertType):
         return alert_type_input
 
@@ -71,15 +73,25 @@ def normalize_alert_type(alert_type_input):
             "pricethreshold": AlertType.PriceThreshold,
             "profit": AlertType.Profit,
             "travelpercentliquid": AlertType.TravelPercentLiquid,
-            "heatindex": AlertType.HeatIndex
+            "heatindex": AlertType.HeatIndex,
+            "totalvalue": AlertType.TotalValue,
+            "totalsize": AlertType.TotalSize,
+            "avgleverage": AlertType.AvgLeverage,
+            "avgtravelpercent": AlertType.AvgTravelPercent,
+            "valuetocollateralratio": AlertType.ValueToCollateralRatio,
+            "totalheat": AlertType.TotalHeat
         }
 
         if cleaned in mapping:
             return mapping[cleaned]
         else:
-            raise ValueError(f"Invalid alert_type string: {alert_type_input}")
+            raise ValueError(
+                f"Invalid alert_type string: {alert_type_input}. "
+                f"Expected one of: {list(mapping.keys())}"
+            )
 
     raise TypeError(f"Invalid alert_type input: {type(alert_type_input)}")
+
 
 
 
@@ -105,3 +117,23 @@ def normalize_notification_type(notification_input):
             raise ValueError(f"Invalid notification_type string: {notification_input}")
 
     raise TypeError(f"Invalid notification_type input: {type(notification_input)}")
+
+def log_alert_summary(alert):
+    """
+    Print a clean, emoji-annotated summary of a created alert.
+    """
+    from utils.console_logger import ConsoleLogger as log
+
+    alert_type = getattr(alert, "alert_type", None)
+    alert_class = getattr(alert, "alert_class", None)
+    trigger_value = getattr(alert, "trigger_value", None)
+
+    if isinstance(alert, dict):
+        alert_type = alert.get("alert_type")
+        alert_class = alert.get("alert_class")
+        trigger_value = alert.get("trigger_value")
+
+    log.info(
+        f"📦 Alert Created → 🧭 Class: {alert_class} | 🏷️ Type: {alert_type} | 🎯 Trigger: {trigger_value}",
+        source="CreateAlert"
+    )

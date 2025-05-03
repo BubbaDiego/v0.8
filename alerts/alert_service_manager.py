@@ -5,6 +5,10 @@ from xcom.notification_service import NotificationService
 from utils.config_loader import load_config
 from data.data_locker import DataLocker
 
+from config.config_constants import ALERT_LIMITS_PATH
+config_loader = lambda: load_config(str(ALERT_LIMITS_PATH)) or {}
+
+
 # Singleton pattern for Alert Service Manager
 class AlertServiceManager:
     _instance = None

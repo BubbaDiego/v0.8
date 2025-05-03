@@ -16,7 +16,7 @@ from alerts.alert_service_manager import AlertServiceManager
 from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 from utils.console_logger import ConsoleLogger as log
-
+from alerts.alert_utils import log_alert_summary
 
 
 
@@ -148,6 +148,51 @@ class Cyclone:
 
     from utils.console_logger import ConsoleLogger as log
 
+    async def run_create_portfolio_alerts(self):
+        from uuid import uuid4
+        from datetime import datetime
+        from data.alert import AlertType, Condition
+
+        dl = DataLocker.get_instance()
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        metrics = [
+            (AlertType.TotalValue, "total_value", 50000),
+            (AlertType.TotalSize, "total_size", 1.0),
+            (AlertType.AvgLeverage, "avg_leverage", 2.0),
+            (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0),
+            (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2),
+            (AlertType.TotalHeat, "total_heat", 25.0),
+        ]
+
+        for alert_type, metric_desc, trigger_value in metrics:
+            alert = {
+                "id": str(uuid4()),
+                "created_at": now,
+                "alert_type": alert_type.value,
+                "alert_class": "Portfolio",
+                "asset": "PORTFOLIO",
+                "asset_type": "ALL",
+                "trigger_value": trigger_value,
+                "condition": Condition.ABOVE.value,
+                "notification_type": "SMS",
+                "level": "Normal",
+                "last_triggered": None,
+                "status": "Active",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0.0,
+                "travel_percent": 0.0,
+                "liquidation_price": 0.0,
+                "notes": "Auto-generated portfolio alert",
+                "description": metric_desc,
+                "position_reference_id": None,
+                "evaluated_value": 0.0,
+                "position_type": None
+            }
+            dl.create_alert(alert)
+            log_alert_summary(alert)  # ✅ log it
+
     async def run_create_position_alerts(self):
         """
         Create position-based alerts (Heat Index, Profit, Travel Percent) for active positions.
@@ -175,9 +220,9 @@ class Cyclone:
                     continue
 
                 base_alert_fields = {
-                    "position_reference_id": position_id,
-                    "asset": asset.upper(),
+                    "asset": asset.upper(),  # ✅ now required
                     "asset_type": asset.upper(),
+                    "position_reference_id": position_id,
                     "position_type": position_type,
                     "notification_type": "SMS",
                     "level": "Normal",
@@ -203,7 +248,8 @@ class Cyclone:
                     "condition": "ABOVE",
                 }
                 data_locker.create_alert(heat_alert)
-                log.debug("Created Heat Index Alert", source="CreatePositionAlerts", payload=heat_alert)
+                #OLD log.debug("Created Heat Index Alert", source="CreatePositionAlerts", payload=heat_alert)
+                log_alert_summary(alert)  # ✅ log it
                 created_alerts += 1
 
                 # Create Profit Alert
@@ -216,7 +262,8 @@ class Cyclone:
                     "condition": "ABOVE",
                 }
                 data_locker.create_alert(profit_alert)
-                log.debug("Created Profit Alert", source="CreatePositionAlerts", payload=profit_alert)
+                # OLD log.debug("Created Profit Alert", source="CreatePositionAlerts", payload=profit_alert)
+                log_alert_summary(alert)  # ✅ log it
                 created_alerts += 1
 
                 # Create Travel Percent Alert
@@ -229,7 +276,8 @@ class Cyclone:
                     "condition": "BELOW",
                 }
                 data_locker.create_alert(travel_alert)
-                log.debug("Created Travel Percent Alert", source="CreatePositionAlerts", payload=travel_alert)
+                # OLD? log.debug("Created Travel Percent Alert", source="CreatePositionAlerts", payload=travel_alert)
+                log_alert_summary(alert)  # ✅ log it
                 created_alerts += 1
 
             log.success(f"✅ Created {created_alerts} position alerts successfully.", source="Cyclone")
@@ -488,6 +536,7 @@ class Cyclone:
             "enrich positions": self.run_enrich_positions,  # Renamed step for positions
             "enrich alerts": self.run_alert_enrichment,  # New step for alert enrichment
             "create_market_alerts": self.run_create_market_alerts,
+            "create_portfolio_alerts": self.run_create_portfolio_alerts,
             "create_position_alerts": self.run_create_position_alerts,
             "create_system_alerts": self.run_create_system_alerts,
             "update_evaluated_value": self.run_update_evaluated_value,
@@ -504,8 +553,8 @@ class Cyclone:
             for step in [
                 "clear_all_data", "market", "position", "cleanse_ids",
                 "enrich positions", "enrich alerts", "create_market_alerts",
-                "create_position_alerts", "create_system_alerts", "update_evaluated_value",
-                "alert", "system", "link_hedges"
+                "create_position_alerts", "create_system_alerts", "create_portfolio_alerts",
+                "update_evaluated_value", "alert", "system", "link_hedges"
             ]:
                 await available_steps[step]()
 

@@ -174,16 +174,17 @@ class CycloneConsoleHelper:
             print("\n--- Alerts Menu ---")
             print("1) 👁 View Alerts")
             print("2) 💵 Create Market Alerts")
-            print("3) 📌 Create Position Alerts")
-            print("4) 🖥 Create System Alerts")
-            print("5) ✨ Enrich Alerts")
-            print("6) 🔄 Update Evaluated Value")
-            print("7) 🔍 Alert Evaluations")
-            print("8) 🧹 Clear Alerts")
-            print("9) ♻️ Refresh Alerts")
-            print("10) 🧹 Clear Alert Ledger")
-            print("11) ↩️ Back to Main Menu")
-            choice = input("Enter your choice (1-11): ").strip()
+            print("3) 📊 Create Portfolio Alerts")
+            print("4) 📌 Create Position Alerts")
+            print("5) 🖥 Create System Alerts")
+            print("6) ✨ Enrich Alerts")
+            print("7) 🔄 Update Evaluated Value")
+            print("8) 🔍 Alert Evaluations")
+            print("9) 🧹 Clear Alerts")
+            print("10) ♻️ Refresh Alerts")
+            print("11) 🧹 Clear Alert Ledger")
+            print("12) ↩️ Back to Main Menu")
+            choice = input("Enter your choice (1-12): ").strip()
             if choice == "1":
                 print("Viewing Alerts...")
                 self.cyclone.view_alerts_backend()
@@ -191,33 +192,36 @@ class CycloneConsoleHelper:
                 print("Creating Market Alerts...")
                 asyncio.run(self.cyclone.run_cycle(steps=["create_market_alerts"]))
             elif choice == "3":
+                print("Creating Portfolio Alerts...")
+                asyncio.run(self.cyclone.run_create_portfolio_alerts())
+            elif choice == "4":
                 print("Creating Position Alerts...")
                 asyncio.run(self.cyclone.run_cycle(steps=["create_position_alerts"]))
-            elif choice == "4":
+            elif choice == "5":
                 print("Creating System Alerts...")
                 asyncio.run(self.cyclone.run_cycle(steps=["create_system_alerts"]))
-            elif choice == "5":
+            elif choice == "6":
                 print("Running Enrich Alerts...")
                 asyncio.run(self.cyclone.run_alert_enrichment())
                 print("Enrich Alerts completed.")
-            elif choice == "6":
+            elif choice == "7":
                 print("Updating Evaluated Values for Alerts...")
                 asyncio.run(self.cyclone.run_cycle(steps=["update_evaluated_value"]))
-            elif choice == "7":
+            elif choice == "8":
                 print("Running Alert Evaluations...")
                 asyncio.run(self.cyclone.run_cycle(steps=["alert"]))
                 print("Alert Evaluations completed.")
-            elif choice == "8":
+            elif choice == "9":
                 print("Clearing Alerts...")
                 self.cyclone.clear_alerts_backend()
-            elif choice == "9":
+            elif choice == "10":
                 print("Refreshing Alerts...")
                 asyncio.run(self.cyclone.run_alert_updates())
                 print("Alerts refreshed.")
-            elif choice == "10":
+            elif choice == "11":
                 print("Clearing Alert Ledger...")
                 self.cyclone.clear_alert_ledger_backend()
-            elif choice == "11":
+            elif choice == "12":
                 break
             else:
                 print("Invalid choice, please try again.")
