@@ -44,11 +44,13 @@
 
   </div>
 
-  <!-- 🔻 POSITIONS + LIQUIDATION -->
-  <div class="box-row">
-    {% include "partials/_positions.html" %}
-    {% include "partials/_liquidation.html" %}
-  </div>
+ <!-- 🔻 POSITIONS + LIQUIDATION -->
+<div class="positions-liq-grid">
+  {% for pos in liquidation_positions %}
+    {% include "partials/_position_liquidation_row.html" with context %}
+  {% endfor %}
+</div>
+
 
   <!-- 📈 GRAPHS & PIE CHART -->
   <div class="box-row">

@@ -673,6 +673,107 @@ body.dark-bg .status-icon {
   opacity: 0.9;
 }
 
+/* ==== SHARED GRID WRAPPER ==== */
+/* Contains the entire row of position + liquidation bar */
+.positions-liq-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Each row-pair is one row of data */
+.row-pair {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+/* ==== LEFT COLUMN: POSITION FIELDS ==== */
+.pos-col {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+/* Each position column cell */
+.pos-cell {
+  flex: 1;
+  text-align: center;
+}
+
+/* ==== RIGHT COLUMN: LIQUIDATION BAR ==== */
+.liq-col {
+  display: flex;
+  flex: 2;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* The gray bar behind the fill */
+.liq-bar-container {
+  position: relative;
+  flex-grow: 1;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Middle vertical divider */
+.liq-midline {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: #333;
+  z-index: 2;
+}
+
+/* The fill bar (green/red, animated) */
+.liq-bar-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  min-width: 3.5rem;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+/* Positive movement to right of center */
+.liq-bar-fill.positive {
+  left: 50%;
+  background: repeating-linear-gradient(45deg, #28a745, #28a745 10px, #2ecc71 10px, #2ecc71 20px);
+}
+
+/* Negative movement to left of center */
+.liq-bar-fill.negative {
+  right: 50%;
+  background: repeating-linear-gradient(45deg, #dc3545, #dc3545 10px, #e74c3c 10px, #e74c3c 20px);
+}
+
+/* 🔥 Circular heat index badge */
+.liq-heat-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ff5722;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 
 

@@ -1,0 +1,55 @@
+<!-- === SHARED POSITION + LIQUIDATION BAR ROW === -->
+<!-- This file renders one row showing both the position data and the liquidation bar. -->
+<!-- It assumes you're looping over `liquidation_positions` in dashboard.html -->
+
+<div class="row-pair">
+
+  <!-- 🟦 LEFT COLUMN: Position Data Fields -->
+  <div class="pos-col">
+    <!-- Asset type (e.g., ETH, BTC) -->
+    <div class="pos-cell asset">{{ pos.asset_type }}</div>
+
+    <!-- Wallet image (must exist at /static/images/) -->
+    <div class="pos-cell wallet">
+      <img src="{{ url_for('static', filename='images/' + pos.wallet_image) }}" alt="{{ pos.wallet }}" />
+    </div>
+
+    <!-- Heat index as a number -->
+    <div class="pos-cell heat">{{ pos.heat_index|int }}</div>
+
+    <!-- Travel % (risk distance to liquidation) -->
+    <div class="pos-cell travel">{{ pos.travel_percent|round(2) }}%</div>
+
+    <!-- Leverage value -->
+    <div class="pos-cell leverage">{{ pos.leverage|round(2) }}</div>
+  </div>
+
+  <!-- 🟥 RIGHT COLUMN: Liquidation Risk Bar + Heat Badge -->
+  <div class="liq-col">
+
+    <!-- Progress bar container -->
+    <div class="liq-bar-container">
+      <!-- Middle marker -->
+      <div class="liq-midline"></div>
+
+      {% set pct = pos.travel_percent|float %}
+
+      <!-- Green travel to the right of midline -->
+      {% if pct >= 0 %}
+        <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
+          <div class="travel-text">{{ pct|round(1) }}%</div>
+        </div>
+      {% else %}
+        <!-- Red travel to the left of midline -->
+        <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
+          <div class="travel-text">{{ pct|round(1) }}%</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Circular badge with heat index score -->
+    <div class="liq-heat-badge">
+      {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+    </div>
+  </div>
+</div>
