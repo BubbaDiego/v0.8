@@ -87,11 +87,11 @@ def get_dashboard_context():
         {"title": "Price", "icon": "📈", "value": format_monitor_time(ledger_info["last_price_time"]), "color": determine_color(ledger_info["age_price"]), "raw_value": ledger_info["age_price"]},
         {"title": "Positions", "icon": "📊", "value": format_monitor_time(ledger_info["last_positions_time"]), "color": determine_color(ledger_info["age_positions"]), "raw_value": ledger_info["age_positions"]},
         {"title": "Operations", "icon": "⚙️", "value": format_monitor_time(ledger_info["last_operations_time"]), "color": determine_color(ledger_info["age_operations"]), "raw_value": ledger_info["age_operations"]},
-        {"title": "Xcom", "icon": "🚀", "value": format_monitor_time(ledger_info["last_xcom_time"]), "color": determine_color(ledger_info["age_xcom"]), "raw_value": ledger_info["age_xcom"]},
+        {"title": "Xcom", "icon": "📡", "value": format_monitor_time(ledger_info["last_xcom_time"]), "color": determine_color(ledger_info["age_xcom"]), "raw_value": ledger_info["age_xcom"]},
         {"title": "Value", "icon": "💰", "value": "${:,.0f}".format(totals["total_value"]), "color": apply_color("value", totals["total_value"], portfolio_limits), "raw_value": totals["total_value"]},
-        {"title": "Leverage", "icon": "⚖️", "value": "{:.2f}".format(totals["avg_leverage"]), "color": apply_color("leverage", totals["avg_leverage"], portfolio_limits), "raw_value": totals["avg_leverage"]},
+        {"title": "Leverage", "icon": "🔧", "value": "{:.2f}".format(totals["avg_leverage"]), "color": apply_color("leverage", totals["avg_leverage"], portfolio_limits), "raw_value": totals["avg_leverage"]},
         {"title": "Size", "icon": "📊", "value": "${:,.0f}".format(totals["total_size"]), "color": apply_color("size", totals["total_size"], portfolio_limits), "raw_value": totals["total_size"]},
-        {"title": "Ratio", "icon": "⚡", "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A", "color": apply_color("ratio", (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None, portfolio_limits), "raw_value": (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None},
+        {"title": "Ratio", "icon": "⚖️", "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A", "color": apply_color("ratio", (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None, portfolio_limits), "raw_value": (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None},
         {"title": "Travel", "icon": "✈️", "value": "{:.2f}%".format(totals["avg_travel_percent"]), "color": apply_color("travel", totals["avg_travel_percent"], portfolio_limits), "raw_value": totals["avg_travel_percent"]}
     ]
 

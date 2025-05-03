@@ -26,8 +26,8 @@
 
 /* === TITLE STYLING FOR MONITOR + PORTFOLIO HEADERS === */
 .status-wrapper.portfolio .section-title {
-  color: #121211; /* 💼 Yellow or gold for Portfolio */
-  font-size: 1rem;
+  color: #f3f3ef; /* 💼 Yellow or gold for Portfolio */
+  font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 0.75rem;
   margin-left: 0.5rem;
@@ -56,7 +56,7 @@
 
 /* === PORTFOLIO BACKGROUND IMAGE OVERRIDE === */
 .status-wrapper.portfolio {
- /* background-image: url('/static/images/wallpaper6.jpg');  /* 🔁 set your custom image path */
+  background-image: url('/static/images/wallpaper5.jpg');  /* 🖼️ path to your image */
   background-color: #d0e7ff;
   background-size: cover;
   background-position: center;

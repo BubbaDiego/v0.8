@@ -939,6 +939,36 @@ body.dark-bg .status-icon {
   text-align: center;
 }
 
+/* === Heat Column Header (🔥) === */
+.heat-label {
+  font-size: 4rem;         /* 🔧 Icon size — increase/decrease here */
+  text-align: right;         /* ✅ Right-align in column */
+  width: 100%;               /* Ensures right edge alignment */
+  padding-right: 0px;        /* 🔧 Horizontal offset */
+  padding-top: 0x;          /* 🔧 Vertical offset */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Wrapper for positioning inside the container */
+.heat-label-wrapper {
+  position: relative;
+  flex: 0 0 30px;
+  height: 100%;
+}
+
+/* Absolutely positioned flame */
+.heat-icon {
+  position: absolute;
+  top: 3;                /* 🔧 vertical tweak here */
+  right: -12px;          /* 🔧 this pushes it outside the column */
+  font-size: 1.8rem;     /* 🔧 icon size */
+  line-height: 1;
+}
+
+
+
 
 
 

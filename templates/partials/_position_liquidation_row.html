@@ -1,8 +1,7 @@
-
-{% if loop.index0 == 0 %}
+<link rel="stylesheet" href="../../static/css/dashboard.css">{% if is_first %}
 <!-- === HEADER ROW FOR POSITION + LIQUIDATION COLUMNS === -->
 <div class="liq-header-row">
-  <!-- Left side: Position labels -->
+  <!-- 🔹 Left Side: Column Titles -->
   <div class="pos-header">
     <div class="pos-col-label">Asset</div>
     <div class="pos-col-label">Wallet</div>
@@ -11,44 +10,56 @@
     <div class="pos-col-label">Lev</div>
   </div>
 
-  <!-- Right side: Bar + Heat badge -->
+  <!-- 🔸 Right Side: Bar Title and 🔥 -->
   <div class="liq-header">
-    <div class="liq-col-label">Liquidation</div>
-    <div class="liq-col-label heat-label">🔥</div>
+    <div class="liq-col-label" style="min-width: 150px;">Liquidation</div>
+    <div class="heat-label-wrapper">
+  <div class="heat-icon">🔥</div>
+</div>
+
   </div>
 </div>
 {% endif %}
-
 
 <!-- === RESPONSIVE ROW: Position + Liquidation Bar === -->
 <div class="row-pair">
 
   <!-- 🔹 LEFT COLUMN: Position Fields -->
   <div class="pos-col">
-    <!-- Asset with logo -->
+
+    <!-- Asset type with icon -->
     <div class="pos-cell asset">
       {{ pos.asset_type }}
       <img class="asset-icon" src="{{ url_for('static', filename='images/' + pos.asset_type|lower + '_logo.png') }}" alt="{{ pos.asset_type }}">
     </div>
 
-    <!-- Wallet name -->
-    <div class="pos-cell wallet">{{ pos.wallet }}</div>
+    <!-- Wallet ID + image -->
+    <div class="pos-cell wallet">
+      {{ pos.wallet }}
+      <img class="wallet-icon" src="{{ url_for('static', filename='images/' + pos.wallet_image) }}" alt="Wallet">
+    </div>
 
     <!-- Heat index -->
-    <div class="pos-cell heat">{{ pos.heat_index|int }}</div>
+    <div class="pos-cell heat">
+      {{ pos.heat_index|int }}
+    </div>
 
     <!-- Travel % -->
-    <div class="pos-cell travel">{{ pos.travel_percent|round(2) }}%</div>
+    <div class="pos-cell travel">
+      {{ pos.travel_percent|round(2) }}%
+    </div>
 
     <!-- Leverage -->
-    <div class="pos-cell leverage">{{ pos.leverage|round(2) }}</div>
+    <div class="pos-cell leverage">
+      {{ pos.leverage|round(2) }}
+    </div>
+
   </div>
 
-  <!-- 🔸 RIGHT COLUMN: Liquidation Bar + Heat Badge -->
+  <!-- 🔸 RIGHT COLUMN: Liquidation Bar + Heat -->
   <div class="liq-col">
     <div class="liq-bar-container">
       <div class="liq-midline"></div>
-
       {% set pct = pos.travel_percent|float %}
       {% if pct >= 0 %}
         <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
@@ -61,6 +72,7 @@
       {% endif %}
     </div>
 
+    <!-- Heat index badge -->
     <div class="liq-heat-badge">
       {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
     </div>
