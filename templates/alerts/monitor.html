@@ -81,6 +81,10 @@
     animation: spin 1s linear infinite;
   }
 
+  .click-sortable {
+    cursor: pointer;
+  }
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -112,16 +116,16 @@
     <table id="alertTable" class="table table-hover align-middle mb-0">
       <thead>
         <tr>
-          <th>Asset</th>
+          <th class="click-sortable" data-key="asset">Asset</th>
           <th>Asset Img</th>
           <th>Wallet Img</th>
-          <th>Class</th>
-          <th>Type</th>
-          <th>Trigger</th>
-          <th>Evaluated</th>
-          <th>Level</th>
-          <th>Status</th>
-          <th>Last Triggered</th>
+          <th class="click-sortable" data-key="alert_class">Class</th>
+          <th class="click-sortable" data-key="alert_type">Type</th>
+          <th class="click-sortable" data-key="trigger_value">Trigger</th>
+          <th class="click-sortable" data-key="evaluated_value">Evaluated</th>
+          <th class="click-sortable" data-key="level">Level</th>
+          <th class="click-sortable" data-key="status">Status</th>
+          <th class="click-sortable" data-key="last_triggered">Last Triggered</th>
           <th class="click-sortable" data-key="id">ID</th>
         </tr>
       </thead>
@@ -145,6 +149,18 @@
 
   function getSafeStatus(statusRaw) {
     return (typeof statusRaw === "string" && ["Active", "Inactive"].includes(statusRaw)) ? statusRaw : "Inactive";
+  }
+
+  function getAlertTypeIcon(type) {
+    const map = {
+      HeatIndex: "fa-fire",
+      Profit: "fa-sack-dollar",
+      TravelPercentLiquid: "fa-plane-departure",
+      ValueToCollateralRatio: "fa-balance-scale",
+      TotalValue: "fa-chart-bar",
+      AvgLeverage: "fa-wrench"
+    };
+    return map[type] || "fa-bell";
   }
 
   async function fetchAlerts() {
@@ -193,7 +209,9 @@
         <td><img src="${assetImg}" class="alert-img" onerror="this.src='/static/images/unknown.png'"></td>
         <td><img src="${walletImg}" class="alert-img" onerror="this.src='/static/images/unknown_wallet.jpg'"></td>
         <td>${alert.alert_class}</td>
-        <td>${alert.alert_type}</td>
+        <td title="${alert.alert_type}">
+          <i class="fas ${getAlertTypeIcon(alert.alert_type)} text-secondary me-1"></i>
+        </td>
         <td>${alert.trigger_value ?? "—"}</td>
         <td>${alert.evaluated_value ?? "—"}</td>
         <td><span class="badge badge-level-${level}">${level}</span></td>
