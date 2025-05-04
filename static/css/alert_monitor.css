@@ -1,0 +1,28 @@
+.level-High {
+  background-color: #dc3545 !important;
+  color: #fff;
+}
+.level-Medium {
+  background-color: #ffc107 !important;
+  color: #000;
+}
+.level-Low {
+  background-color: #0d6efd !important;
+  color: #fff;
+}
+.status-Active {
+  background-color: #198754 !important;
+  color: #fff;
+}
+.status-Inactive {
+  background-color: #adb5bd !important;
+  color: #000;
+}
+.shadow-table {
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.click-sortable {
+  cursor: pointer;
+}
