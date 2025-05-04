@@ -1,9 +1,9 @@
-import asyncio
-import logging
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import asyncio
+import logging
 from monitor.monitor_utils import LedgerWriter
 from datetime import datetime, timezone
 from monitor.price_monitor import PriceMonitor
@@ -15,11 +15,10 @@ from data.data_locker import DataLocker
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager  # Import HedgeManager directly
 from positions.position_service import PositionService
-from alerts.alert_service_manager import AlertServiceManager
 from config.config_manager import UnifiedConfigManager
 from config.config_constants import CONFIG_PATH
 from utils.console_logger import ConsoleLogger as log
-
+from alerts.alert_service_manager import AlertServiceManager
 
 
 

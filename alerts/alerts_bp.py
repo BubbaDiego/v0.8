@@ -1,4 +1,5 @@
-import os
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
 import logging
 import asyncio
@@ -76,39 +77,87 @@ def test_sms():
 
 @alerts_bp.route('/monitor', methods=['GET'])
 def monitor_alerts():
-    """
-    Return a lightweight JSON of current active alerts and their statuses.
-    Includes full Alert model fields.
-    """
-    try:
-        data_locker = DataLocker.get_instance()
-        alerts = data_locker.get_alerts()
+    return jsonify({
+        "alerts": [
+            {
+                "id": "abc123",
+                "alert_type": "Profit",
+                "alert_class": "Position",
+                "asset": "BTC",
+                "trigger_value": 1000,
+                "evaluated_value": 640,
+                "condition": "ABOVE",
+                "position_reference_id": "POS1",
+                "position_type": "Short",
+                "notification_type": "SMS",
+                "level": "High",
+                "last_triggered": "2025-05-03T12:30:00Z",
+                "status": "Active",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0,
+                "travel_percent": -22.0,
+                "liquidation_price": 18000,
+                "notes": "Auto-generated",
+                "description": "Profit alert on BTC short",
+                "wallet_name": "ObiVault",
+                "wallet_image": "/static/images/obivault.jpg",
+                "wallet_id": "wallet-001"
+            },
+            {
+                "id": "def456",
+                "alert_type": "HeatIndex",
+                "alert_class": "Position",
+                "asset": "ETH",
+                "trigger_value": 50,
+                "evaluated_value": 35,
+                "condition": "ABOVE",
+                "position_reference_id": "POS2",
+                "position_type": "Long",
+                "notification_type": "SMS",
+                "level": "Medium",
+                "last_triggered": "2025-05-03T12:35:00Z",
+                "status": "Active",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0,
+                "travel_percent": -5,
+                "liquidation_price": 1350,
+                "notes": "Position overheating",
+                "description": "Heat check",
+                "wallet_name": "R2Vault",
+                "wallet_image": "/static/images/r2vault.jpg",
+                "wallet_id": "wallet-002"
+            },
+            {
+                "id": "ghi789",
+                "alert_type": "TravelPercentLiquid",
+                "alert_class": "Position",
+                "asset": "SOL",
+                "trigger_value": -25,
+                "evaluated_value": -18,
+                "condition": "BELOW",
+                "position_reference_id": "POS3",
+                "position_type": "Short",
+                "notification_type": "SMS",
+                "level": "Low",
+                "last_triggered": "2025-05-03T12:40:00Z",
+                "status": "Inactive",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0,
+                "travel_percent": 12.5,
+                "liquidation_price": 21.2,
+                "notes": "Chillin",
+                "description": "SOL drifting",
+                "wallet_name": "LandoVault",
+                "wallet_image": "/static/images/landovault.jpg",
+                "wallet_id": "wallet-003"
+            }
+        ]
+    })
 
-        output = []
-        for alert in alerts:
-            output.append({
-                "id": alert.get("id"),
-                "alert_type": alert.get("alert_type"),
-                "alert_class": alert.get("alert_class"),
-                "trigger_value": alert.get("trigger_value"),
-                "notification_type": alert.get("notification_type"),
-                "last_triggered": alert.get("last_triggered"),
-                "status": alert.get("status"),
-                "frequency": alert.get("frequency"),
-                "counter": alert.get("counter"),
-                "liquidation_distance": alert.get("liquidation_distance"),
-                "travel_percent": alert.get("travel_percent"),
-                "liquidation_price": alert.get("liquidation_price"),
-                "notes": alert.get("notes"),
-                "position_reference_id": alert.get("position_reference_id"),
-                "level": alert.get("level"),
-                "evaluated_value": alert.get("evaluated_value")
-            })
 
-        return jsonify({"alerts": output})
-    except Exception as e:
-        logger.error(f"Error monitoring alerts: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
 
 @alerts_bp.route('/create_all', methods=['POST'])
 def create_all_alerts():
@@ -186,10 +235,9 @@ def config_page():
                            notifications=config_data.get("alert_config", {}).get("notifications", {}),
                            theme=config_data.get("theme_config", {}))
 
-# Add alias route for config_page so title bar link works
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
-    return config_page()  # calls existing config_page() handler
+    return "🚫 Alert Limits Page has been disabled.", 410
 
 
 # Matrix view route
@@ -272,6 +320,11 @@ def alert_matrix():
     except Exception as e:
         logger.error(f"Error building alert matrix: {e}", exc_info=True)
         return "Matrix load error", 500
+
+@alerts_bp.route('/monitor_page', methods=['GET'])
+def monitor_page():
+    return render_template("alerts/monitor.html")
+
 
 # --- Internal helpers ---
 

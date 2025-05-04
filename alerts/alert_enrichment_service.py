@@ -51,7 +51,21 @@ class AlertEnrichmentService:
     async def _enrich_position_type(self, alert):
         """
         Dispatch Position-class alerts to their enrichment method based on alert_type.
+        Also attaches wallet info from the position.
         """
+        position = self.data_locker.get_position_by_reference_id(alert.position_reference_id)
+        if not position:
+            log.error(f"⚠️ Position not found for alert {alert.id}", source="AlertEnrichment")
+            return alert
+
+        # 🧠 Attach wallet info from position
+        wallet_id = position.get("wallet_id")
+        wallet_name = position.get("wallet_name")
+        alert.wallet_id = wallet_id
+        alert.wallet_name = wallet_name
+
+        log.debug(f"🔗 Bound wallet to alert {alert.id} → {wallet_name} ({wallet_id})", source="AlertEnrichment")
+
         if alert.alert_type == AlertType.TravelPercentLiquid:
             return await self._enrich_travel_percent(alert)
         elif alert.alert_type == AlertType.HeatIndex:

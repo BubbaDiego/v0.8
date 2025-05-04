@@ -56,6 +56,34 @@ def normalize_condition(condition_input):
 
     raise TypeError(f"Invalid condition input: {type(condition_input)}")
 
+def resolve_wallet_metadata(alert, data_locker=None):
+    """
+    Given an Alert object, resolve the wallet info (name, image_path) by following:
+    alert → position_reference_id → position.wallet_name → wallet → image_path
+    """
+    from data.data_locker import DataLocker
+
+    if not alert or not alert.position_reference_id:
+        return {"wallet_name": None, "wallet_image": None, "wallet_id": None}
+
+    if not data_locker:
+        data_locker = DataLocker.get_instance()
+
+    position = data_locker.get_position_by_reference_id(alert.position_reference_id)
+    if not position:
+        return {"wallet_name": None, "wallet_image": None, "wallet_id": None}
+
+    wallet_name = position.get("wallet_name") or position.get("wallet")
+    wallet_id = position.get("wallet_id")
+
+    wallet = data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
+
+    return {
+        "wallet_name": wallet.get("name") if wallet else wallet_name,
+        "wallet_image": wallet.get("image_path") if wallet else f"/static/images/{wallet_name.lower()}.jpg",
+        "wallet_id": wallet_id
+    }
+
 
 def normalize_alert_type(alert_type_input):
     """

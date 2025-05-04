@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from alerts.alert_service import AlertService
 from alerts.alert_repository import AlertRepository
 from alerts.alert_enrichment_service import AlertEnrichmentService

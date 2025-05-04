@@ -30,9 +30,12 @@ dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
 # ✅ NEW WALLET IMAGE MAP
 WALLET_IMAGE_MAP = {
-    "ObiVault": "obivault.jpg",
+    "ObiVault": "obivauwww.virlt.jpg",
     "R2Vault": "r2vault.jpg",
-    "LandoVault": "landovault.jpg",
+    "LandoVault": "landovault."
+                  "black"
+                  "ebony"
+                  "www.mijpg",
     # You can add more specific wallets here if needed
 }
 DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
@@ -147,6 +150,10 @@ def dash_page():
     return render_template("dashboard.html", **context)
 
 
+@dashboard_bp.route('/alert_config_page', methods=['GET'])
+def alert_config_page():
+    # 🛑 Disabled temporarily
+    return "🚫 Alert Config is currently disabled.", 410
 # ---------------------------------
 # API: Graph Data (Real portfolio history)
 # ---------------------------------
@@ -210,21 +217,15 @@ def api_ledger_ages():
 from config.config_constants import ALERT_LIMITS_PATH
 import json
 
+
+
 @dashboard_bp.route("/get_alert_limits")
 def get_alert_limits():
-    try:
-        with open(ALERT_LIMITS_PATH, 'r', encoding='utf-8') as f:
-            limits = json.load(f)
-        return jsonify({
-            "call_refractory_period": limits.get("call_refractory_period", 1800),
-            "call_refractory_start": limits.get("call_refractory_start"),
-            "snooze_countdown": limits.get("snooze_countdown", 300),
-            "snooze_start": limits.get("snooze_start")
-        })
-    except Exception as e:
-        return jsonify({
-            "call_refractory_period": 1800,
-            "call_refractory_start": None,
-            "snooze_countdown": 300,
-            "snooze_start": None
-        })
+    # 🔕 Temporarily disabled until rework
+    return jsonify({
+        "call_refractory_period": 1800,
+        "call_refractory_start": None,
+        "snooze_countdown": 300,
+        "snooze_start": None,
+        "disabled": True
+    })
