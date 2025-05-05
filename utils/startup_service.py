@@ -39,7 +39,7 @@ class StartUpService:
     @staticmethod
     def ensure_alert_limits():
         if not os.path.exists(ALERT_LIMITS_PATH):
-            log.warning("⚠️ alert_limits.json not found. Creating default template...")
+            log.warning("⚠️ alert_limitsz.json not found. Creating default template...")
             default = {
                 "alert_ranges": {},
                 "global_alert_config": {
@@ -49,10 +49,10 @@ class StartUpService:
                 }
             }
             from utils.config_loader import save_config
-            save_config("alert_limits.json", default)
-            log.success("✅ Default alert_limits.json created.", source="StartUpCheck")
+            save_config("alert_limitsz.json", default)
+            log.success("✅ Default alert_limitsz.json created.", source="StartUpCheck")
         else:
-            log.info("✅ alert_limits.json found.", source="StartUpCheck")
+            log.info("✅ alert_limitsz.json found.", source="StartUpCheck")
 
     @staticmethod
     def ensure_required_directories():

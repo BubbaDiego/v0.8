@@ -31,7 +31,7 @@ class AlertServiceManager:
         data_locker = DataLocker.get_instance()
         repo = AlertRepository(data_locker)
         enrichment = AlertEnrichmentService(data_locker)
-        config_loader = lambda: load_config("alert_limits.json") or {}
+        config_loader = lambda: load_config("alert_limitsz.json") or {}
         service = AlertService(repo, enrichment, config_loader)
         service.notification_service = NotificationService(config_loader)
         return service

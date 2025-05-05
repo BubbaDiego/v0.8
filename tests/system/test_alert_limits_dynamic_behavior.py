@@ -17,10 +17,10 @@ from tests.system.system_test_helpers import create_temp_alert_limits_json
 async def test_alert_limits_dynamic_behavior(tmp_path):
     """
     System Test:
-    1. Load alert_limits.json
+    1. Load alert_limitsz.json
     2. Verify config loaded correctly
     3. Create an alert based on current limits
-    4. Modify alert_limits.json
+    4. Modify alert_limitsz.json
     5. Reload config
     6. Create a new alert based on new limits
     7. Compare alerts
@@ -35,7 +35,7 @@ async def test_alert_limits_dynamic_behavior(tmp_path):
     # --- Step 1: Load original config ---
     log.banner("SYSTEM TEST: Load Original Config")
     original_config = load_config(original_limits_path)
-    assert original_config, "❌ Failed to load original alert_limits.json"
+    assert original_config, "❌ Failed to load original alert_limitsz.json"
 
     # Save backup
     with open(backup_limits_path, "w", encoding="utf-8") as f:
@@ -74,7 +74,7 @@ async def test_alert_limits_dynamic_behavior(tmp_path):
     success = repo.create_alert(first_alert)
     assert success, "❌ Failed to create first alert"
 
-    # --- Step 4: Modify alert_limits.json ---
+    # --- Step 4: Modify alert_limitsz.json ---
     log.banner("SYSTEM TEST: Modify Config")
     modified_config = copy.deepcopy(original_config)
     modified_config["alert_cooldown_seconds"] = 300  # Example change

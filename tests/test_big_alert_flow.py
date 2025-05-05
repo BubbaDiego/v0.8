@@ -37,7 +37,7 @@ async def test_full_alert_flow():
 
     repo = AlertRepository(data_locker)
     enrichment = AlertEnrichmentService(data_locker)
-    config_loader = lambda: load_config("alert_limits.json") or {}  # fallback empty
+    config_loader = lambda: load_config("alert_limitsz.json") or {}  # fallback empty
     notification_service = NotificationService(config_loader)
 
     service = AlertService(repo, enrichment, config_loader)

@@ -60,7 +60,7 @@ async def test_total_alert_system_flow():
     log.banner("SYSTEM TEST: Sonic Alert System Full Lifecycle Start")
 
     # Step 1: Setup
-    config = load_config("alert_limits.json") or {}
+    config = load_config("alert_limitsz.json") or {}
     data_locker = MockDataLockerSystem()
     repo = AlertRepository(data_locker)
     enrichment = AlertEnrichmentService(data_locker)

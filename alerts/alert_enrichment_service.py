@@ -116,6 +116,22 @@ class AlertEnrichmentService:
             log.error(f"❌ Portfolio enrichment failed for alert {alert.id}: {e}", source="AlertEnrichment")
             return alert
 
+    async def _enrich_position_type(self, alert):
+        """
+        Dispatch enrichment based on position-level alert_type.
+        """
+        alert_type = str(alert.alert_type).lower()
+
+        if alert_type == "profit":
+            return await self._enrich_profit(alert)
+        elif alert_type == "heatindex":
+            return await self._enrich_heat_index(alert)
+        elif alert_type == "travelpercentliquid":
+            return await self._enrich_travel_percent(alert)
+        else:
+            log.warning(f"⚠️ Unsupported position alert type: {alert_type}", source="AlertEnrichment")
+            return alert
+
 
     async def _enrich_travel_percent(self, alert):
         try:

@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from cyclone.cyclone import Cyclone
+from cyclone.cyclone_engine import Cyclone
 from utils.console_logger import ConsoleLogger as log
 
 @pytest.fixture

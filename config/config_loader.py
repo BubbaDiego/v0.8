@@ -16,7 +16,7 @@ def load_config(filename=None):
     """
     Always loads from ALERT_LIMITS_PATH unless explicitly overridden with a full absolute path.
     """
-    if not filename or Path(filename).name == "alert_limits.json":
+    if not filename or Path(filename).name == "alert_limitsz.json":
         filename = str(ALERT_LIMITS_PATH)
 
     if not os.path.isabs(filename):

@@ -18,7 +18,7 @@ from config.config_constants import DB_PATH, CONFIG_PATH, BASE_DIR
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager
 from utils.console_logger import ConsoleLogger as log  # 🚀 NEW
-from cyclone.cyclone import Cyclone
+from cyclone.cyclone_engine import Cyclone
 from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp
 from alerts.alerts_bp import alerts_bp

@@ -13,7 +13,7 @@ from utils.console_logger import ConsoleLogger
 from config.config_constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):
-    ALERT_LIMITS = "alert_limits.json"
+    ALERT_LIMITS = "alert_limitsz.json"
     THEME_CONFIG = "theme_config.json"
     SONIC_SAUCE = "sonic_sauce.json"
     SONIC_CONFIG = "sonic_config.json"

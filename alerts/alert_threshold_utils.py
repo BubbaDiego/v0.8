@@ -5,7 +5,7 @@ from data.alert import AlertType
 
 def get_default_trigger_value(alert_type: AlertType) -> float:
     """
-    Returns the default trigger value from alert_limits.json based on the alert_type.
+    Returns the default trigger value from alert_limitsz.json based on the alert_type.
     """
     config = load_config(ALERT_LIMITS_PATH)
     alert_limits = config.get("alert_limits", config)

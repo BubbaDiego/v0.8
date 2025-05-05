@@ -23,7 +23,7 @@ import logging
 from datetime import datetime, timezone
 
 import pytz
-from cyclone.cyclone import Cyclone
+from cyclone.cyclone_engine import Cyclone
 from monitor.monitor_utils import load_timer_config, update_timer_config
 
 # ——— Setup logging in PST ———

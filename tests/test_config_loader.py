@@ -14,7 +14,7 @@ def tmp_config_file(tmp_path):
             }
         }
     }
-    config_path = tmp_path / "alert_limits.json"
+    config_path = tmp_path / "alert_limitsz.json"
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f)
     return str(config_path)

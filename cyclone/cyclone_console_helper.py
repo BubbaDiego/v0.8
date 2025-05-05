@@ -1,6 +1,6 @@
 import asyncio
 #from alerts.alert_controller import AlertController
-from cyclone import Cyclone
+from cyclone_engine import Cyclone
 
 class CycloneConsoleHelper:
     def __init__(self, cyclone_instance):
@@ -49,7 +49,7 @@ class CycloneConsoleHelper:
                         operation_type="Cycle Report Generated",
                         primary_text="Cycle report generated successfully",
                         source="Cyclone",
-                        file="cyclone.py"
+                        file="cyclone_engine.py"
                     )
                     print("Cycle report generated.")
                 except Exception as e:
@@ -104,7 +104,7 @@ class CycloneConsoleHelper:
                         operation_type="Cycle Report Generated",
                         primary_text="Cycle report generated successfully",
                         source="Cyclone",
-                        file="cyclone.py"
+                        file="cyclone_engine.py"
                     )
                 except Exception as e:
                     self.cyclone.logger.error(f"Cycle report generation failed: {e}", exc_info=True)
@@ -313,7 +313,7 @@ class CycloneConsoleHelper:
                 print("Invalid choice, please try again.")
 
 if __name__ == "__main__":
-    from cyclone import Cyclone
+    from cyclone_engine import Cyclone
     cyclone = Cyclone(poll_interval=60)
     helper = CycloneConsoleHelper(cyclone)
     helper.run()

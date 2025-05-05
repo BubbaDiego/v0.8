@@ -777,7 +777,7 @@ class DataLocker:
     # --- New Method to Get Alert Limits ---
     def get_alert_limits(self):
         try:
-            alert_limits_path = os.path.join(self.db_path, "..", "alert_limits.json")
+            alert_limits_path = os.path.join(self.db_path, "..", "alert_limitsz.json")
             alert_limits_path = os.path.abspath(alert_limits_path)  # Always use absolute path
             with open(alert_limits_path, "r") as f:
                 data = json.load(f)
@@ -791,7 +791,7 @@ class DataLocker:
             }
 
         except Exception as e:
-            print(f"[ERROR] Failed to load alert_limits.json: {e}")
+            print(f"[ERROR] Failed to load alert_limitsz.json: {e}")
             # Return safe fallback if file missing or corrupt
             return {
                 "call_refractory_period": 1800,

@@ -188,7 +188,7 @@ def config_page():
     """
     try:
         json_manager = current_app.json_manager
-        config_data = json_manager.load("alert_limits.json", json_type=JsonType.ALERT_LIMITS)
+        config_data = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
         config_data = convert_types_in_dict(config_data)
     except Exception as e:
         logger.error(f"Error loading config: {e}", exc_info=True)
@@ -214,7 +214,7 @@ def alert_matrix_page():
         alerts = data_locker.get_alerts()
         positions = data_locker.read_positions()
         json_manager = current_app.json_manager
-        alert_config = json_manager.load("alert_limits.json", json_type=JsonType.ALERT_LIMITS)
+        alert_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
         theme_config = current_app.config.get('theme', {})
 
         for alert in alerts:
@@ -243,7 +243,7 @@ def update_config():
         nested_update = convert_types_in_dict(nested_update)
 
         json_manager = current_app.json_manager
-        current_config = json_manager.load("alert_limits.json", json_type=JsonType.ALERT_LIMITS)
+        current_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
         merged_config = json_manager.deep_merge(current_config, nested_update)
 
         if not merged_config.get("alert_cooldown_seconds"):
@@ -251,7 +251,7 @@ def update_config():
         if not merged_config.get("call_refractory_period"):
             merged_config["call_refractory_period"] = 1800
 
-        json_manager.save("alert_limits.json", merged_config, json_type=JsonType.ALERT_LIMITS)
+        json_manager.save("alert_limitsz.json", merged_config, json_type=JsonType.ALERT_LIMITS)
         log.success("Alert configuration updated successfully.", source="AlertsBP")
         return jsonify({"success": True})
     except Exception as e:
@@ -268,7 +268,7 @@ def alert_matrix():
         alerts = data_locker.get_alerts()
         positions = data_locker.read_positions()
         json_manager = current_app.json_manager
-        alert_config = json_manager.load("alert_limits.json", json_type=JsonType.ALERT_LIMITS)
+        alert_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
         theme_config = current_app.config.get('theme', {})
 
         now = time()

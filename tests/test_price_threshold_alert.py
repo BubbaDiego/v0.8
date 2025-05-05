@@ -68,7 +68,7 @@ async def test_profit_alert_behavior():
     data_locker = MockDataLockerProfit()
     repo = AlertRepository(data_locker)
     enrichment = MockEnrichmentService(data_locker)
-    config_loader = lambda: load_config("alert_limits.json") or {}
+    config_loader = lambda: load_config("alert_limitsz.json") or {}
 
     service = AlertService(repo, enrichment, config_loader)
     service.notification_service = NotificationService(config_loader)
