@@ -129,14 +129,31 @@ class AlertEvaluationService:
         """
         Handles evaluation of Position alerts using alert-type-specific thresholds.
         """
-        alert_type_key = str(alert.alert_type).lower() + "_limits"
-        thresholds = self.thresholds.get(alert_type_key)
+        type_key_map = {
+            "profit": "profit_ranges",
+            "heatindex": "heat_index_ranges",
+            "travelpercentliquid": "travel_percent_liquid_ranges",
+            "pricethreshold": "price_alerts"
+        }
 
+        if not alert.alert_type:
+            log.error(f"❌ Cannot evaluate: missing alert_type on alert {alert.id}", source="AlertEvaluation")
+            alert.level = AlertLevel.NORMAL
+            return alert
+
+        # 🔧 Remove Enum wrapper (i.e., 'AlertType.Profit' → 'profit')
+        alert_type_str = str(alert.alert_type).lower().replace("alerttype.", "")
+        alert_type_key = type_key_map.get(alert_type_str)
+
+        if not alert_type_key:
+            log.warning(f"⚠️ Unknown alert type '{alert.alert_type}' → using fallback eval", source="AlertEvaluation")
+            return self._simple_trigger_evaluation(alert)
+
+        thresholds = self.thresholds.get(alert_type_key)
         if thresholds:
             return self._evaluate_against(alert, thresholds)
 
-        log.warning(f"⚠️ No thresholds for alert type '{alert_type_key}' — fallback to simple eval",
-                    source="AlertEvaluation")
+        log.warning(f"⚠️ No thresholds found for key '{alert_type_key}'", source="AlertEvaluation")
         return self._simple_trigger_evaluation(alert)
 
     def _simple_trigger_evaluation(self, alert):

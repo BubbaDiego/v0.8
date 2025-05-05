@@ -53,6 +53,20 @@ class AlertRepository:
 
         return alerts
 
+    def update_alert_evaluated_value(self, alert_id: str, evaluated_value: float):
+        try:
+            cursor = self.data_locker.conn.cursor()  # ✅ use the injected DataLocker
+            sql = """
+                UPDATE alerts
+                   SET evaluated_value = ?
+                 WHERE id = ?
+            """
+            cursor.execute(sql, (evaluated_value, alert_id))
+            self.data_locker.conn.commit()
+            log.info(f"✅ Updated evaluated_value for alert {alert_id}", source="AlertRepository")
+        except Exception as e:
+            log.error(f"❌ Failed to update evaluated_value for alert {alert_id}: {e}", source="AlertRepository")
+
     async def update_alert_level(self, alert_id: str, new_level):
         await asyncio.sleep(0)  # simulate async
         try:

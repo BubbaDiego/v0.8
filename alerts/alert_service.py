@@ -23,40 +23,48 @@ class AlertService:
         """
         log.banner("STARTING ALERT PROCESSING")
 
-        alerts = await self.repository.get_active_alerts()
+        # ❌ This was the bug: do NOT await a sync method
+        alerts = self.repository.get_active_alerts()  # ✅ FIXED: no await
 
         if not alerts:
             log.warning("No active alerts found.", source="AlertService")
             return
 
         log.info(f"Fetched {len(alerts)} active alerts.", source="AlertService")
-
         log.start_timer("process_alerts")
 
-        for alert in alerts:
-            try:
-                enriched_alert = await self.enrichment_service.enrich(alert)
-                new_level = self.evaluation_service.evaluate(enriched_alert)
+        try:
+            # 🧠 NEW: Use batch enrich for async concurrency
+            enriched_alerts = await self.enrichment_service.enrich_all(alerts)
 
-                if new_level != AlertLevel.NORMAL:
-                    log.success(
-                        f"ALERT TRIGGERED! {enriched_alert.asset} - {enriched_alert.alert_type} ({new_level})",
-                        source="AlertService",
-                        payload={"evaluated_value": enriched_alert.evaluated_value,
-                                 "trigger_value": enriched_alert.trigger_value}
-                    )
-                    await self.notification_service.send_alert(enriched_alert)
-                else:
-                    log.debug(
-                        f"Alert evaluated as NORMAL: {enriched_alert.asset} - {enriched_alert.alert_type}",
-                        source="AlertService",
-                        payload={"evaluated_value": enriched_alert.evaluated_value}
-                    )
+            for alert in enriched_alerts:
+                try:
+                    evaluated = self.evaluation_service.evaluate(alert)
 
-                await self.repository.update_alert_level(enriched_alert.id, new_level)
+                    if evaluated.level != AlertLevel.NORMAL:
+                        log.success(
+                            f"🚨 ALERT TRIGGERED: {evaluated.asset} - {evaluated.alert_type} ({evaluated.level})",
+                            source="AlertService",
+                            payload={"evaluated_value": evaluated.evaluated_value,
+                                     "trigger_value": evaluated.trigger_value}
+                        )
+                        await self.notification_service.send_alert(evaluated)
+                    else:
+                        log.debug(
+                            f"✅ Alert evaluated as NORMAL: {evaluated.asset} - {evaluated.alert_type}",
+                            source="AlertService",
+                            payload={"evaluated_value": evaluated.evaluated_value}
+                        )
 
-            except Exception as e:
-                log.error(f"Error processing alert {alert.id}: {e}", source="AlertService")
+                    self.repository.update_alert_level(evaluated.id, evaluated.level)
+                    self.repository.update_alert_evaluated_value(evaluated.id, evaluated.evaluated_value)
+
+                except Exception as inner:
+                    log.error(f"⚠️ Error handling alert {alert.id}: {inner}", source="AlertService")
+
+        except Exception as outer:
+            log.error(f"❌ Top-level alert processing error: {outer}", source="AlertService")
 
         log.end_timer("process_alerts", source="AlertService")
         log.banner("ALERT PROCESSING COMPLETE")
+
