@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Alert Monitor - Grid Matrix</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #222;
+      color: #fff;
+      padding: 2rem;
+    }
+    .alert-tile {
+      background-color: #2c2f33;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .alert-tile:hover {
+      transform: scale(1.01);
+      box-shadow: 0 0 8px rgba(255,255,255,0.15);
+    }
+    .tile-level-High { border-left: 8px solid #dc3545; }
+    .tile-level-Medium { border-left: 8px solid #ffc107; }
+    .tile-level-Low { border-left: 8px solid #0d6efd; }
+    .tile-level-Normal { border-left: 8px solid #6c757d; }
+    .tile-header {
+      font-weight: 600;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .tile-meta {
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+    .tile-badge {
+      font-size: 0.75rem;
+      padding: 0.25em 0.6em;
+    }
+    .action-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h2 class="mb-4">📊 Alert Monitor – Grid Matrix</h2>
+  <div class="container-fluid">
+    <div class="row g-4">
+      
+      <!-- Tile 1 -->
+      <div class="col-md-6">
+        <div class="alert-tile tile-level-Medium">
+          <div class="tile-header"><i class="fas fa-bolt text-warning"></i> PriceThreshold</div>
+          <div class="tile-meta">60000 → <strong>59700</strong></div>
+          <div class="mt-2">
+            <span class="badge bg-warning text-dark tile-badge">Medium</span>
+            <span class="badge bg-success tile-badge">Active</span>
+          </div>
+          <div class="mt-3 small text-muted">⏱ Last: 2025-05-01 12:23</div>
+          <button class="btn btn-outline-light btn-sm action-btn"><i class="fas fa-sync-alt"></i></button>
+        </div>
+      </div>
+
+      <!-- Tile 2 -->
+      <div class="col-md-6">
+        <div class="alert-tile tile-level-High">
+          <div class="tile-header"><i class="fas fa-dollar-sign text-danger"></i> Profit</div>
+          <div class="tile-meta">1000 → <strong>1500</strong></div>
+          <div class="mt-2">
+            <span class="badge bg-danger tile-badge">High</span>
+            <span class="badge bg-success tile-badge">Active</span>
+          </div>
+          <div class="mt-3 small text-muted">⏱ Last: 2025-05-02 08:30</div>
+          <button class="btn btn-outline-light btn-sm action-btn"><i class="fas fa-sync-alt"></i></button>
+        </div>
+      </div>
+
+      <!-- Tile 3 -->
+      <div class="col-md-6">
+        <div class="alert-tile tile-level-Low">
+          <div class="tile-header"><i class="fas fa-fire text-primary"></i> TotalHeat</div>
+          <div class="tile-meta">70 → <strong>30</strong></div>
+          <div class="mt-2">
+            <span class="badge bg-primary tile-badge">Low</span>
+            <span class="badge bg-secondary tile-badge">Inactive</span>
+          </div>
+          <div class="mt-3 small text-muted">⏱ Last: 2025-04-28 14:10</div>
+          <button class="btn btn-outline-light btn-sm action-btn" disabled><i class="fas fa-ban"></i></button>
+        </div>
+      </div>
+
+      <!-- Tile 4 -->
+      <div class="col-md-6">
+        <div class="alert-tile tile-level-High">
+          <div class="tile-header"><i class="fas fa-plane-departure text-danger"></i> TravelPercentLiquid</div>
+          <div class="tile-meta">-50 → <strong>-65</strong></div>
+          <div class="mt-2">
+            <span class="badge bg-danger tile-badge">High</span>
+            <span class="badge bg-success tile-badge">Active</span>
+          </div>
+          <div class="mt-3 small text-muted">⏱ Last: 2025-05-03 06:15</div>
+          <button class="btn btn-outline-light btn-sm action-btn"><i class="fas fa-sync-alt"></i></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

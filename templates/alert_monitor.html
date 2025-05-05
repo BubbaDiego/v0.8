@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Alert Monitor{% endblock %}
+
+{% block extra_styles %}
+<style>
+  body {
+    background-color: #f5f6fa;
+  }
+
+  .table-container {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.08);
+  }
+
+  table thead th {
+    background-color: #212529;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.75rem 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  table tbody td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+  }
+
+  tbody tr:hover {
+    background-color: #f2f4f6;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e3e3e3;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.35em 0.65em;
+    border-radius: 6px;
+  }
+
+  .badge-level-High { background-color: #dc3545; color: #fff; }
+  .badge-level-Medium { background-color: #ffc107; color: #212529; }
+  .badge-level-Low { background-color: #0d6efd; color: #fff; }
+  .badge-level-Normal { background-color: #6c757d; color: #fff; }
+  .badge-status-Active { background-color: #198754; color: #fff; }
+  .badge-status-Inactive { background-color: #6c757d; color: #fff; }
+
+  .alert-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ccc;
+  }
+
+  .bar-container {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    background-color: #e9ecef;
+    border-radius: 6px;
+    margin-top: 6px;
+    min-width: 180px;
+  }
+
+  .bar-fill {
+    position: absolute;
+    height: 100%;
+    background-color: #0d6efd;
+    border-radius: 6px;
+  }
+
+  .bar-marker {
+    position: absolute;
+    top: -6px;
+    width: 2px;
+    height: 24px;
+    background-color: #dc3545;
+  }
+
+  .refresh-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  .click-sortable {
+    cursor: pointer;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4"><i class="fas fa-bell"></i> Alert Monitor</h2>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <button id="manualRefreshBtn" class="btn btn-outline-primary btn-sm">
+      <i id="refreshIcon" class="fas fa-sync-alt"></i> Refresh
+    </button>
+    <div>
+      <label class="form-label me-2 mb-0">Filter by Level:</label>
+      <select id="levelFilter" class="form-select form-select-sm d-inline-block w-auto">
+        <option value="">All</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+        <option value="Normal">Normal</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="alertTable" class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Wallet</th>
+          <th>Class</th>
+          <th>Type</th>
+          <th>Trigger</th>
+          <th>Current</th>
+          <th>Level</th>
+          <th>Status</th>
+          <th style="width: 50%;">Progress</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  async function loadAlerts() {
+    try {
+      const res = await fetch("/alerts/monitor");
+      const data = await res.json();
+      const levelFilter = document.getElementById("levelFilter").value;
+      const table = document.getElementById("alertTable").getElementsByTagName("tbody")[0];
+      table.innerHTML = "";
+
+      data.alerts
+        .filter(alert => !levelFilter || alert.level === levelFilter)
+        .forEach(alert => {
+          const row = document.createElement("tr");
+          const level = alert.level || "Normal";
+          const status = alert.status || "Inactive";
+          const assetImg = `/static/images/${alert.asset?.toLowerCase()}_logo.png`;
+          const walletImg = `/static/images/${alert.wallet || "unknown_wallet"}.jpg`;
+
+          const start = alert.start_value ?? (alert.trigger_value - 10);
+          const trigger = alert.trigger_value ?? 100;
+          const current = alert.evaluated_value ?? 90;
+          const range = Math.abs(trigger - start) || 1;
+          const fillPercent = Math.min(Math.max((current - start) / range, 0), 1) * 100;
+          const triggerPos = ((trigger - start) / range) * 100;
+
+          row.innerHTML = `
+            <td><img src="${assetImg}" class="alert-img" onerror="this.src='/static/images/unknown.png'"></td>
+            <td><img src="${walletImg}" class="alert-img" onerror="this.src='/static/images/unknown_wallet.jpg'"></td>
+            <td>${alert.alert_class}</td>
+            <td title="${alert.alert_type}">
+              <i class="fas ${getAlertTypeIcon(alert.alert_type)} text-secondary me-1"></i>
+            </td>
+            <td>${trigger}</td>
+            <td>${current}</td>
+            <td><span class="badge badge-level-${level}">${levelEmojiMap[level] || ""} ${level}</span></td>
+            <td><span class="badge badge-status-${status}">${status}</span></td>
+            <td>
+              <div class="bar-container">
+                <div class="bar-fill" style="width: ${fillPercent}%;"></div>
+                <div class="bar-marker" style="left: ${triggerPos}%;"></div>
+              </div>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+    } catch (err) {
+      console.error("Failed to load alerts:", err);
+    }
+  }
+
+  function getAlertTypeIcon(type) {
+    return {
+      time: "fa-clock",
+      value: "fa-coins",
+      price: "fa-water",
+    }[type?.toLowerCase()] || "fa-circle-question";
+  }
+
+  const levelEmojiMap = {
+    Normal: "🟢",
+    Warning: "🟠",
+    Critical: "🔴"
+  };
+
+  document.addEventListener("DOMContentLoaded", loadAlerts);
+</script>
+{% endblock %}
