@@ -1,3 +1,13 @@
+import sys
+import os
+import sqlite3
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from alerts.alert_utils import (
+    normalize_alert_type,
+    normalize_condition,
+    normalize_notification_type
+)
+
 from data.alert import Alert, AlertLevel
 import asyncio
 from utils.console_logger import ConsoleLogger as log
@@ -7,18 +17,87 @@ class AlertRepository:
     def __init__(self, data_locker):
         self.data_locker = data_locker
 
-    def create_alert(self, alert_dict):
-        """Insert a new alert into the database."""
-        # Ensure starting_value is captured at creation time if not manually provided
-        if "starting_value" not in alert_dict or alert_dict["starting_value"] is None:
-            try:
-                current = self.data_locker.get_current_value(alert_dict["asset"])
-                alert_dict["starting_value"] = current
-                log.debug(f"[create_alert] Injected starting_value: {current}", source="AlertRepository")
-            except Exception as e:
-                log.warning(f"[create_alert] Could not fetch starting_value for {alert_dict['asset']}: {e}", source="AlertRepository")
+    def create_alert(self, alert_obj) -> bool:
+        try:
+            if not isinstance(alert_obj, dict):
+                alert_dict = alert_obj.to_dict()
+            else:
+                alert_dict = alert_obj
 
-        return self.data_locker.create_alert(alert_dict)
+            # Normalize critical fields
+            if "alert_type" in alert_dict:
+                alert_dict["alert_type"] = normalize_alert_type(alert_dict["alert_type"]).value
+            if "condition" in alert_dict:
+                alert_dict["condition"] = normalize_condition(alert_dict["condition"]).value
+            if "notification_type" in alert_dict:
+                alert_dict["notification_type"] = normalize_notification_type(alert_dict["notification_type"]).value
+
+            # 🔧 Safely inject starting_value only if alert is asset-based
+            alert_class = alert_dict.get("alert_class", "").lower()
+            asset = alert_dict.get("asset")
+
+            if asset and alert_class != "portfolio":
+                try:
+                    current = self.data_locker.get_current_value(asset)
+                    alert_dict["starting_value"] = current
+                    log.debug(f"[create_alert] Injected starting_value: {current}", source="AlertRepository")
+                except Exception as e:
+                    log.warning(f"[create_alert] Could not fetch starting_value for {asset}: {e}",
+                                source="AlertRepository")
+            else:
+                log.debug(f"[create_alert] Skipped starting_value injection for alert_class={alert_class}",
+                          source="AlertRepository")
+
+            # 🧱 Initialize default values
+            alert_dict = self.data_locker.initialize_alert_data(alert_dict)
+
+            # 📥 DB insert
+            cursor = self.data_locker.conn.cursor()
+            sql = """
+                INSERT INTO alerts (
+                    id,
+                    created_at,
+                    alert_type,
+                    alert_class,
+                    asset,
+                    asset_type,
+                    trigger_value,
+                    condition,
+                    notification_type,
+                    level,
+                    last_triggered,
+                    status,
+                    frequency,
+                    counter,
+                    liquidation_distance,
+                    travel_percent,
+                    liquidation_price,
+                    notes,
+                    description,
+                    position_reference_id,
+                    evaluated_value,
+                    position_type
+                ) VALUES (
+                    :id, :created_at, :alert_type, :alert_class, :asset, :asset_type,
+                    :trigger_value, :condition, :notification_type, :level,
+                    :last_triggered, :status, :frequency, :counter, :liquidation_distance,
+                    :travel_percent, :liquidation_price, :notes, :description,
+                    :position_reference_id, :evaluated_value, :position_type
+                )
+            """
+            cursor.execute(sql, alert_dict)
+            self.data_locker.conn.commit()
+            cursor.close()
+
+            log.success(f"✅ Alert created: {alert_dict['id']}", source="AlertRepository")
+            return True
+
+        except sqlite3.IntegrityError as ie:
+            log.error(f"❌ IntegrityError creating alert: {ie}", source="AlertRepository")
+            return False
+        except Exception as ex:
+            log.error(f"❌ Unexpected error creating alert: {ex}", source="AlertRepository")
+            raise
 
     def get_active_alerts(self) -> list[Alert]:
         alerts_raw = self.data_locker.get_alerts()
@@ -67,14 +146,28 @@ class AlertRepository:
         except Exception as e:
             log.error(f"❌ Failed to update evaluated_value for alert {alert_id}: {e}", source="AlertRepository")
 
-    async def update_alert_level(self, alert_id: str, new_level):
-        await asyncio.sleep(0)  # simulate async
+    async def update_alert_level(self, alert_id: str, new_level: AlertLevel):
         try:
-            level_value = getattr(new_level, "value", str(new_level))
-            self.data_locker.update_alert_conditions(alert_id, {
-                "level": level_value,
-                "last_triggered": self.data_locker.get_current_timestamp()
-            })
-            log.success(f"Updated alert {alert_id} to level {level_value}.", source="AlertRepository")
+            cursor = self.data_locker.conn.cursor()
+
+            sql = """
+                UPDATE alerts
+                   SET level = ?
+                 WHERE id = ?
+            """
+            cursor.execute(sql, (new_level.value, alert_id))
+            self.data_locker.conn.commit()
+
+            # 🔍 Verification step: fetch & log new level
+            verify_cursor = self.data_locker.conn.cursor()
+            verify_cursor.execute("SELECT level FROM alerts WHERE id = ?", (alert_id,))
+            row = verify_cursor.fetchone()
+            if row:
+                db_level = row["level"]
+                log.info(f"🧪 Verified alert {alert_id} level in DB: {db_level}", source="AlertRepository")
+            else:
+                log.warning(f"⚠️ Could not verify updated level for alert {alert_id}", source="AlertRepository")
+
         except Exception as e:
-            log.error(f"Failed to update alert {alert_id}: {e}", source="AlertRepository")
+            log.error(f"❌ Failed to update level for alert {alert_id}: {e}", source="AlertRepository")
+

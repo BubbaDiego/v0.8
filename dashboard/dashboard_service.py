@@ -65,7 +65,10 @@ def get_dashboard_context():
         "total_value": sum(float(p.get("value", 0)) for p in positions),
         "total_size": sum(float(p.get("size", 0)) for p in positions),
         "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
+        "avg_travel_percent": (
+                    sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
+        "avg_heat_index": (sum(float(p.get("heat_index", 0)) for p in positions) / len(positions)) if positions else 0
+        # ✅ this is the key
     }
 
     jm = JsonManager()
@@ -98,6 +101,7 @@ def get_dashboard_context():
     monitor_titles = {"Price", "Positions", "Operations", "Xcom"}
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
+
 
     return {
         "theme_mode": dl.get_theme_mode(),

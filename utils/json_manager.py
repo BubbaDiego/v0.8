@@ -1,9 +1,15 @@
 # json_manager.py
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import re
 
 import json
 import inspect
 from enum import Enum
-from utils.unified_logger import UnifiedLogger
+from typing import Optional
+from utils.console_logger import ConsoleLogger
+
 from config.config_constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):
@@ -15,10 +21,7 @@ class JsonType(Enum):
 
 class JsonManager:
     def __init__(self, logger=None):
-        if logger is None:
-            self.logger = UnifiedLogger()
-        else:
-            self.logger = logger
+        self.logger = logger or ConsoleLogger()
 
     def load(self, file_path: str, json_type: JsonType = None):
         """Load and return the JSON data from the specified file path."""
@@ -153,6 +156,37 @@ class JsonManager:
                 extra_data={"json_type": json_type.name if json_type else ""}
             )
             raise
+
+    def resolve_key_fuzzy(self, input_key: str, json_dict: dict, threshold: float = 0.6, aliases: dict = None) -> \
+    Optional[str]:
+        """
+        Attempts to resolve input_key to a key in json_dict using:
+        1. Alias map (manual overrides)
+        2. Normalized exact match
+        3. Fuzzy matching
+        """
+        if not isinstance(json_dict, dict):
+            raise ValueError("Provided json_dict must be a dictionary.")
+
+        def normalize(k):
+            return re.sub(r'[\W_]+', '', str(k).lower())
+
+        norm_input = normalize(input_key)
+
+        # 1. Alias resolution
+        if aliases:
+            for target_key, alias_list in aliases.items():
+                if norm_input == normalize(target_key) or norm_input in map(normalize, alias_list):
+                    return target_key
+
+        # 2. Normalized key match
+        norm_map = {normalize(k): k for k in json_dict.keys()}
+        if norm_input in norm_map:
+            return norm_map[norm_input]
+
+        # 3. Fuzzy fallback
+        close = get_close_matches(norm_input, norm_map.keys(), n=1, cutoff=threshold)
+        return norm_map[close[0]] if close else None
 
     def deep_merge(self, source: dict, updates: dict) -> dict:
         """

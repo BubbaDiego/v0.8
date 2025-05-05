@@ -1,9 +1,12 @@
+
 import sys
 import os
-import asyncio
+
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from utils.json_manager import JsonManager  # ensure this is at the top
+import asyncio
+import re
 from dashboard.dashboard_service import get_dashboard_context
 from utils.calc_services import CalcServices
 from utils.console_logger import ConsoleLogger as log
@@ -15,6 +18,7 @@ from alerts.alert_utils import (
     normalize_alert_fields
 )
 
+from utils.json_manager import JsonManager
 
 class AlertEnrichmentService:
     def __init__(self, data_locker):
@@ -60,28 +64,6 @@ class AlertEnrichmentService:
             log.error(f"❌ Exception during enrichment of alert {alert.id}: {e}", source="AlertEnrichment")
             return alert
 
-    async def _enrich_position_type(self, alert):
-        position = self.data_locker.get_position_by_reference_id(alert.position_reference_id)
-        if not position:
-            log.error(f"⚠️ Position not found for alert {alert.id}", source="AlertEnrichment")
-            return alert
-
-        wallet_id = position.get("wallet_id")
-        wallet_name = position.get("wallet_name")
-
-        log.debug(f"🔗 Bound wallet to alert {alert.id} → {wallet_name} ({wallet_id})", source="AlertEnrichment")
-
-        if alert.alert_type == AlertType.TravelPercentLiquid:
-            return await self._enrich_travel_percent(alert)
-        elif alert.alert_type == AlertType.HeatIndex:
-            return await self._enrich_heat_index(alert)
-        elif alert.alert_type == AlertType.Profit:
-            return await self._enrich_profit(alert)
-        else:
-            log.warning(f"⚠️ Unknown Position alert_type '{alert.alert_type}' for alert {alert.id}",
-                        source="AlertEnrichment")
-            return alert
-
     async def _enrich_portfolio(self, alert):
         try:
             context = get_dashboard_context()
@@ -101,19 +83,39 @@ class AlertEnrichmentService:
                 "total_heat": totals.get("avg_heat_index")
             }
 
-            value = key_map.get(metric)
+            # 🧠 Aliases allow resilient matching
+            aliases = {
+                "total_heat": ["avg_heat_index", "heat_index", "heat"],
+                "value_to_collateral_ratio": ["vcr", "collateral_ratio", "valuecollateral"],
+                "avg_travel_percent": ["travel", "travel_percent", "avgtravel"]
+            }
+
+            json_mgr = JsonManager()
+            resolved_key = json_mgr.resolve_key_fuzzy(metric, key_map, aliases=aliases)
+            value = key_map.get(resolved_key)
+
             alert.evaluated_value = value
 
+            # 🔍 ConsoleLogger v2 structured logging
+            log.debug(f"🔍 Metric requested: '{metric}'", source="AlertEnrichment")
+            log.debug(f"🔑 Resolved key: '{resolved_key}'", source="AlertEnrichment")
+            log.debug("📦 Available keys in map", source="AlertEnrichment", payload={"keys": list(key_map.keys())})
+
             if value is not None:
-                log.success(f"✅ Enriched Portfolio Alert {alert.id} → {metric}={value}", source="AlertEnrichment")
+                log.success(f"✅ Enriched Portfolio Alert {alert.id} → {resolved_key}={value}", source="AlertEnrichment")
             else:
-                log.warning(f"⚠️ Portfolio enrichment metric not found: {metric}", source="AlertEnrichment")
+                log.warning("⚠️ No matching key for enrichment", source="AlertEnrichment", payload={
+                    "requested_metric": metric,
+                    "available_keys": list(key_map.keys()),
+                    "resolved_key": resolved_key
+                })
 
             return alert
 
         except Exception as e:
             log.error(f"❌ Portfolio enrichment failed for alert {alert.id}: {e}", source="AlertEnrichment")
             return alert
+
 
     async def _enrich_travel_percent(self, alert):
         try:

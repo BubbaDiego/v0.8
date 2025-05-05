@@ -7,6 +7,8 @@ from utils.console_logger import ConsoleLogger as log
 from config.config_loader import load_config
 from data.alert import AlertType
 from config.config_constants import ALERT_LIMITS_PATH
+from utils.json_manager import JsonManager
+
 #config_loader = lambda: load_config(str(ALERT_LIMITS_PATH)) or {}
 
 
@@ -72,57 +74,72 @@ class AlertEvaluationService:
         return alert
 
     def _evaluate_portfolio(self, alert):
-        """
-        Special evaluator for portfolio alerts using total_*_limits thresholds.
-        Metric name is derived from description/notes.
-        """
         try:
-            metric = alert.description or alert.notes or ""
-            metric_key = metric.strip().lower().replace(" ", "_") + "_limits"
-            portfolio_limits = self.thresholds.get("total_portfolio_limits", {})
-            thresholds = portfolio_limits.get(metric_key)
+            from config.config_loader import load_config
+            from config.config_constants import ALERT_LIMITS_PATH
+
+            config = load_config(ALERT_LIMITS_PATH)
+            alert_limits = config.get("alert_limits", config)
+            total_limits = alert_limits.get("total_portfolio_limits", {})
+
+            # 🔍 Get the metric being evaluated
+            metric = (alert.description or "").strip().lower()
+            raw_key = f"{metric}_limits"
+
+            # 🔁 Alias map for fallback matching
+            aliases = {
+                "total_heat_limits": ["avg_heat_index_limits", "heat_index_limits", "heat_limits"],
+                "value_to_collateral_ratio_limits": ["vcr_limits", "valuecollateral_limits", "ratio_limits"],
+                "avg_travel_percent_limits": ["travel_percent_limits", "travel_limits"]
+            }
+
+            # 🔎 Resolve key using fuzzy + aliases
+            json_mgr = JsonManager()
+            resolved_key = json_mgr.resolve_key_fuzzy(raw_key, total_limits, aliases=aliases)
+            thresholds = total_limits.get(resolved_key)
+
+            log.debug(f"📊 Evaluating Portfolio Alert {alert.id} → description='{metric}' → key='{resolved_key}'",
+                      source="AlertEvaluation")
 
             if not thresholds:
-                log.warning(f"⚠️ No thresholds for portfolio metric {metric_key}.", source="AlertEvaluation")
-                return self._simple_trigger_evaluation(alert)
+                log.warning(
+                    f"⚠️ Thresholds not found for '{metric}'. Resolved key: '{resolved_key}'",
+                    source="AlertEvaluation",
+                    payload={"available_keys": list(total_limits.keys())}
+                )
+                return alert
 
             value = alert.evaluated_value
-            condition = alert.condition
+            if value is None:
+                log.warning(f"⚠️ Missing evaluated_value for alert {alert.id}", source="AlertEvaluation")
+                return alert
 
+            # 🧠 Evaluate thresholds
             low = thresholds.get("low")
             medium = thresholds.get("medium")
             high = thresholds.get("high")
 
-            log.debug(f"📊 Portfolio thresholds ({metric_key}) → low={low}, medium={medium}, high={high}",
+            log.debug(f"📈 Thresholds for {resolved_key}: low={low}, medium={medium}, high={high}",
                       source="AlertEvaluation")
 
-            if condition == Condition.ABOVE:
-                if value >= high:
-                    alert.level = AlertLevel.HIGH
-                elif value >= medium:
-                    alert.level = AlertLevel.MEDIUM
-                elif value >= low:
-                    alert.level = AlertLevel.LOW
-                else:
-                    alert.level = AlertLevel.NORMAL
-            elif condition == Condition.BELOW:
-                if value <= high:
-                    alert.level = AlertLevel.HIGH
-                elif value <= medium:
-                    alert.level = AlertLevel.MEDIUM
-                elif value <= low:
-                    alert.level = AlertLevel.LOW
-                else:
-                    alert.level = AlertLevel.NORMAL
+            if value >= high:
+                alert.level = "High"
+            elif value >= medium:
+                alert.level = "Medium"
+            elif value >= low:
+                alert.level = "Low"
             else:
-                alert.level = AlertLevel.NORMAL
+                alert.level = "Normal"
 
-            log.success(f"✅ Portfolio alert evaluated: {metric}={value} → {alert.level}", source="AlertEvaluation")
+            log.success(
+                f"✅ Portfolio alert evaluated: {metric}={value} → AlertLevel.{alert.level.upper()}",
+                source="AlertEvaluation"
+            )
+
             return alert
 
         except Exception as e:
-            log.error(f"❌ Exception in portfolio evaluation for alert {alert.id}: {e}", source="AlertEvaluation")
-            alert.level = AlertLevel.NORMAL
+            log.error(f"❌ Portfolio evaluation failed for alert {alert.id}: {e}", source="AlertEvaluation")
             return alert
 
     def _evaluate_position(self, alert):

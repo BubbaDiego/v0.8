@@ -8,7 +8,7 @@ class ConsoleLogger:
         "success": "\033[92m", # Green
         "warning": "\033[93m", # Yellow
         "error": "\033[91m",   # Red
-        "debug": "\033[90m",   # Gray
+        "debug": "\033[38;5;208m",  # Orange (ANSI 256-color) "debug": "\033[90m",   # Gray
         "endc": "\033[0m",     # Reset
     }
 
@@ -32,10 +32,15 @@ class ConsoleLogger:
         icon = cls.ICONS.get(level, "")
         endc = cls.COLORS["endc"]
         source_tag = f"[{source}]" if source else ""
+
         print(f"{color}{icon} [{cls._timestamp()}] {source_tag} {message}{endc}")
+
         if payload:
-            pretty = json.dumps(payload, indent=2)
-            print(f"{color}{pretty}{endc}")
+            try:
+                pretty = json.dumps(payload, indent=2)
+                print(f"{color}{pretty}{endc}")
+            except Exception:
+                print(f"{color}[payload formatting error]{endc}")
 
     @classmethod
     def info(cls, message: str, source: str = None, payload: dict = None):
@@ -70,7 +75,17 @@ class ConsoleLogger:
         cls.success(f"Timer '{label}' completed in {elapsed:.2f} seconds", source)
 
     @classmethod
+    def log_operation(cls, operation_type: str, primary_text: str, source: str = None, file: str = None,
+                      extra_data: dict = None):
+        msg = f"{operation_type}: {primary_text}"
+        if file:
+            msg += f" [File: {file}]"
+        if extra_data:
+            msg += f" [Data: {json.dumps(extra_data)}]"
+        cls.info(msg, source=source)
+
+    @classmethod
     def banner(cls, message: str):
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print(f"🚀 {message.center(50)} 🚀")
-        print("="*60 + "\n")
+        print("=" * 60 + "\n")
