@@ -14,6 +14,7 @@ from alerts.alert_repository import AlertRepository
 from config.config_loader import load_config
 from config.config_constants import ALERT_LIMITS_PATH
 from utils.console_logger import ConsoleLogger as log
+from alerts.alert_threshold_utils import get_default_trigger_value
 from dashboard import dashboard_service
 
 
@@ -24,7 +25,7 @@ from dashboard import dashboard_service
 # 1️⃣  Load alert configuration and log top-level keys
 # 2️⃣  Clear alerts/positions per cycle
 # 3️⃣  Inject portfolio snapshot, position, and price data
-# 4️⃣  Create alerts for all alert types
+# 4️⃣  Create alerts for all alert types (with trigger values from config)
 # 5️⃣  Enrich alerts to compute `evaluated_value`
 # 6️⃣  Evaluate alerts using threshold config to assign `level`
 # 7️⃣  Save `evaluated_value` and `level` to DB
@@ -35,7 +36,7 @@ def test_portfolio_alerts_EE_multirun():
     log.banner("STARTING FULL END-TO-END ALERT SYSTEM TEST")
     locker = DataLocker.get_instance()
 
-    # ✅ Step 1: Load and log config keys
+    # ✅ Step 1: Load config
     try:
         config = load_config(str(ALERT_LIMITS_PATH))
         alert_limits = config.get("alert_limits", config)
@@ -45,7 +46,6 @@ def test_portfolio_alerts_EE_multirun():
     except Exception as e:
         raise AssertionError(f"❌ Failed to load alert config: {e}")
 
-    # 🧠 Patch DataLocker if needed
     if not hasattr(locker, "get_current_value"):
         setattr(locker, "get_current_value", lambda asset: locker.get_latest_price(asset).get("current_price", 0.0))
 
@@ -56,7 +56,7 @@ def test_portfolio_alerts_EE_multirun():
     for run in range(1, 4):
         log.banner(f"🔁 CYCLE {run}/3")
 
-        # ✅ Step 2: Clean DB
+        # ✅ Step 2: Clear state
         locker.delete_all_alerts()
         locker.delete_all_positions()
 
@@ -65,15 +65,14 @@ def test_portfolio_alerts_EE_multirun():
         _mock_positions(locker, run)
         _mock_prices(locker, run)
 
-        # 🔧 Override dashboard context to feed enrichment
+        # Override dashboard context for enrichment
         dashboard_service.get_dashboard_context = lambda: {"totals": totals}
 
-        # ✅ Step 4: Create alerts
+        # ✅ Step 4: Create alerts (trigger values pulled from config)
         alerts = []
-        alerts += _create_portfolio_alerts(repo, run)
+        alerts += _create_portfolio_alerts(repo)
         alerts += _create_position_alerts(repo, run)
-        alerts += _create_market_alerts(repo, run)
-
+        alerts += _create_market_alerts(repo)
         log.info(f"📋 Created {len(alerts)} alerts for run {run}", source="Test")
 
         # ✅ Step 5: Enrich + Evaluate
@@ -84,32 +83,31 @@ def test_portfolio_alerts_EE_multirun():
 
         final_alerts = asyncio.run(enrich_and_evaluate())
 
-        # ✅ Step 6: Persist to DB
+        # ✅ Step 6: Save results
         for alert in final_alerts:
             repo.update_alert_evaluated_value(alert.id, alert.evaluated_value)
             asyncio.run(repo.update_alert_level(alert.id, alert.level))
 
-        # ✅ Step 7: Verify in memory
+        # ✅ Step 7: Memory assertions
         log.info(f"🔍 Validating in-memory alerts for run {run}", source="MemoryCheck")
         for alert in final_alerts:
             log.debug(f"{alert.alert_class} - {alert.alert_type} → Eval={alert.evaluated_value} | Level={alert.level}",
                       source="MemoryCheck")
+            assert isinstance(alert.evaluated_value, (int, float))
+            assert alert.level in {"Low", "Medium", "High", "Normal"}
 
-            assert isinstance(alert.evaluated_value, (int, float)), f"{alert.alert_type} evaluated_value is not numeric"
-            assert alert.level in {"Low", "Medium", "High", "Normal"}, f"{alert.alert_type} level is invalid"
-
-        # ✅ Step 8: Verify in DB
+        # ✅ Step 8: DB assertions
         log.info(f"🧪 Validating DB entries for run {run}", source="DBCheck")
         db_alerts = locker.get_alerts()
         for a in db_alerts:
             log.debug(f"[DB] Alert {a['id']} → Eval={a['evaluated_value']} | Level={a['level']}", source="DBCheck")
-            assert isinstance(a["evaluated_value"], (int, float)), f"{a['id']} DB evaluated_value is not numeric"
-            assert a["level"] in {"Low", "Medium", "High", "Normal"}, f"{a['id']} DB level is invalid"
+            assert isinstance(a["evaluated_value"], (int, float))
+            assert a["level"] in {"Low", "Medium", "High", "Normal"}
 
     log.banner("✅ ALL ALERT CYCLES COMPLETED SUCCESSFULLY")
 
 
-# === MOCK DATA ===
+# === MOCKS ===
 
 def _mock_portfolio_snapshot(locker, cycle):
     snapshot = {
@@ -118,7 +116,7 @@ def _mock_portfolio_snapshot(locker, cycle):
         "total_size": 2000 * cycle,
         "avg_leverage": 1.0 + cycle,
         "avg_travel_percent": 10 * cycle,
-        "avg_heat_index": 35.0  # ✅ Required for total_heat
+        "avg_heat_index": 35.0  # Ensures total_heat is valid
     }
     locker.record_portfolio_snapshot(snapshot)
     return snapshot
@@ -137,8 +135,8 @@ def _mock_positions(locker, cycle):
         "value": 2500 + (cycle * 200),
         "wallet_name": f"CycleWallet{cycle}",
         "current_price": 1100 + (cycle * 20),
-        "heat_index": 0.3 + (cycle * 0.1),
-        "current_heat_index": 0.3 + (cycle * 0.1),
+        "heat_index": 35.0,  # ← important for HeatIndex
+        "current_heat_index": 35.0,
         "pnl_after_fees_usd": 100 + (cycle * 50)
     })
 
@@ -147,9 +145,9 @@ def _mock_prices(locker, cycle):
     locker.insert_or_update_price("BTC", 60000 + (cycle * 5000), "TestCycle")
 
 
-# === ALERT CREATORS ===
+# === ALERT GENERATORS ===
 
-def _create_portfolio_alerts(repo, cycle):
+def _create_portfolio_alerts(repo):
     metric_map = {
         AlertType.TotalValue: "total_value",
         AlertType.TotalSize: "total_size",
@@ -164,7 +162,7 @@ def _create_portfolio_alerts(repo, cycle):
             id=str(uuid.uuid4()),
             alert_type=atype,
             alert_class="Portfolio",
-            trigger_value=5000,
+            trigger_value=get_default_trigger_value(atype),
             condition=Condition.ABOVE,
             notification_type=NotificationType.EMAIL,
             description=desc
@@ -183,7 +181,7 @@ def _create_position_alerts(repo, cycle):
             alert_type=atype,
             alert_class="Position",
             position_reference_id=position_id,
-            trigger_value=1.0,
+            trigger_value=get_default_trigger_value(atype),
             condition=Condition.ABOVE,
             notification_type=NotificationType.SMS
         )
@@ -192,13 +190,13 @@ def _create_position_alerts(repo, cycle):
     return alerts
 
 
-def _create_market_alerts(repo, cycle):
+def _create_market_alerts(repo):
     alert = Alert(
         id=str(uuid.uuid4()),
         alert_type=AlertType.PriceThreshold,
         alert_class="Market",
         asset="BTC",
-        trigger_value=60000,
+        trigger_value=60000,  # could be dynamic too
         condition=Condition.ABOVE,
         notification_type=NotificationType.SMS
     )
