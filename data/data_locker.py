@@ -267,6 +267,140 @@ class DataLocker:
             self.logger.error(f"Error initializing database: {e}", exc_info=True)
             raise
 
+    def ensure_db(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+
+        # Create alerts table with starting_value
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS alerts (
+                id TEXT PRIMARY KEY,
+                asset TEXT,
+                wallet TEXT,
+                metric TEXT,
+                level TEXT,
+                status TEXT,
+                triggered BOOLEAN,
+                trigger_value REAL,
+                current_value REAL,
+                starting_value REAL,
+                last_triggered TEXT,
+                created_at TEXT,
+                notes TEXT
+            )
+        ''')
+
+        # Migration: add starting_value if it doesn't exist
+        c.execute("PRAGMA table_info(alerts)")
+        columns = [row[1] for row in c.fetchall()]
+        if "starting_value" not in columns:
+            c.execute("ALTER TABLE alerts ADD COLUMN starting_value REAL")
+
+        conn.commit()
+        conn.close()
+
+    def initialize_alert_data(self, alert_id):
+        default_alert = {
+            'id': alert_id,
+            'asset': '',
+            'wallet': '',
+            'metric': '',
+            'level': '',
+            'status': '',
+            'triggered': False,
+            'trigger_value': 0.0,
+            'current_value': 0.0,
+            'starting_value': 0.0,
+            'last_triggered': '',
+            'created_at': datetime.now().isoformat(),
+            'notes': ''
+        }
+        self.save_alert(default_alert)
+
+    def save_alert(self, alert_data):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute('''
+            INSERT OR REPLACE INTO alerts (
+                id, asset, wallet, metric, level, status,
+                triggered, trigger_value, current_value, starting_value,
+                last_triggered, created_at, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            alert_data['id'],
+            alert_data['asset'],
+            alert_data['wallet'],
+            alert_data['metric'],
+            alert_data['level'],
+            alert_data['status'],
+            alert_data['triggered'],
+            alert_data['trigger_value'],
+            alert_data['current_value'],
+            alert_data.get('starting_value', 0.0),
+            alert_data['last_triggered'],
+            alert_data['created_at'],
+            alert_data['notes']
+        ))
+        conn.commit()
+        conn.close()
+
+    def load_alert(self, alert_id):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("SELECT * FROM alerts WHERE id = ?", (alert_id,))
+        row = c.fetchone()
+        conn.close()
+        if row:
+            return {
+                'id': row[0],
+                'asset': row[1],
+                'wallet': row[2],
+                'metric': row[3],
+                'level': row[4],
+                'status': row[5],
+                'triggered': bool(row[6]),
+                'trigger_value': row[7],
+                'current_value': row[8],
+                'starting_value': row[9],
+                'last_triggered': row[10],
+                'created_at': row[11],
+                'notes': row[12]
+            }
+        return None
+
+    def load_all_alerts(self):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("SELECT * FROM alerts")
+        rows = c.fetchall()
+        conn.close()
+
+        alerts = []
+        for row in rows:
+            alerts.append({
+                'id': row[0],
+                'asset': row[1],
+                'wallet': row[2],
+                'metric': row[3],
+                'level': row[4],
+                'status': row[5],
+                'triggered': bool(row[6]),
+                'trigger_value': row[7],
+                'current_value': row[8],
+                'starting_value': row[9],
+                'last_triggered': row[10],
+                'created_at': row[11],
+                'notes': row[12]
+            })
+        return alerts
+
+    def delete_alert(self, alert_id):
+        conn = sqlite3.connect(self.db_path)
+        c = conn.cursor()
+        c.execute("DELETE FROM alerts WHERE id = ?", (alert_id,))
+        conn.commit()
+        conn.close()
+
     @classmethod
     def get_instance(cls, db_path: Optional[str] = None) -> 'DataLocker':
         if cls._instance is None:

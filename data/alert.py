@@ -3,8 +3,7 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 
-
-# === Enums ===
+# === ENUMS ===
 
 class AlertType(str, Enum):
     # 🔥 Position-level alert types
@@ -42,8 +41,7 @@ class NotificationType(str, Enum):
     EMAIL = "EMAIL"
     PHONECALL = "PHONECALL"
 
-
-# === Main Alert Model ===
+# === MAIN MODEL ===
 
 class Alert(BaseModel):
     id: str
@@ -64,10 +62,9 @@ class Alert(BaseModel):
     liquidation_distance: Optional[float] = 0.0
     travel_percent: Optional[float] = 0.0
     liquidation_price: Optional[float] = 0.0
+    starting_value: Optional[float] = None  # 🧱 Used to represent bar start on UI
     notes: Optional[str] = ""
     description: Optional[str] = ""
 
     class Config:
-        use_enum_values = True  # 👈🏽 CRUCIAL: serialize enums to their raw values in JSON
-
-
+        use_enum_values = True  # serialize enums into their string values (not Enum objects)

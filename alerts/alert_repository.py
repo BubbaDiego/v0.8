@@ -1,6 +1,7 @@
 from data.alert import Alert, AlertLevel
 import asyncio
-from utils.console_logger import ConsoleLogger as log  # <-- NEW
+from utils.console_logger import ConsoleLogger as log
+
 
 class AlertRepository:
     def __init__(self, data_locker):
@@ -8,12 +9,18 @@ class AlertRepository:
 
     def create_alert(self, alert_dict):
         """Insert a new alert into the database."""
+        # Ensure starting_value is captured at creation time if not manually provided
+        if "starting_value" not in alert_dict or alert_dict["starting_value"] is None:
+            try:
+                current = self.data_locker.get_current_value(alert_dict["asset"])
+                alert_dict["starting_value"] = current
+                log.debug(f"[create_alert] Injected starting_value: {current}", source="AlertRepository")
+            except Exception as e:
+                log.warning(f"[create_alert] Could not fetch starting_value for {alert_dict['asset']}: {e}", source="AlertRepository")
+
         return self.data_locker.create_alert(alert_dict)
 
-    # alert_repository.py
-
     def get_active_alerts(self) -> list[Alert]:
-
         alerts_raw = self.data_locker.get_alerts()
 
         if not alerts_raw:
@@ -23,7 +30,6 @@ class AlertRepository:
         log.info(f"Loaded {len(alerts_raw)} alerts from database.", source="AlertRepository")
 
         alerts = []
-
         for a in alerts_raw:
             try:
                 # 🧼 HARD SANITIZE LEVEL FIELD
@@ -36,6 +42,10 @@ class AlertRepository:
                         a["level"] = level_clean
                 else:
                     a["level"] = "Normal"
+
+                # Ensure starting_value exists (fallback for legacy)
+                if "starting_value" not in a:
+                    a["starting_value"] = a.get("trigger_value", 0)
 
                 alerts.append(Alert(**a))
             except Exception as e:
