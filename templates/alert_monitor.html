@@ -22,11 +22,13 @@
     padding: 0.75rem 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    text-align: center;
   }
 
   table tbody td {
-    vertical-align: middle;
     font-size: 0.875rem;
+    text-align: center;
+    vertical-align: middle !important;
   }
 
   tbody tr:hover {
@@ -41,11 +43,15 @@
     border: 1px solid #ccc;
   }
 
-  .flex-icon-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    justify-content: center;
+  .icon-label {
+    display: inline-block;
+    height: 28px;
+    line-height: 28px;
+    font-size: 1.4rem;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .badge {
@@ -100,15 +106,10 @@
 
   .bar-bell {
     position: absolute;
-    top: -18px;
+    top: 32px;
     right: 0;
-    font-size: 14px;
+    font-size: 16px;
     color: #f57c00;
-  }
-
-  th:last-child,
-  td:last-child {
-    text-align: center;
   }
 
   .refresh-spin {
@@ -192,13 +193,17 @@
 
           row.innerHTML = `
             <td><img src="${assetImg}" class="alert-img" onerror="this.src='/static/images/unknown.png'"></td>
-            <td><img src="${walletImg}" class="alert-img" onerror="this.src='/static/images/unknown_wallet.jpg'"></td>
+            <td>
+              ${alert.wallet
+                ? `<img src="${walletImg}" class="alert-img" onerror="this.src='/static/images/unknown_wallet.jpg'>`
+                : `<span class="text-muted">—</span>`}
+            </td>
 
-            <td><div class="flex-icon-label">${getClassIcon(alert.alert_class)} <span>${alert.alert_class}</span></div></td>
-            <td><div class="flex-icon-label">${getTypeIcon(alert.alert_type)} <span>${alert.alert_type}</span></div></td>
+            <td><span class="icon-label">${getClassIcon(alert.alert_class)}</span></td>
+            <td><span class="icon-label">${getTypeIcon(alert.alert_type)}</span></td>
 
-            <td>${alert.trigger_value ?? "—"}</td>
-            <td>${alert.evaluated_value ?? "—"}</td>
+            <td><strong>${formatValue(alert.trigger_value)}</strong></td>
+            <td><strong>${formatValue(alert.evaluated_value)}</strong></td>
 
             <td><span class="badge badge-status-${alert.status}">${alert.status}</span></td>
             <td><span class="badge badge-level-${alert.level}">${alert.level}</span></td>
@@ -221,7 +226,7 @@
   function getTypeIcon(type) {
     const map = {
       profit: "💰",
-      heatindex: "🌡️",
+      heatindex: "🛠",
       travelpercentliquid: "✈️",
       pricethreshold: "💵"
     };
@@ -230,11 +235,15 @@
 
   function getClassIcon(alertClass) {
     const map = {
-      position: "🧍‍♂️📉",
-      portfolio: "🧺📊",
-      market: "📈💱"
+      position: "🧍‍♂️",
+      portfolio: "🧺",
+      market: "📈"
     };
     return map[(alertClass || "").toLowerCase()] || "❓";
+  }
+
+  function formatValue(val) {
+    return (val !== null && val !== undefined) ? Number(val).toFixed(2) : "—";
   }
 
   document.addEventListener("DOMContentLoaded", loadAlerts);
