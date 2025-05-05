@@ -4,8 +4,10 @@ import json
 import logging
 import asyncio
 from flask import Blueprint, request, jsonify, render_template, current_app
+from markupsafe import Markup
 from alerts.alert_service_manager import AlertServiceManager
 from utils.json_manager import JsonManager, JsonType
+from dashboard.dashboard_view_model import DashboardViewModel
 from config.config_constants import ALERT_LIMITS_PATH
 from utils.console_logger import ConsoleLogger as log
 from data.data_locker import DataLocker
@@ -77,87 +79,9 @@ def test_sms():
 
 @alerts_bp.route('/monitor', methods=['GET'])
 def monitor_alerts():
-    return jsonify({
-        "alerts": [
-            {
-                "id": "abc123",
-                "alert_type": "Profit",
-                "alert_class": "Position",
-                "asset": "BTC",
-                "trigger_value": 1000,
-                "evaluated_value": 640,
-                "condition": "ABOVE",
-                "position_reference_id": "POS1",
-                "position_type": "Short",
-                "notification_type": "SMS",
-                "level": "High",
-                "last_triggered": "2025-05-03T12:30:00Z",
-                "status": "Active",
-                "frequency": 1,
-                "counter": 0,
-                "liquidation_distance": 0,
-                "travel_percent": -22.0,
-                "liquidation_price": 18000,
-                "notes": "Auto-generated",
-                "description": "Profit alert on BTC short",
-                "wallet_name": "ObiVault",
-                "wallet_image": "/static/images/obivault.jpg",
-                "wallet_id": "wallet-001"
-            },
-            {
-                "id": "def456",
-                "alert_type": "HeatIndex",
-                "alert_class": "Position",
-                "asset": "ETH",
-                "trigger_value": 50,
-                "evaluated_value": 35,
-                "condition": "ABOVE",
-                "position_reference_id": "POS2",
-                "position_type": "Long",
-                "notification_type": "SMS",
-                "level": "Medium",
-                "last_triggered": "2025-05-03T12:35:00Z",
-                "status": "Active",
-                "frequency": 1,
-                "counter": 0,
-                "liquidation_distance": 0,
-                "travel_percent": -5,
-                "liquidation_price": 1350,
-                "notes": "Position overheating",
-                "description": "Heat check",
-                "wallet_name": "R2Vault",
-                "wallet_image": "/static/images/r2vault.jpg",
-                "wallet_id": "wallet-002"
-            },
-            {
-                "id": "ghi789",
-                "alert_type": "TravelPercentLiquid",
-                "alert_class": "Position",
-                "asset": "SOL",
-                "trigger_value": -25,
-                "evaluated_value": -18,
-                "condition": "BELOW",
-                "position_reference_id": "POS3",
-                "position_type": "Short",
-                "notification_type": "SMS",
-                "level": "Low",
-                "last_triggered": "2025-05-03T12:40:00Z",
-                "status": "Inactive",
-                "frequency": 1,
-                "counter": 0,
-                "liquidation_distance": 0,
-                "travel_percent": 12.5,
-                "liquidation_price": 21.2,
-                "notes": "Chillin",
-                "description": "SOL drifting",
-                "wallet_name": "LandoVault",
-                "wallet_image": "/static/images/landovault.jpg",
-                "wallet_id": "wallet-003"
-            }
-        ]
-    })
-
-
+    #from alerts.dashboard_view_model import DashboardViewModel
+    dashboard = DashboardViewModel()
+    return jsonify({"alerts": dashboard.get_alerts()})
 
 @alerts_bp.route('/create_all', methods=['POST'])
 def create_all_alerts():
@@ -323,7 +247,42 @@ def alert_matrix():
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
 def monitor_page():
-    return render_template("alerts/monitor.html")
+    import os
+    from flask import current_app
+    path = os.path.join(current_app.template_folder, 'alert_monitor.html')
+    print(f"🧪 CHECKING TEMPLATE PATH: {path}")
+    exists = os.path.exists(path)
+    print(f"🧪 EXISTS? {exists}")
+    return render_template("alert_monitor.html")
+
+
+@alerts_bp.route('/monitor_page_debug', methods=['GET'])
+def monitor_page_debug():
+    from markupsafe import Markup
+    html = """
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>💥 Debug Monitor Page</title>
+          <style>
+              body {
+                  font-family: monospace;
+                  padding: 2rem;
+                  background: #1e1e1e;
+                  color: #00ffae;
+              }
+          </style>
+      </head>
+      <body>
+          <h1>✅ DEBUG: Template rendering is working!</h1>
+          <script>
+              alert("🚀 DEBUG TEMPLATE WORKS!");
+              console.log("🧠 JS loaded inside alert_monitor.html");
+          </script>
+      </body>
+      </html>
+      """
+    return Markup(html)
 
 
 # --- Internal helpers ---

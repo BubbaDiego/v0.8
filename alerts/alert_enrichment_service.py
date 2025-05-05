@@ -61,8 +61,8 @@ class AlertEnrichmentService:
         # 🧠 Attach wallet info from position
         wallet_id = position.get("wallet_id")
         wallet_name = position.get("wallet_name")
-        alert.wallet_id = wallet_id
-        alert.wallet_name = wallet_name
+       # alert.wallet_id = wallet_id
+      #  alert.wallet_name = wallet_name
 
         log.debug(f"🔗 Bound wallet to alert {alert.id} → {wallet_name} ({wallet_id})", source="AlertEnrichment")
 

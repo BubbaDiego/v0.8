@@ -15,7 +15,9 @@ from data.data_locker import DataLocker
 from utils.unified_logger import UnifiedLogger
 from sonic_labs.hedge_manager import HedgeManager  # Import HedgeManager directly
 from positions.position_service import PositionService
-from config.config_manager import UnifiedConfigManager
+#from config.config_manager import UnifiedConfigManager
+from config.config_loader import load_config
+from config.config_constants import ALERT_LIMITS_PATH
 from config.config_constants import CONFIG_PATH
 from utils.console_logger import ConsoleLogger as log
 from alerts.alert_service_manager import AlertServiceManager
@@ -33,8 +35,8 @@ class Cyclone:
         self.data_locker = DataLocker.get_instance()
         self.price_monitor = PriceMonitor()  # Market Updates
         self.alert_service = AlertServiceManager.get_instance()    # Alert Updates
-        self.config = UnifiedConfigManager(CONFIG_PATH).load_config()
-
+        #self.config = UnifiedConfigManager(CONFIG_PATH).load_config()
+        self.config = load_config(str(ALERT_LIMITS_PATH))
 
         from utils.console_logger import ConsoleLogger as log
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")

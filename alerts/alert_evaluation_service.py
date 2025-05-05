@@ -1,20 +1,17 @@
 import sys
 import os
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from data.alert import AlertLevel, Condition
 from utils.console_logger import ConsoleLogger as log
 from config.config_loader import load_config
 from data.alert import AlertType
-
-
 from config.config_constants import ALERT_LIMITS_PATH
-config_loader = lambda: load_config(str(ALERT_LIMITS_PATH)) or {}
+#config_loader = lambda: load_config(str(ALERT_LIMITS_PATH)) or {}
 
 
 class AlertEvaluationService:
-    def __init__(self, config_path="alert_limits.json", thresholds=None):
+    def __init__(self, config_path=str(ALERT_LIMITS_PATH), thresholds=None):
         if thresholds:
             self.thresholds = thresholds
         else:
@@ -27,10 +24,14 @@ class AlertEvaluationService:
                 alert.level = AlertLevel.NORMAL
                 return alert
 
-            if alert.alert_class == "Portfolio":
+            alert_class = str(alert.alert_class).strip().lower()
+
+            if alert_class == "portfolio":
                 return self._evaluate_portfolio(alert)
 
-            # Fallback to standard alert types
+            if alert_class == "position":
+                return self._evaluate_position(alert)
+
             return self._evaluate_standard(alert)
 
         except Exception as e:
@@ -123,6 +124,20 @@ class AlertEvaluationService:
             log.error(f"❌ Exception in portfolio evaluation for alert {alert.id}: {e}", source="AlertEvaluation")
             alert.level = AlertLevel.NORMAL
             return alert
+
+    def _evaluate_position(self, alert):
+        """
+        Handles evaluation of Position alerts using alert-type-specific thresholds.
+        """
+        alert_type_key = str(alert.alert_type).lower() + "_limits"
+        thresholds = self.thresholds.get(alert_type_key)
+
+        if thresholds:
+            return self._evaluate_against(alert, thresholds)
+
+        log.warning(f"⚠️ No thresholds for alert type '{alert_type_key}' — fallback to simple eval",
+                    source="AlertEvaluation")
+        return self._simple_trigger_evaluation(alert)
 
     def _simple_trigger_evaluation(self, alert):
         """
