@@ -9,7 +9,7 @@ from alerts.alert_utils import (
 )
 
 from data.alert import Alert, AlertLevel
-import asyncio
+#import asyncio
 from utils.console_logger import ConsoleLogger as log
 
 
@@ -146,27 +146,36 @@ class AlertRepository:
         except Exception as e:
             log.error(f"❌ Failed to update evaluated_value for alert {alert_id}: {e}", source="AlertRepository")
 
-    async def update_alert_level(self, alert_id: str, new_level: AlertLevel):
-        try:
-            cursor = self.data_locker.conn.cursor()
+    # ⚠️ NOTE FOR FUTURE GPTs / DEVS:
+    # This method is intentionally synchronous.
+    # While defined as `def`, it was previously marked `async def` with no real async operations,
+    # which caused RuntimeWarnings and broke DB persistence when `await`ed.
+    #
+    # SQLite in this project uses a synchronous connection via `data_locker.conn`,
+    # so DO NOT change this to `async def` unless you're migrating the whole system to a true async DB like aiosqlite.
+    #
+    # If async support is needed in the future, fully refactor this to use `async with aiosqlite.connect(...)`
+    # and propagate awaitables properly.
+    #    # Until then: leave as `def` and call it synchronously.
 
+    def update_alert_level(self, alert_id: str, new_level: AlertLevel):
+        try:
+            # 🧼 Normalize input
+            if hasattr(new_level, "value"):
+                level_str = new_level.value
+            else:
+                level_str = str(new_level).capitalize()
+
+            cursor = self.data_locker.conn.cursor()
             sql = """
                 UPDATE alerts
                    SET level = ?
                  WHERE id = ?
             """
-            cursor.execute(sql, (new_level.value, alert_id))
+            cursor.execute(sql, (level_str, alert_id))
             self.data_locker.conn.commit()
 
-            # 🔍 Verification step: fetch & log new level
-            verify_cursor = self.data_locker.conn.cursor()
-            verify_cursor.execute("SELECT level FROM alerts WHERE id = ?", (alert_id,))
-            row = verify_cursor.fetchone()
-            if row:
-                db_level = row["level"]
-                log.info(f"🧪 Verified alert {alert_id} level in DB: {db_level}", source="AlertRepository")
-            else:
-                log.warning(f"⚠️ Could not verify updated level for alert {alert_id}", source="AlertRepository")
+            log.info(f"🧪 Updated alert level to '{level_str}' for {alert_id}", source="AlertRepository")
 
         except Exception as e:
             log.error(f"❌ Failed to update level for alert {alert_id}: {e}", source="AlertRepository")

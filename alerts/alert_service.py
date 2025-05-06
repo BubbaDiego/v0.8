@@ -1,7 +1,12 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from utils.console_logger import ConsoleLogger as log  # <-- NEW import
 from alerts.alert_evaluation_service import AlertEvaluationService
 from xcom.notification_service import NotificationService
 from data.alert import Alert, AlertLevel
-from utils.console_logger import ConsoleLogger as log  # <-- NEW import
+
 
 class AlertService:
     def __init__(self, repository, enrichment_service, config_loader):
@@ -23,8 +28,7 @@ class AlertService:
         """
         log.banner("STARTING ALERT PROCESSING")
 
-        # ❌ This was the bug: do NOT await a sync method
-        alerts = self.repository.get_active_alerts()  # ✅ FIXED: no await
+        alerts = self.repository.get_active_alerts()  # ✅ Already synchronous — no await needed
 
         if not alerts:
             log.warning("No active alerts found.", source="AlertService")
@@ -34,7 +38,7 @@ class AlertService:
         log.start_timer("process_alerts")
 
         try:
-            # 🧠 NEW: Use batch enrich for async concurrency
+            # ⚡ Enrich alerts using async batch
             enriched_alerts = await self.enrichment_service.enrich_all(alerts)
 
             for alert in enriched_alerts:
@@ -45,10 +49,9 @@ class AlertService:
                         log.success(
                             f"🚨 ALERT TRIGGERED: {evaluated.asset} - {evaluated.alert_type} ({evaluated.level})",
                             source="AlertService",
-                            payload={"evaluated_value": evaluated.evaluated_value,
-                                     "trigger_value": evaluated.trigger_value}
+                            payload={"evaluated_value": evaluated.evaluated_value}
                         )
-                        await self.notification_service.send_alert(evaluated)
+                        self.notification_service.send_alert(evaluated)
                     else:
                         log.debug(
                             f"✅ Alert evaluated as NORMAL: {evaluated.asset} - {evaluated.alert_type}",
@@ -56,6 +59,7 @@ class AlertService:
                             payload={"evaluated_value": evaluated.evaluated_value}
                         )
 
+                    # ✅ Ensure DB is updated
                     self.repository.update_alert_level(evaluated.id, evaluated.level)
                     self.repository.update_alert_evaluated_value(evaluated.id, evaluated.evaluated_value)
 
@@ -67,4 +71,5 @@ class AlertService:
 
         log.end_timer("process_alerts", source="AlertService")
         log.banner("ALERT PROCESSING COMPLETE")
+
 

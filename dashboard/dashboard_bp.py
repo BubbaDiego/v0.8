@@ -18,6 +18,7 @@ from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dashboard.dashboard_service import get_dashboard_context
+from utils.fuzzy_wuzzy import fuzzy_match_key
 
 
 
@@ -117,16 +118,23 @@ def format_monitor_time(iso_str):
         print(f"DEBUG: Exception occurred in format_monitor_time: {e}")
         return "N/A"
 
-
-
-
-
 def apply_color(metric_name, value, limits):
-    thresholds = limits.get(metric_name.lower())
-    if thresholds is None or value is None:
-        return "red"
     try:
+        # 🔍 Attempt direct match
+        thresholds = limits.get(metric_name.lower())
+
+        # 🧠 If no match, apply fuzzy logic
+        if thresholds is None:
+            matched_key = fuzzy_match_key(metric_name, limits, threshold=65.0)
+            thresholds = limits.get(matched_key)
+            print(f"[FuzzyMatch] Resolved '{metric_name}' to '{matched_key}'")
+
+        # 🚨 Still nothing? Fail safely
+        if thresholds is None or value is None:
+            return "red"
+
         val = float(value)
+
         if metric_name.lower() == "travel":
             if val >= thresholds["low"]:
                 return "green"
@@ -141,7 +149,9 @@ def apply_color(metric_name, value, limits):
                 return "yellow"
             else:
                 return "red"
-    except:
+
+    except Exception as e:
+        print(f"[apply_color ERROR] Metric: {metric_name}, Value: {value}, Error: {e}")
         return "red"
 
 @dashboard_bp.route("/dash", endpoint="dash_page")

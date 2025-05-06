@@ -9,7 +9,10 @@ from data.alert import AlertType
 from config.config_constants import ALERT_LIMITS_PATH
 from utils.json_manager import JsonManager
 
-#config_loader = lambda: load_config(str(ALERT_LIMITS_PATH)) or {}
+from utils.fuzzy_wuzzy import fuzzy_match_enum
+#from alerts.enums import AlertType
+from utils.console_logger import ConsoleLogger as log
+
 
 
 class AlertEvaluationService:
@@ -143,35 +146,45 @@ class AlertEvaluationService:
             return alert
 
     def _evaluate_position(self, alert):
-        """
-        Handles evaluation of Position alerts using alert-type-specific thresholds.
-        """
-        type_key_map = {
-            "profit": "profit_ranges",
-            "heatindex": "heat_index_ranges",
-            "travelpercentliquid": "travel_percent_liquid_ranges",
-            "pricethreshold": "price_alerts"
-        }
+        try:
+            raw_type = str(alert.alert_type)
+            enum_type = fuzzy_match_enum(raw_type.split('.')[-1], AlertType)
 
-        if not alert.alert_type:
-            log.error(f"❌ Cannot evaluate: missing alert_type on alert {alert.id}", source="AlertEvaluation")
-            alert.level = AlertLevel.NORMAL
-            return alert
+            if not enum_type:
+                log.warning(f"⚠️ Unable to fuzzy match alert type: {raw_type}", source="AlertEvaluation")
+                return self._simple_trigger_evaluation(alert)
 
-        # 🔧 Remove Enum wrapper (i.e., 'AlertType.Profit' → 'profit')
-        alert_type_str = str(alert.alert_type).lower().replace("alerttype.", "")
-        alert_type_key = type_key_map.get(alert_type_str)
+            alert_type_str = enum_type.name.lower()
 
-        if not alert_type_key:
-            log.warning(f"⚠️ Unknown alert type '{alert.alert_type}' → using fallback eval", source="AlertEvaluation")
-            return self._simple_trigger_evaluation(alert)
+            type_key_map = {
+                "profit": "profit_ranges",
+                "heatindex": "heat_index_ranges",
+                "travelpercentliquid": "travel_percent_liquid_ranges"
+            }
 
-        thresholds = self.thresholds.get(alert_type_key)
-        if thresholds:
+            alert_type_key = type_key_map.get(alert_type_str)
+            if not alert_type_key:
+                log.warning(f"⚠️ No config key mapping for alert type: {alert_type_str}", source="AlertEvaluation")
+                return self._simple_trigger_evaluation(alert)
+
+            thresholds = self.thresholds.get(alert_type_key)
+            if not thresholds or not thresholds.get("enabled", False):
+                log.warning(f"⚠️ Thresholds not found or disabled for key: {alert_type_key}", source="AlertEvaluation")
+                return self._simple_trigger_evaluation(alert)
+
+            # 🐻 Confirm loaded thresholds
+            log.debug(
+                f"🐻 Thresholds for {alert_type_key}: low={thresholds.get('low')} | "
+                f"medium={thresholds.get('medium')} | high={thresholds.get('high')}",
+                source="AlertEvaluation"
+            )
+
             return self._evaluate_against(alert, thresholds)
 
-        log.warning(f"⚠️ No thresholds found for key '{alert_type_key}'", source="AlertEvaluation")
-        return self._simple_trigger_evaluation(alert)
+        except Exception as e:
+            log.error(f"❌ Evaluation error for alert {alert.id}: {e}", source="AlertEvaluation")
+            return self._simple_trigger_evaluation(alert)
+
 
     def _simple_trigger_evaluation(self, alert):
         """
