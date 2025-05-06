@@ -36,10 +36,16 @@
     </div>
 
     <!-- Wallet ID + image -->
-    <div class="pos-cell wallet">
-      {{ pos.wallet }}
-      <img class="wallet-icon" src="{{ url_for('static', filename='images/' + pos.wallet_image) }}" alt="Wallet">
-    </div>
+<div class="pos-cell wallet">
+  {% if pos.wallet %}
+    <img class="wallet-icon mb-1" src="{{ pos.wallet.image_path }}" alt="{{ pos.wallet.name }}">
+    <div class="small">{{ pos.wallet.name }}</div>
+    <div class="text-muted small">{{ pos.wallet.type|capitalize }}</div>
+  {% else %}
+    <span class="text-muted">No Wallet</span>
+  {% endif %}
+</div>
+
 
     <!-- Heat index -->
     <div class="pos-cell heat">

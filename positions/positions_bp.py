@@ -111,14 +111,13 @@ def get_strategy_performance():
 
 
 @positions_bp.route("/", methods=["GET"])
+@positions_bp.route("/", methods=["GET"])
 def list_positions():
     try:
         positions = PositionService.get_all_positions(DB_PATH)
         dl = DataLocker.get_instance(DB_PATH)
-        for pos in positions:
-            wallet_name = pos.get("wallet_name")
-            pos["wallet_name"] = dl.get_wallet_by_name(wallet_name) if wallet_name else None
 
+        # ✅ config setup for thresholds
         config_data = load_config(CONFIG_PATH)
         alert_dict = config_data.get("alert_ranges", {})
 
@@ -144,24 +143,24 @@ def list_positions():
             else:
                 return ""
 
+        # ✅ Apply alert coloring
         liqd_cfg = alert_dict.get("liquidation_distance_ranges", {})
         liqd_low = liqd_cfg.get("low", 0.0)
         liqd_med = liqd_cfg.get("medium", 0.0)
         liqd_high = liqd_cfg.get("high", None)
-        for pos in positions:
-            liqd = float(pos.get("liquidation_distance") or 0.0)
-            pos["liqdist_alert_class"] = get_alert_class_local(liqd, liqd_low, liqd_med, liqd_high)
 
         hi_cfg = alert_dict.get("heat_index_ranges", {})
         hi_low = hi_cfg.get("low", 0.0)
         hi_med = hi_cfg.get("medium", 0.0)
         hi_high = hi_cfg.get("high", None)
+
         for pos in positions:
+            liqd = float(pos.get("liquidation_distance") or 0.0)
             heat_val = float(pos.get("heat_index") or 0.0)
+            pos["liqdist_alert_class"] = get_alert_class_local(liqd, liqd_low, liqd_med, liqd_high)
             pos["heat_alert_class"] = get_alert_class_local(heat_val, hi_low, hi_med, hi_high)
 
         totals_dict = CalcServices().calculate_totals(positions)
-        dl = DataLocker.get_instance(DB_PATH)
         times_dict = dl.get_last_update_times() or {}
         pos_time_iso = times_dict.get("last_update_time_positions", "N/A")
         pos_time_formatted = _convert_iso_to_pst(pos_time_iso)
@@ -176,6 +175,7 @@ def list_positions():
     except Exception as e:
         logger.error(f"Error in listing positions: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
 
 
 @positions_bp.route("/dydx", methods=["GET"])

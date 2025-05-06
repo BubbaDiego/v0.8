@@ -53,8 +53,8 @@ class PositionService:
     @staticmethod
     def get_all_positions(db_path: str = DB_PATH) -> List[Dict[str, Any]]:
         """
-        Retrieve all positions from the database, enrich each position,
-        but do NOT write back into the DB during the read.
+        Retrieve all positions from the database, enrich each,
+        and inject wallet info as `wallet` object.
         """
         try:
             dl = DataLocker.get_instance(db_path)
@@ -64,9 +64,14 @@ class PositionService:
             for pos in raw_positions:
                 pos_dict = {key: pos[key] for key in pos.keys()}
                 enriched = PositionService.enrich_position(pos_dict)
+
+                # 🔗 Attach wallet object
+                wallet_name = enriched.get("wallet_name")
+                wallet_data = dl.get_wallet_by_name(wallet_name) if wallet_name else None
+                enriched["wallet"] = wallet_data
+
                 positions.append(enriched)
 
-            # ✅ No database writes here
             return positions
 
         except Exception as e:
@@ -227,61 +232,55 @@ class PositionService:
             raise
 
     @staticmethod
+    @staticmethod
     def update_jupiter_positions(db_path: str = DB_PATH) -> dict:
         """
-        Updates positions from the Jupiter API without deleting existing positions.
-        Each position from Jupiter is identified by a unique positionPubkey.
-        If a position with that ID already exists in the database, it is skipped.
-        Logs the processing of each position (its unique ID) for debugging purposes.
-
-        Returns:
-            A dictionary with a message and counts of imported and skipped (duplicate) positions.
+        Fetches latest Jupiter positions, maps them, and inserts them into the database.
+        Logs every step and confirms wallet linkage.
         """
-        logger.info("Jupiter: Updating positions from Jupiter API...")
+        logger.info("🔄 Updating Jupiter positions from API...")
         try:
             dl = DataLocker.get_instance(db_path)
             wallets_list = dl.read_wallets()
             if not wallets_list:
-                logger.info("No wallets found in DB.")
-                return {"message": "No wallets found in DB", "imported": 0, "skipped": 0}
+                logger.warning("⚠️ No wallets found in DB.")
+                return {"message": "No wallets in DB", "imported": 0, "skipped": 0}
 
             new_positions = []
-            for w in wallets_list:
-                public_addr = w.get("public_address", "").strip()
+
+            for wallet in wallets_list:
+                public_addr = wallet.get("public_address", "").strip()
+                wallet_name = wallet.get("name")
                 if not public_addr:
-                    logger.info(f"Skipping wallet {w['name']} (no public_address).")
+                    logger.warning(f"⚠️ Skipping wallet {wallet_name} — missing public address.")
                     continue
 
-                jupiter_url = f"https://perps-api.jup.ag/v1/positions?walletAddress={public_addr}&showTpslRequests=true"
-                resp = requests.get(jupiter_url)
-                resp.raise_for_status()
-                data = resp.json()
-                data_list = data.get("dataList", [])
-                if not data_list:
-                    logger.info(f"No positions for wallet {w['name']} ({public_addr}).")
+                print(f"[🛰️] Checking Jupiter for {wallet_name} → {public_addr}")
+                try:
+                    url = f"https://perps-api.jup.ag/v1/positions?walletAddress={public_addr}&showTpslRequests=true"
+                    resp = requests.get(url)
+                    resp.raise_for_status()
+                    data = resp.json()
+                    data_list = data.get("dataList", [])
+                    print(f"[🌐] Found {len(data_list)} positions for {wallet_name}")
+                except Exception as e:
+                    print(f"[ERROR] Failed to fetch Jupiter positions for {wallet_name}: {e}")
                     continue
 
                 for item in data_list:
                     try:
-                        pos_pubkey = item.get("positionPubkey")
-                        if not pos_pubkey:
-                            logger.warning(f"Skipping item for wallet {w['name']} due to missing positionPubkey")
+                        pos_id = item.get("positionPubkey")
+                        if not pos_id:
+                            print(f"[SKIP] Missing positionPubkey in item: {item}")
                             continue
 
-                        # Log the Jupiter position ID being processed:
-                        logger.debug(f"Processing Jupiter position with ID: {pos_pubkey}")
-
-                        epoch_time = float(item.get("updatedTime", 0))
-                        updated_dt = datetime.fromtimestamp(epoch_time)
+                        updated_dt = datetime.fromtimestamp(float(item.get("updatedTime", 0)))
                         mint = item.get("marketMint", "")
-                        # Map the mint to an asset type; fallback to "BTC" if unknown.
                         asset_type = PositionService.MINT_TO_ASSET.get(mint, "BTC")
                         side = item.get("side", "short").capitalize()
-                        travel_pct_value = item.get("pnlChangePctAfterFees")
-                        travel_percent = float(travel_pct_value) if travel_pct_value is not None else 0.0
 
                         pos_dict = {
-                            "id": pos_pubkey,
+                            "id": pos_id,
                             "asset_type": asset_type,
                             "position_type": side,
                             "entry_price": float(item.get("entryPrice", 0.0)),
@@ -291,36 +290,41 @@ class PositionService:
                             "leverage": float(item.get("leverage", 0.0)),
                             "value": float(item.get("value", 0.0)),
                             "last_updated": updated_dt.isoformat(),
-                            "wallet_name": w["name"],
+                            "wallet_name": wallet_name,
                             "pnl_after_fees_usd": float(item.get("pnlAfterFeesUsd", 0.0)),
-                            "travel_percent": travel_percent
+                            "travel_percent": float(item.get("pnlChangePctAfterFees", 0.0))
                         }
+
+                        print(f"[MAP] {wallet_name} → Position {pos_id} mapped.")
                         new_positions.append(pos_dict)
                     except Exception as map_err:
-                        logger.warning(f"Skipping item for wallet {w['name']} due to mapping error: {map_err}")
+                        print(f"[ERROR] Failed to map Jupiter position for {wallet_name}: {map_err}")
+                        print(item)
+                        continue
 
-            new_count = 0
-            duplicate_count = 0
-            for p in new_positions:
-                logger.debug(f"Checking Jupiter position with ID: {p['id']}")
+            imported, skipped = 0, 0
+            for pos in new_positions:
                 cursor = dl.conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (p["id"],))
-                dup_count = cursor.fetchone()[0]
+                cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos["id"],))
+                dup = cursor.fetchone()[0]
                 cursor.close()
-                if dup_count == 0:
-                    dl.create_position(p)
-                    new_count += 1
-                    logger.debug(f"Imported new Jupiter position: {p['id']}")
-                else:
-                    duplicate_count += 1
-                    logger.info(f"Skipping duplicate Jupiter position: {p['id']}")
 
-            # (Optionally) update hedges if needed:
-            hedges = PositionService.find_hedges(db_path)
-            msg = "Jupiter positions updated successfully."
-            return {"message": msg, "imported": new_count, "skipped": duplicate_count}
+                if dup == 0:
+                    dl.create_position(pos)
+                    print(f"[✅] Imported Jupiter position {pos['id']} for wallet {pos['wallet_name']}")
+                    imported += 1
+                else:
+                    print(f"[⏩] Skipped duplicate position {pos['id']}")
+                    skipped += 1
+
+            return {
+                "message": "Jupiter sync complete.",
+                "imported": imported,
+                "skipped": skipped
+            }
+
         except Exception as e:
-            logger.error(f"Error in update_jupiter_positions: {e}", exc_info=True)
+            logger.exception("❌ Jupiter update failed")
             return {"error": str(e)}
 
     @staticmethod
