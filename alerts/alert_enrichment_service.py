@@ -1,7 +1,8 @@
 
 import sys
 import os
-
+from utils.fuzzy_wuzzy import fuzzy_match_enum
+from data.alert import AlertType
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.json_manager import JsonManager  # ensure this is at the top
@@ -117,21 +118,37 @@ class AlertEnrichmentService:
             return alert
 
     async def _enrich_position_type(self, alert):
-        """
-        Dispatch enrichment based on position-level alert_type.
-        """
-        alert_type = str(alert.alert_type).lower()
+        try:
+            #alert_type_enum = fuzzy_match_enum(str(alert.alert_type), AlertType)
 
-        if alert_type == "profit":
-            return await self._enrich_profit(alert)
-        elif alert_type == "heatindex":
-            return await self._enrich_heat_index(alert)
-        elif alert_type == "travelpercentliquid":
-            return await self._enrich_travel_percent(alert)
-        else:
-            log.warning(f"⚠️ Unsupported position alert type: {alert_type}", source="AlertEnrichment")
+            raw_type = str(alert.alert_type)
+            cleaned = raw_type.split('.')[-1]  # Strip enum wrapper
+            alert_type_enum = fuzzy_match_enum(cleaned, AlertType)
+
+            if not alert_type_enum:
+                log.warning(f"⚠️ Unable to fuzzy-match alert type: {alert.alert_type}", source="AlertEnrichment")
+                return alert
+
+            alert.alert_type = alert_type_enum
+            alert_type_str = alert_type_enum.name.lower()
+            log.debug(f"📌 Matched alert type: {alert_type_str}", source="AlertEnrichment")
+
+            if alert_type_str == "profit":
+                log.debug(f"🧭 Routing to _enrich_profit for alert {alert.id}", source="AlertEnrichment")
+                return await self._enrich_profit(alert)
+            elif alert_type_str == "heatindex":
+                log.debug(f"🧭 Routing to _enrich_heat_index for alert {alert.id}", source="AlertEnrichment")
+                return await self._enrich_heat_index(alert)
+            elif alert_type_str == "travelpercentliquid":
+                log.debug(f"🧭 Routing to _enrich_travel_percent for alert {alert.id}", source="AlertEnrichment")
+                return await self._enrich_travel_percent(alert)
+            else:
+                log.warning(f"⚠️ Unsupported matched alert type: {alert_type_str}", source="AlertEnrichment")
+                return alert
+
+        except Exception as e:
+            log.error(f"❌ Fuzzy match error during enrichment of alert {alert.id}: {e}", source="AlertEnrichment")
             return alert
-
 
     async def _enrich_travel_percent(self, alert):
         try:
@@ -145,15 +162,22 @@ class AlertEnrichmentService:
             position_type = position.get("position_type")
 
             if not all([entry_price, liquidation_price, position_type]):
-                log.error(f"Missing fields in position for alert {alert.id}", source="AlertEnrichment")
+                alert.notes = (alert.notes or "") + " 🔸 TravelPercent defaulted due to missing price fields.\n"
+                alert.evaluated_value = 0.0
+                log.warning(f"⚠️ TravelPercent inputs missing for alert {alert.id}. Using default 0.0",
+                            source="AlertEnrichment")
                 return alert
 
             current_price_data = self.data_locker.get_latest_price(position.get("asset_type"))
             if not current_price_data:
-                log.error(f"Current price not found for asset {position.get('asset_type')}", source="AlertEnrichment")
+                alert.notes = (alert.notes or "") + " 🔸 TravelPercent defaulted due to missing market price.\n"
+                alert.evaluated_value = 0.0
+                log.warning(f"⚠️ Market price not found for asset {position.get('asset_type')} → defaulting",
+                            source="AlertEnrichment")
                 return alert
 
             current_price = current_price_data.get("current_price")
+
             travel_percent = self.calc_services.calculate_travel_percent(
                 position_type=position_type,
                 entry_price=entry_price,
@@ -161,17 +185,21 @@ class AlertEnrichmentService:
                 liquidation_price=liquidation_price
             )
 
-            if travel_percent is not None:
-                alert.evaluated_value = travel_percent
+            if travel_percent is None:
+                travel_percent = 0.0
+                alert.notes = (alert.notes or "") + " 🔸 TravelPercent calc returned None → defaulted.\n"
+                log.warning(f"⚠️ Travel calc failed for alert {alert.id} → default 0.0", source="AlertEnrichment")
+            else:
                 log.success(f"✅ Enriched Travel Percent Alert {alert.id} evaluated_value={travel_percent}",
                             source="AlertEnrichment")
-            else:
-                log.warning(f"⚠️ Travel percent calc returned None for alert {alert.id}", source="AlertEnrichment")
 
+            alert.evaluated_value = travel_percent
             return alert
 
         except Exception as e:
             log.error(f"Error enriching Travel Percent for alert {alert.id}: {e}", source="AlertEnrichment")
+            alert.evaluated_value = 0.0
+            alert.notes = (alert.notes or "") + " 🔸 TravelPercent exception → defaulted.\n"
             return alert
 
     async def _enrich_price_threshold(self, alert):
@@ -190,13 +218,16 @@ class AlertEnrichmentService:
             return alert
 
         pnl = position.get("pnl_after_fees_usd")
+
         if pnl is None:
-            log.warning(f"⚠️ Profit missing (pnl_after_fees_usd) for position {position.get('id')} on alert {alert.id}",
+            pnl = 0.0  # ✅ Fallback default
+            alert.notes = (alert.notes or "") + " 🔸 Default profit applied (0.0).\n"
+            log.warning(f"⚠️ Profit missing for position {position.get('id')} on alert {alert.id} → using default 0.0",
                         source="AlertEnrichment")
         else:
-            alert.evaluated_value = pnl
             log.success(f"✅ Enriched Profit Alert {alert.id} evaluated_value={pnl}", source="AlertEnrichment")
 
+        alert.evaluated_value = pnl
         return alert
 
     async def _enrich_heat_index(self, alert):
@@ -206,13 +237,16 @@ class AlertEnrichmentService:
             return alert
 
         heat = position.get("current_heat_index")
+
         if heat is None:
-            log.warning(f"⚠️ No heat_index for position {position.get('id')} on alert {alert.id}",
+            heat = 5.0  # ← ✅ Default fallback value
+            alert.notes = (alert.notes or "") + " 🔸 Default heat index applied (5.0).\n"
+            log.warning(f"⚠️ No heat_index for position {position.get('id')} on alert {alert.id} → using default 5.0",
                         source="AlertEnrichment")
         else:
-            alert.evaluated_value = heat
             log.success(f"✅ Enriched HeatIndex Alert {alert.id} evaluated_value={heat}", source="AlertEnrichment")
 
+        alert.evaluated_value = heat
         return alert
 
     async def enrich_all(self, alerts):

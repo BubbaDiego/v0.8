@@ -4,7 +4,7 @@ import os
 import threading
 from flask import Blueprint, jsonify, render_template, current_app
 from config.config_constants import BASE_DIR
-from cyclone_engine.cyclone_engine import Cyclone
+from cyclone.cyclone_engine import Cyclone
 
 # --- Setup Blueprint ---
 cyclone_bp = Blueprint("cyclone", __name__, template_folder=".", url_prefix="/cyclone")

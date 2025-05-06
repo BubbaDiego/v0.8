@@ -8,6 +8,7 @@ class ConsoleLogger:
         "success": "\033[92m", # Green
         "warning": "\033[93m", # Yellow
         "error": "\033[91m",   # Red
+        "confidence": "\033[96m",  # Cyan
         "debug": "\033[38;5;208m",  # Orange (ANSI 256-color) "debug": "\033[90m",   # Gray
         "endc": "\033[0m",     # Reset
     }
@@ -17,6 +18,7 @@ class ConsoleLogger:
         "success": "✅",
         "warning": "⚠️",
         "error": "❌",
+        "confidence": "🐻",
         "debug": "🐞",
     }
 
