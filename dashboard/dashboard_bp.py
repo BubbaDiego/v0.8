@@ -31,13 +31,9 @@ dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
 # ✅ NEW WALLET IMAGE MAP
 WALLET_IMAGE_MAP = {
-    "ObiVault": "obivauwww.virlt.jpg",
+    "ObiVault": "obivault.jpg",
     "R2Vault": "r2vault.jpg",
-    "LandoVault": "landovault."
-                  "black"
-                  "ebony"
-                  "www.mijpg",
-    # You can add more specific wallets here if needed
+    "LandoVault": "landovault.jpg",
 }
 DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
@@ -158,6 +154,8 @@ def apply_color(metric_name, value, limits):
 def dash_page():
     context = get_dashboard_context()
     return render_template("dashboard.html", **context)
+     #return render_template("dashboard.html", **context)
+
 
 
 @dashboard_bp.route('/alert_config_page', methods=['GET'])
@@ -180,17 +178,28 @@ def api_graph_data():
 # ---------------------------------
 # API: Size Composition Pie (Real positions)
 # ---------------------------------
+
 @dashboard_bp.route("/api/size_composition")
 def api_size_composition():
     try:
         positions = PositionService.get_all_positions(DB_PATH) or []
-        long_total = sum(float(p.get("size", 0)) for p in positions if p.get("position_type", "").upper() == "LONG")
-        short_total = sum(float(p.get("size", 0)) for p in positions if p.get("position_type", "").upper() == "SHORT")
+
+        long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
+        short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
         total = long_total + short_total
-        series = [round(long_total / total * 100), round(short_total / total * 100)] if total > 0 else [0, 0]
+
+        if total > 0:
+            series = [round(long_total / total * 100), round(short_total / total * 100)]
+        else:
+            print("⚠️ No LONG/SHORT positions found for size pie.")
+            series = [0, 0]
+
         return jsonify({"series": series})
+
     except Exception as e:
+        print(f"[Pie Chart Error] Size composition: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 # ---------------------------------
 # API: Collateral Composition Pie (Real positions)
@@ -199,13 +208,23 @@ def api_size_composition():
 def api_collateral_composition():
     try:
         positions = PositionService.get_all_positions(DB_PATH) or []
-        long_total = sum(float(p.get("collateral", 0)) for p in positions if p.get("position_type", "").upper() == "LONG")
-        short_total = sum(float(p.get("collateral", 0)) for p in positions if p.get("position_type", "").upper() == "SHORT")
+
+        long_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
+        short_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
         total = long_total + short_total
-        series = [round(long_total / total * 100), round(short_total / total * 100)] if total > 0 else [0, 0]
+
+        if total > 0:
+            series = [round(long_total / total * 100), round(short_total / total * 100)]
+        else:
+            print("⚠️ No LONG/SHORT positions found for collateral pie.")
+            series = [0, 0]
+
         return jsonify({"series": series})
+
     except Exception as e:
+        print(f"[Pie Chart Error] Collateral composition: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 @dashboard_bp.route("/api/ledger_ages")
 def api_ledger_ages():

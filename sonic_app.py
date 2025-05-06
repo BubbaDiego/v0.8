@@ -27,6 +27,7 @@ from dashboard.dashboard_bp import dashboard_bp
 from portfolio.portfolio_bp import portfolio_bp
 from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
+from wallets.wallets_bp import wallet_bp
 from utils.startup_checker import verify_paths
 from utils.unified_logger import UnifiedLogger
 
@@ -57,6 +58,9 @@ app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
 app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
+
+app.register_blueprint(wallet_bp)
+
 
 # Aliases
 if "dashboard.index" in app.view_functions:

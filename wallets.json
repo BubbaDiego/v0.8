@@ -1,0 +1,32 @@
+[
+  {
+    "name": "R2Vault",
+    "public_address": "Gwk8DdAZPyonAcxfJDs7fZazC2bDKmpASWsBEbtxvAY6",
+    "private_address": "",
+    "image_path": "\\static\\images\\r2vault.jpg",
+    "balance": 1.23,
+    "tags": [],
+    "is_active": true,
+    "type": "personal"
+  },
+  {
+    "name": "LandoVault",
+    "public_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
+    "private_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
+    "image_path": "1.23",
+    "balance": 1.23,
+    "tags": [],
+    "is_active": true,
+    "type": "personal"
+  },
+  {
+    "name": "test wallet",
+    "public_address": "1234",
+    "private_address": "",
+    "image_path": "/static/uploads/wallets/Screenshot_2025-04-01_111150.png",
+    "balance": 1.23,
+    "tags": [],
+    "is_active": true,
+    "type": "personal"
+  }
+]

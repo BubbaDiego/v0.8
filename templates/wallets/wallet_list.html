@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}💼 Wallet Manager{% endblock %}
+
+{% block page_title %}
+  <h1 class="mt-4">💼 Wallets</h1>
+{% endblock %}
+
+{% block content %}
+  <!-- ✅ Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash-messages">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <!-- 🧾 Wallet Table -->
+  <div class="mini-table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>🖼️</th>
+          <th>🧠 Name</th>
+          <th>📬 Address</th>
+          <th>💰 Balance</th>
+          <th>🏷️ Tags</th>
+          <th>📂 Type</th>
+          <th>✅ Active</th>
+          <th>🛠️ Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for wallet in wallets %}
+        <tr>
+          <td>
+            {% if wallet.image_path %}
+              <img src="{{ wallet.image_path }}" alt="wallet avatar" class="wallet-icon">
+            {% else %}
+              <span>No Image</span>
+            {% endif %}
+          </td>
+          <td>{{ wallet.name }}</td>
+          <td>{{ wallet.public_address }}</td>
+          <td>${{ wallet.balance }}</td>
+          <td>{{ wallet.tags|join(", ") }}</td>
+          <td>{{ wallet.type }}</td>
+          <td>{{ "✔️" if wallet.is_active else "❌" }}</td>
+          <td>
+            <form action="/wallets/delete/{{ wallet.name }}" method="post" style="display:inline;">
+              <button type="submit" class="btn btn-sm btn-danger">🗑️</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- ➕ Add Wallet -->
+  {% include "wallets/wallet_form.html" %}
+
+  <hr>
+
+  <!-- 💾 JSON Sync Buttons -->
+  <form action="/wallets/export" method="post" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">💾 Export to JSON</button>
+  </form>
+  <form action="/wallets/import" method="post" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">♻️ Import from JSON</button>
+  </form>
+{% endblock %}
