@@ -1,0 +1,93 @@
+/* =======================
+   TABLES.CSS — Position Tables, Headers, Cells 🧾
+   ======================= */
+
+/* === 📦 Table Wrapper Container === */
+.mini-table-box {
+  background-color: var(--card-background-color, #d0e7ff); /* 🔧 Customizable base */
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* === 🧠 Full Width Table with Collapse === */
+.mini-table-box table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--card-title-color, #000);
+}
+
+/* === 📌 Sticky Table Headers === */
+.mini-table-box thead th {
+  position: sticky;
+  top: 0;
+  background-color: rgba(255,255,255,0.2);  /* 🔧 Translucent glassy style */
+  backdrop-filter: blur(4px);              /* 🧊 Frosted glass effect */
+  z-index: 2;
+}
+
+/* === 🏷️ Column Headers === */
+.mini-table-box th {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  border-bottom: 2px solid rgba(255,255,255,0.3);
+}
+
+/* === 📄 Table Cell Content === */
+.mini-table-box td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* === 🔁 Table Row Hover Effect === */
+.mini-table-box tbody tr {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.mini-table-box tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.15); /* 🔧 Hover tint */
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+/* === 🧭 Scroll Wrapper for Table === */
+.positions-container {
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 1rem;
+}
+
+/* === 🎛 Scrollbar Styling === */
+.positions-container::-webkit-scrollbar {
+  height: 8px;
+}
+.positions-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+.positions-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* === 🎨 Light vs Dark Theme (moved from theme.css for isolation) === */
+body.light-bg .mini-table-box table,
+body.light-bg .mini-table-box thead th {
+  background-color: #e6f0ff;
+  color: #000;
+}
+
+body.dark-bg .mini-table-box table,
+body.dark-bg .mini-table-box thead th {
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+
+/* === Column Padding (shared) === */
+.mini-table-box th,
+.mini-table-box td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}

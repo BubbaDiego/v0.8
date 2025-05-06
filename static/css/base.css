@@ -1,0 +1,65 @@
+/* =======================
+   BASE.CSS — Universal Resets, Typography, HTML/BODY, Scrollbars
+   ======================= */
+
+/* --- Universal Box-Sizing Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* ✅ Ensures predictable padding + width */
+}
+
+/* --- Base HTML + BODY --- */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif; /* 🔧 Swap with Inter, Roboto, etc */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff; /* 🔧 Can override in theme.css */
+  color: #222222;
+}
+
+/* --- Anchor Reset --- */
+a {
+  text-decoration: none;
+  color: inherit; /* 🔧 Allow color to inherit unless overridden */
+}
+
+/* --- Image Reset --- */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* --- Default Font Sizes --- */
+body {
+  font-size: 16px;  /* 🔧 Consider using clamp() for responsive scaling */
+}
+
+/* --- Button + Input Reset --- */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+}
+
+/* --- Scrollbar Styling (WebKit) --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4); /* 🔧 Use theme var if themed scrollbars */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}

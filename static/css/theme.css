@@ -1,0 +1,72 @@
+/* =======================
+   THEME.CSS — Light & Dark Modes 🌗
+   ======================= */
+
+/* === ☀️ LIGHT MODE === */
+body.light-bg {
+  background-color: #f9f9f9;  /* 🔧 Main background */
+  color: #000000;             /* 🔧 Default text */
+}
+
+/* Cards and Boxes in Light Theme */
+body.light-bg .common-box,
+body.light-bg .mini-table-box,
+body.light-bg .ledger-box,
+body.light-bg .liquidation-box {
+  background-color: #d0e7ff;        /* 🌤️ Sky blue background */
+  color: #000000;
+  border: 2px solid #c0d7f5;        /* 🧊 Border for separation */
+}
+
+/* Wrappers */
+body.light-bg .wrapper,
+body.light-bg .content-wrapper {
+  background-color: #ffffff;        /* 🧼 Keep things clean */
+}
+
+/* === 🌙 DARK MODE === */
+body.dark-bg {
+  background-color: #1c1c1c;        /* 🕶️ Dark shell */
+  color: #ddd;                      /* 🔧 Medium contrast text */
+}
+
+/* Cards and Boxes in Dark Theme */
+body.dark-bg .common-box,
+body.dark-bg .mini-table-box,
+body.dark-bg .ledger-box,
+body.dark-bg .liquidation-box {
+  background-color: #2a2a2a;
+  color: #ddd;
+  border: 2px solid #444;
+  box-shadow: 0 2px 8px rgba(255,255,255,0.1);  /* ✨ Subtle glow */
+}
+
+/* Wrappers in Dark Mode */
+body.dark-bg .wrapper,
+body.dark-bg .content-wrapper {
+  background-color: #1c1c1c;
+}
+
+/* 🧃 Text Colors for All Elements */
+body.dark-bg h1,
+body.dark-bg h2,
+body.dark-bg h3,
+body.dark-bg h4,
+body.dark-bg h5,
+body.dark-bg p,
+body.dark-bg span,
+body.dark-bg td,
+body.dark-bg th {
+  color: #ddd; /* ✅ Unified text styling in dark mode */
+}
+
+/* === DARK MODE GRADIENTS 🌌 === */
+body.dark-bg .fresh-gradient {
+  background: linear-gradient(90deg, #3c6e47, #345e3c);
+}
+body.dark-bg .warning-gradient {
+  background: linear-gradient(90deg, #8a7635, #7d6930);
+}
+body.dark-bg .stale-gradient {
+  background: linear-gradient(90deg, #8b3c3c, #7d2f2f);
+}

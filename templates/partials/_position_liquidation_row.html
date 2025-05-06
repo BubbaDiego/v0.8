@@ -1,4 +1,7 @@
-<link rel="stylesheet" href="../../static/css/dashboard.css">{% if is_first %}
+<link rel="stylesheet" href="../../static/css/portfolio_status.css">
+<link rel="stylesheet" href="../../static/css/dashboard.css">
+
+{% if is_first %}
 <!-- === HEADER ROW FOR POSITION + LIQUIDATION COLUMNS === -->
 <div class="liq-header-row">
   <!-- 🔹 Left Side: Column Titles -->
@@ -14,9 +17,8 @@
   <div class="liq-header">
     <div class="liq-col-label" style="min-width: 150px;">Liquidation</div>
     <div class="heat-label-wrapper">
-  <div class="heat-icon">🔥</div>
-</div>
-
+      <div class="heat-icon">🔥</div>
+    </div>
   </div>
 </div>
 {% endif %}
@@ -57,7 +59,18 @@
   </div>
 
   <!-- 🔸 RIGHT COLUMN: Liquidation Bar + Heat -->
-  <div class="liq-col">
+  <div class="liq-col" style="position: relative;">
+
+    <!-- Profit index badge (green left-side circle) -->
+    {% if pos.travel_percent >= 0 %}
+    <div class="liq-profit-badge-wrapper">
+      <div class="liq-profit-badge">
+        {{ pos.travel_percent|round(0)|int }}
+      </div>
+    </div>
+    {% endif %}
+
+
     <div class="liq-bar-container">
       <div class="liq-midline"></div>
       {% set pct = pos.travel_percent|float %}

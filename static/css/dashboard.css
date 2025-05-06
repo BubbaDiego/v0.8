@@ -958,6 +958,25 @@ body.dark-bg .status-icon {
   height: 100%;
 }
 
+.liq-profit-badge {
+  background-color: #00b050; /* 💚 Profit green */
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 13px;
+  position: absolute;
+  left: -40px; /* Adjust spacing */
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 3px rgba(0,0,0,0.4);
+}
+
+
 /* Absolutely positioned flame */
 .heat-icon {
   position: absolute;
@@ -986,6 +1005,45 @@ body.dark-bg .status-icon {
   animation: bounceFlame 1.4s infinite ease-in-out;
   display: inline-block;
 }
+
+.profit-label-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding-right: 6px;
+}
+
+.profit-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.liq-profit-badge-wrapper {
+  position: absolute;
+  left: -14px; /* aligned closer to bar */
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.liq-profit-badge {
+  background-color: #00b050;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 13px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.4);
+  margin-top: 2px;
+}
+
 
 
 
