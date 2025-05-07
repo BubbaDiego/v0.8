@@ -2,6 +2,7 @@ from data.data_locker import DataLocker
 from positions.position_service import PositionService
 from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
+from core.logging import log
 from config.config_constants import DB_PATH, ALERT_LIMITS_PATH
 from utils.fuzzy_wuzzy import fuzzy_match_key
 from datetime import datetime
@@ -144,6 +145,8 @@ def format_monitor_time(iso_str):
 
 
 def get_dashboard_context():
+    log.info("📊 Assembling dashboard context", source="DashboardContext")
+
     dl = DataLocker.get_instance()
     positions = PositionService.get_all_positions(DB_PATH) or []
 
@@ -184,7 +187,6 @@ def get_dashboard_context():
          "color": determine_color(ledger_info["age_operations"]), "raw_value": ledger_info["age_operations"]},
         {"title": "Xcom", "icon": "📡", "value": format_monitor_time(ledger_info["last_xcom_time"]),
          "color": determine_color(ledger_info["age_xcom"]), "raw_value": ledger_info["age_xcom"]},
-
         {"title": "Value", "icon": "💰", "value": "${:,.0f}".format(totals["total_value"]),
          "color": apply_color("total_value", totals["total_value"], portfolio_limits),
          "raw_value": totals["total_value"]},
@@ -192,13 +194,12 @@ def get_dashboard_context():
          "color": apply_color("avg_leverage", totals["avg_leverage"], portfolio_limits),
          "raw_value": totals["avg_leverage"]},
         {"title": "Size", "icon": "📊", "value": "${:,.0f}".format(totals["total_size"]),
-         "color": apply_color("total_size", totals["total_size"], portfolio_limits), "raw_value": totals["total_size"]},
+         "color": apply_color("total_size", totals["total_size"], portfolio_limits),
+         "raw_value": totals["total_size"]},
         {"title": "Ratio", "icon": "⚖️",
-         "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals[
-                                                                                             "total_collateral"] > 0 else "N/A",
+         "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A",
          "color": apply_color("value_to_collateral_ratio",
-                              (totals["total_value"] / totals["total_collateral"]) if totals[
-                                                                                          "total_collateral"] > 0 else None,
+                              (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None,
                               portfolio_limits),
          "raw_value": (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None},
         {"title": "Travel", "icon": "✈️", "value": "{:.2f}%".format(totals["avg_travel_percent"]),
@@ -210,13 +211,9 @@ def get_dashboard_context():
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
-    # 🧪 DEBUG OUTPUT
-    print("\n===== 🧪 DEBUG: PORTFOLIO LIMITS =====")
-    pprint(portfolio_limits)
-    print("\n===== 🧪 DEBUG: STATUS ITEMS SENT TO FRONTEND =====")
-    pprint(status_items)
-    print("\n===== 🧪 DEBUG: MONITOR ITEMS SENT TO FRONTEND =====")
-    pprint(monitor_items)
+    log.debug("📊 Dashboard status items", source="DashboardContext", payload=status_items)
+    log.debug("📡 Dashboard monitor items", source="DashboardContext", payload=monitor_items)
+    log.debug("📐 Portfolio limit config", source="DashboardContext", payload=portfolio_limits)
 
     return {
         "theme_mode": dl.get_theme_mode(),

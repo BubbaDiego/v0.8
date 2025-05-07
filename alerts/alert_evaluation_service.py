@@ -14,6 +14,8 @@ from utils.fuzzy_wuzzy import fuzzy_match_enum
 from utils.console_logger import ConsoleLogger as log
 
 
+log.debug_module()
+
 
 class AlertEvaluationService:
     def __init__(self, config_path=str(ALERT_LIMITS_PATH), thresholds=None):

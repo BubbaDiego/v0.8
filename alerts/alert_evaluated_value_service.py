@@ -4,7 +4,7 @@ from utils.console_logger import ConsoleLogger as log
 from utils.json_manager import JsonManager
 
 
-class AlertEvaluatedValueService:
+class AlertEvaluatedValueServicez:
     def __init__(self, dashboard_context: callable = None):
         from dashboard.dashboard_service import get_dashboard_context
         self.get_dashboard_context = dashboard_context or get_dashboard_context

@@ -7,7 +7,7 @@ from flask import Blueprint, request, jsonify, render_template, current_app
 from markupsafe import Markup
 from alerts.alert_service_manager import AlertServiceManager
 from utils.json_manager import JsonManager, JsonType
-from dashboard.dashboard_view_model import DashboardViewModel
+#from dashboard.dashboard_view_model import DashboardViewModel
 from config.config_constants import ALERT_LIMITS_PATH
 from utils.console_logger import ConsoleLogger as log
 from data.data_locker import DataLocker
@@ -62,26 +62,6 @@ def refresh_alerts():
         logger.error(f"Error refreshing alerts: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
-@alerts_bp.route('/test_sms', methods=['POST'])
-def test_sms():
-    """
-    Trigger a test SMS via NotificationService.
-    """
-    try:
-        service = AlertServiceManager.get_instance()
-        msg = current_app.config.get('TEST_SMS_MESSAGE', 'This is a test SMS alert.')
-        result = service.notification_service.send_alert(msg, 'test_sms')
-        return jsonify(success=bool(result),
-                       message='SMS sent!' if result else 'SMS failed'), (200 if result else 500)
-    except Exception as e:
-        logger.error(f"Error sending test SMS: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@alerts_bp.route('/monitor', methods=['GET'])
-def monitor_alerts():
-    #from alerts.dashboard_view_model import DashboardViewModel
-    dashboard = DashboardViewModel()
-    return jsonify({"alerts": dashboard.get_alerts()})
 
 @alerts_bp.route('/create_all', methods=['POST'])
 def create_all_alerts():
@@ -139,111 +119,12 @@ def delete_all_alerts():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-@alerts_bp.route('/config', methods=['GET'])
-def config_page():
-    """
-    Display the alert configuration editor.
-    """
-    try:
-        json_manager = current_app.json_manager
-        config_data = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
-        config_data = convert_types_in_dict(config_data)
-    except Exception as e:
-        logger.error(f"Error loading config: {e}", exc_info=True)
-        return render_template("alert_limits.html", error_message="Failed to load configuration."), 500
-
-    return render_template("alert_limits.html",
-                           alert_ranges=config_data.get("alert_ranges", {}),
-                           price_alerts=config_data.get("alert_ranges", {}).get("price_alerts", {}),
-                           global_alert_config=config_data.get("global_alert_config", {}),
-                           notifications=config_data.get("alert_config", {}).get("notifications", {}),
-                           theme=config_data.get("theme_config", {}))
 
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
     return "🚫 Alert Limits Page has been disabled.", 410
 
 
-# Matrix view route
-@alerts_bp.route('/alert_matrix', methods=['GET'])
-def alert_matrix_page():
-    try:
-        data_locker = DataLocker.get_instance()
-        alerts = data_locker.get_alerts()
-        positions = data_locker.read_positions()
-        json_manager = current_app.json_manager
-        alert_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
-        theme_config = current_app.config.get('theme', {})
-
-        for alert in alerts:
-            alert["cooldown_remaining"] = 0  # can extend later
-
-        return render_template("alert_matrix.html",
-                               theme=theme_config,
-                               alerts=alerts,
-                               alert_ranges=alert_config.get("alert_ranges", {}),
-                               hedges=[],
-                               asset_images={},
-                               wallet_default="")
-    except Exception as e:
-        logger.error(f"Error loading alert matrix: {e}", exc_info=True)
-        return "Error loading alert matrix", 500
-
-
-@alerts_bp.route('/update_config', methods=['POST'])
-def update_config():
-    """
-    Save updated alert configuration.
-    """
-    try:
-        flat_form = request.form.to_dict(flat=False)
-        nested_update = _parse_nested_form(flat_form)
-        nested_update = convert_types_in_dict(nested_update)
-
-        json_manager = current_app.json_manager
-        current_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
-        merged_config = json_manager.deep_merge(current_config, nested_update)
-
-        if not merged_config.get("alert_cooldown_seconds"):
-            merged_config["alert_cooldown_seconds"] = 900
-        if not merged_config.get("call_refractory_period"):
-            merged_config["call_refractory_period"] = 1800
-
-        json_manager.save("alert_limitsz.json", merged_config, json_type=JsonType.ALERT_LIMITS)
-        log.success("Alert configuration updated successfully.", source="AlertsBP")
-        return jsonify({"success": True})
-    except Exception as e:
-        logger.error(f"Error updating alert config: {e}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@alerts_bp.route('/matrix', methods=['GET'])
-def alert_matrix():
-    """
-    Display the Alert Matrix (visuals for current alerts).
-    """
-    try:
-        data_locker = DataLocker.get_instance()
-        alerts = data_locker.get_alerts()
-        positions = data_locker.read_positions()
-        json_manager = current_app.json_manager
-        alert_config = json_manager.load("alert_limitsz.json", json_type=JsonType.ALERT_LIMITS)
-        theme_config = current_app.config.get('theme', {})
-
-        now = time()
-
-        for alert in alerts:
-            alert["cooldown_remaining"] = 0  # Placeholder if you want per-alert cooldowns
-
-        return render_template("alert_matrix.html",
-                               theme=theme_config,
-                               alerts=alerts,
-                               alert_ranges=alert_config.get("alert_ranges", {}),
-                               hedges=[],  # Could load hedges if needed
-                               asset_images={},  # You can define asset image mapping
-                               wallet_default="")
-    except Exception as e:
-        logger.error(f"Error building alert matrix: {e}", exc_info=True)
-        return "Matrix load error", 500
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
 def monitor_page():
@@ -253,36 +134,7 @@ def monitor_page():
     print(f"🧪 CHECKING TEMPLATE PATH: {path}")
     exists = os.path.exists(path)
     print(f"🧪 EXISTS? {exists}")
-    return render_template("alert_monitor.html")
-
-
-@alerts_bp.route('/monitor_page_debug', methods=['GET'])
-def monitor_page_debug():
-    from markupsafe import Markup
-    html = """
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <title>💥 Debug Monitor Page</title>
-          <style>
-              body {
-                  font-family: monospace;
-                  padding: 2rem;
-                  background: #1e1e1e;
-                  color: #00ffae;
-              }
-          </style>
-      </head>
-      <body>
-          <h1>✅ DEBUG: Template rendering is working!</h1>
-          <script>
-              alert("🚀 DEBUG TEMPLATE WORKS!");
-              console.log("🧠 JS loaded inside alert_monitor.html");
-          </script>
-      </body>
-      </html>
-      """
-    return Markup(html)
+    return render_template("alerts/alert_monitor.html")
 
 
 # --- Internal helpers ---

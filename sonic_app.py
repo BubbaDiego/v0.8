@@ -3,21 +3,17 @@
 sonic_app.py
 Main Flask app for Sonic Dashboard.
 """
-
-
-
 import os
 import sys
 import json
 import asyncio
-import logging
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO
 from config.config_constants import DB_PATH, CONFIG_PATH, BASE_DIR
-#from config.config_manager import UnifiedConfigManager
+#from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager
-from utils.console_logger import ConsoleLogger as log  # 🚀 NEW
 from cyclone.cyclone_engine import Cyclone
 from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp
@@ -29,7 +25,56 @@ from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
 from wallets.wallets_bp import wallet_bp
 from utils.startup_checker import verify_paths
-from utils.unified_logger import UnifiedLogger
+
+
+def configure_console_debug_log():
+    """
+    🔧 configure_console_debug_log()
+
+    Centralized debug logging configuration for the Sonic Dashboard. 🧠
+
+    🧭 Features:
+    - Silences noisy modules during normal operation (e.g. calc_services)
+    - Enables grouped logging control (e.g. "analytics" or "infra")
+    - Ensures clean, informative CLI output with emoji-coded logs
+
+    📦 Module Controls:
+    - "calc_services"     🔇 Disabled by default
+    - "positions_bp"      🔇 Disabled
+    - "alerts_bp"         🔊 Enabled
+    - "cyclone_engine"    🔊 Enabled
+
+    📛 Group Controls:
+    - Group "analytics" includes: ["calc_services", "positions_bp"]
+    - Group "system"    includes: ["alerts_bp", "cyclone_engine"]
+    """
+
+    # 🔇 Disable specific modules by default
+    log.silence_module("calc_services")
+    # Log.silence_module("positions_bp")  # Can enable as needed
+
+    # 🔊 Allow these to be chatty
+    #log.enable_module("alerts_bp")
+    #log.enable_module("cyclone_engine")
+
+    #🕵️ Hijack
+    log.hijack_logger("werkzeug")
+    # 🔇 Disable werkzeug by default
+    log.silence_module("werkzeug")
+
+    #log.silence_prefix("calculate")
+   # log.silence_prefix("hedge")
+    log.silence_module("fuzzy_wuzzy")
+
+    # 🧠 Group management
+    #log.assign_group("analytics", ["calc_services", "positions_bp"])
+   # log.assign_group("system", ["alerts_bp", "cyclone_engine"])
+
+    # 🧩 Emit status ping
+    log.init_status()
+
+
+
 
 # Flask App Initialization
 app = Flask(__name__)
@@ -37,16 +82,9 @@ app.debug = False
 app.secret_key = "i-like-lamp"
 socketio = SocketIO(app)
 
-# Banner
+configure_console_debug_log()
+
 log.banner("SONIC DASHBOARD STARTUP")
-
-# Startup Checks
-log.info(f"Verifying paths...", source="Startup")
-#verify_paths()
-
-# Setup JSON Manager
-unified_logger = UnifiedLogger()
-app.json_manager = JsonManager(logger=unified_logger)
 
 # Register Blueprints
 log.info(f"Registering blueprints...", source="Startup")
@@ -58,15 +96,19 @@ app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
 app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
-
 app.register_blueprint(wallet_bp)
 
+
+# Startup Checks
+log.info(f"Verifying paths...", source="Startup")
+#verify_paths()
+
+app.json_manager = JsonManager(logger=log)
 
 # Aliases
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 
-log.success(f"Flask app initialized successfully.", source="Startup")
 
 # Flask Routes
 @app.route("/")
@@ -267,4 +309,7 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 5001
     log.success(f"Starting Flask server at {host}:{port}", source="Startup")
+   # log.print_dashboard_link(host="127.0.0.1", port=port)  # 👈 Add this line here
+    log.print_dashboard_link(host="127.0.0.1", port=port, route="/")  # use '/' instead of '/dashboard'
+
     app.run(debug=False, host=host, port=port)

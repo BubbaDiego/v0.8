@@ -30,22 +30,23 @@ class JsonManager:
                 JsonType.ALERT_LIMITS: ALERT_LIMITS_PATH,
                 JsonType.THEME_CONFIG: THEME_CONFIG_PATH,
                 JsonType.SONIC_SAUCE: SONIC_SAUCE_PATH,
-                # Add mappings for SONIC_CONFIG and COMM_CONFIG if needed.
             }
             file_path = str(path_map.get(json_type, file_path))
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            caller = inspect.getframeinfo(inspect.stack()[1][0])
+
+            # 👁️ Context info
+            type_info = json_type.name if json_type else "unspecified"
             json_str = json.dumps(data)
             if len(json_str) > 200:
                 json_str = json_str[:200] + "..."
-            type_info = f" [JSON Type: {json_type.name}]" if json_type else ""
 
-            # --- Verification Block ---
+            # ✅ Verification
             verification_passed = True
             verification_message = "No verification rules applied."
+
             if json_type == JsonType.SONIC_SAUCE:
                 required_keys = ["hedge_modifiers", "heat_modifiers"]
                 missing_keys = [k for k in required_keys if k not in data]
@@ -60,36 +61,29 @@ class JsonManager:
                     verification_message = "Theme config is not a dictionary."
                 else:
                     verification_message = f"Theme config keys: {list(data.keys())}"
-            # You can add additional verification for other types if needed.
 
+            # 🧠 Logging
             if verification_passed:
-                self.logger.log_operation(
-                    operation_type="JSON Verified",
-                    primary_text=(f"Verification passed for {file_path} (JSON Type: {json_type.name}). {verification_message}"),
-                    source="system",
-                    file=file_path,
-                    extra_data={"json_type": json_type.name}
-                )
+                self.logger.success("✅ JSON verification passed", source="JsonManager", payload={
+                    "file": file_path,
+                    "type": type_info,
+                    "details": verification_message
+                })
             else:
-                self.logger.log_operation(
-                    operation_type="JSON Verification Failed",
-                    primary_text=(f"Verification failed for {file_path} (JSON Type: {json_type.name}). {verification_message}"),
-                    source="system",
-                    file=file_path,
-                    extra_data={"json_type": json_type.name}
-                )
+                self.logger.warning("⚠️ JSON verification failed", source="JsonManager", payload={
+                    "file": file_path,
+                    "type": type_info,
+                    "details": verification_message
+                })
 
             return data
+
         except Exception as e:
-            caller = inspect.getframeinfo(inspect.stack()[1][0])
-            type_info = f" [JSON Type: {json_type.name}]" if json_type else ""
-            self.logger.log_operation(
-                operation_type="Load JSON Failed",
-                primary_text=(f"Failed to load {file_path}{type_info} by system at {caller.filename}:{caller.lineno}: {e}"),
-                source="system",
-                file=f"{file_path} ({caller.filename}:{caller.lineno})",
-                extra_data={"json_type": json_type.name if json_type else ""}
-            )
+            self.logger.error("❌ Failed to load JSON", source="JsonManager", payload={
+                "file": file_path,
+                "error": str(e),
+                "type": json_type.name if json_type else "unknown"
+            })
             raise
 
     def save(self, file_path: str, data, json_type: JsonType = None):
@@ -99,7 +93,6 @@ class JsonManager:
                 JsonType.ALERT_LIMITS: ALERT_LIMITS_PATH,
                 JsonType.THEME_CONFIG: THEME_CONFIG_PATH,
                 JsonType.SONIC_SAUCE: SONIC_SAUCE_PATH,
-                # Add additional mappings if needed.
             }
             file_path = str(path_map.get(json_type, file_path))
 
@@ -108,53 +101,30 @@ class JsonManager:
                 json.dump(data, f, indent=2)
                 f.truncate()
 
-            caller = inspect.getframeinfo(inspect.stack()[1][0])
-            json_str = json.dumps(data)
-            if len(json_str) > 200:
-                json_str = json_str[:200] + "..."
-            type_info = f" [JSON Type: {json_type.name}]" if json_type else ""
+            self.logger.success("💾 JSON saved", source="JsonManager", payload={
+                "file": file_path,
+                "type": json_type.name if json_type else "unknown"
+            })
 
-            self.logger.log_operation(
-                operation_type="JSON Saved",
-                primary_text=(
-                    f"Successfully saved {file_path}{type_info} by system at {caller.filename}:{caller.lineno}. Data: {json_str}"),
-                source="system",
-                file=f"{file_path} ({caller.filename}:{caller.lineno})",
-                extra_data={"json_type": json_type.name if json_type else ""}
-            )
-
-            # ✅ Post-Save Validation
+            # 🔍 Post-save validation
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     json.load(f)
-                self.logger.log_operation(
-                    operation_type="JSON Validation",
-                    primary_text=f"Post-save validation passed for {file_path}",
-                    source="JsonManager",
-                    file=file_path,
-                    extra_data={"json_type": json_type.name if json_type else ""}
-                )
+                self.logger.success("🔍 Post-save validation passed", source="JsonManager", payload={
+                    "file": file_path
+                })
             except json.JSONDecodeError as ve:
-                self.logger.log_operation(
-                    operation_type="JSON Validation Failed",
-                    primary_text=f"Post-save validation failed for {file_path}: {ve}",
-                    source="JsonManager",
-                    file=file_path,
-                    extra_data={"json_type": json_type.name if json_type else ""}
-                )
+                self.logger.error("❌ Post-save validation failed", source="JsonManager", payload={
+                    "file": file_path,
+                    "error": str(ve)
+                })
                 raise
 
         except Exception as e:
-            caller = inspect.getframeinfo(inspect.stack()[1][0])
-            type_info = f" [JSON Type: {json_type.name}]" if json_type else ""
-            self.logger.log_operation(
-                operation_type="Save JSON Failed",
-                primary_text=(
-                    f"Failed to save {file_path}{type_info} by system at {caller.filename}:{caller.lineno}: {e}"),
-                source="system",
-                file=f"{file_path} ({caller.filename}:{caller.lineno})",
-                extra_data={"json_type": json_type.name if json_type else ""}
-            )
+            self.logger.error("❌ Failed to save JSON", source="JsonManager", payload={
+                "file": file_path,
+                "error": str(e)
+            })
             raise
 
     def resolve_key_fuzzy(self, input_key: str, json_dict: dict, threshold: float = 0.6, aliases: dict = None) -> \
@@ -165,6 +135,9 @@ class JsonManager:
         2. Normalized exact match
         3. Fuzzy matching
         """
+        import re
+        from difflib import get_close_matches
+
         if not isinstance(json_dict, dict):
             raise ValueError("Provided json_dict must be a dictionary.")
 
@@ -177,16 +150,32 @@ class JsonManager:
         if aliases:
             for target_key, alias_list in aliases.items():
                 if norm_input == normalize(target_key) or norm_input in map(normalize, alias_list):
+                    self.logger.debug("🎯 Resolved via alias", source="JsonManager", payload={
+                        "input": input_key, "resolved": target_key
+                    })
                     return target_key
 
         # 2. Normalized key match
         norm_map = {normalize(k): k for k in json_dict.keys()}
         if norm_input in norm_map:
-            return norm_map[norm_input]
+            resolved = norm_map[norm_input]
+            self.logger.debug("🎯 Resolved via normalized match", source="JsonManager", payload={
+                "input": input_key, "resolved": resolved
+            })
+            return resolved
 
-        # 3. Fuzzy fallback
+        # 3. Fuzzy match
         close = get_close_matches(norm_input, norm_map.keys(), n=1, cutoff=threshold)
-        return norm_map[close[0]] if close else None
+        if close:
+            resolved = norm_map[close[0]]
+            self.logger.debug("🤖 Resolved via fuzzy match", source="JsonManager", payload={
+                "input": input_key, "resolved": resolved,
+                "match_score": threshold
+            })
+            return resolved
+
+        self.logger.warning("⚠️ Failed to resolve key", source="JsonManager", payload={"input": input_key})
+        return None
 
     def deep_merge(self, source: dict, updates: dict) -> dict:
         """
@@ -196,33 +185,19 @@ class JsonManager:
         try:
             for key, value in updates.items():
                 if key in source and isinstance(source[key], dict) and isinstance(value, dict):
-                    self.logger.log_operation(
-                        operation_type="Deep Merge",
-                        primary_text=f"Deep merging key: {key}",
-                        source="JsonManager",
-                        file="JsonManager.deep_merge"
-                    )
+                    self.logger.debug("🔀 Deep merging dict", source="JsonManager", payload={"key": key})
                     source[key] = self.deep_merge(source[key], value)
                 else:
-                    self.logger.log_operation(
-                        operation_type="Deep Merge",
-                        primary_text=f"Updating key: {key} with value: {value}",
-                        source="JsonManager",
-                        file="JsonManager.deep_merge"
-                    )
+                    self.logger.debug("🧬 Updating value", source="JsonManager", payload={"key": key, "value": value})
                     source[key] = value
-            self.logger.log_operation(
-                operation_type="Deep Merge Success",
-                primary_text="Deep merge completed successfully.",
-                source="JsonManager",
-                file="JsonManager.deep_merge"
-            )
+
+            self.logger.success("✅ Deep merge completed", source="JsonManager")
             return source
+
         except Exception as e:
-            self.logger.log_operation(
-                operation_type="Deep Merge Failure",
-                primary_text=f"Deep merge failed with error: {e}",
-                source="JsonManager",
-                file="JsonManager.deep_merge"
-            )
+            self.logger.error("❌ Deep merge failed", source="JsonManager", payload={
+                "error": str(e),
+                "updates": updates
+            })
             raise
+

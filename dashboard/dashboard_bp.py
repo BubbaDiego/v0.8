@@ -158,10 +158,11 @@ def dash_page():
 
 
 
-@dashboard_bp.route('/alert_config_page', methods=['GET'])
+@dashboard_bp.route('/alerts/alert_config_page', methods=['GET'])
 def alert_config_page():
     # 🛑 Disabled temporarily
     return "🚫 Alert Config is currently disabled.", 410
+
 # ---------------------------------
 # API: Graph Data (Real portfolio history)
 # ---------------------------------

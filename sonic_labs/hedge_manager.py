@@ -63,12 +63,14 @@ class HedgeManager:
 
                 self.hedges.append(hedge)
 
-        log.log_operation(
-            operation_type="Hedge Check",
-            primary_text=f"Hedge check complete: {len(self.hedges)} hedges found.",
+        log.success(
+            f"Hedge check complete: {len(self.hedges)} hedges found.",
             source="HedgeManager",
-            file="hedge_manager.py",
-            extra_data={"hedge_count": len(self.hedges)}
+            payload={
+                "hedge_count": len(self.hedges),
+                "file": "hedge_manager.py",
+                "operation_type": "Hedge Check"
+            }
         )
 
     def update_positions(self, positions: List[Position]):

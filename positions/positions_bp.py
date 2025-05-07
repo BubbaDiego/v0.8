@@ -30,14 +30,12 @@ import asyncio  # Ensure asyncio is imported
 
 # These helper functions and objects must be defined and imported appropriately.
 # For example, update_prices and manual_check_alerts might come from other modules.
-from utils.unified_logger import UnifiedLogger
+#from utils.unified_logger import UnifiedLogger
 
 # Assume that socketio is initialized in your main app and imported here.
 #from your_app import socketio  # Replace with the actual import if different
 
-logger = logging.getLogger("PositionsBlueprint")
-logger.setLevel(logging.DEBUG)
-u_logger = UnifiedLogger()
+from core.logging import log
 
 
 from config.config_constants import CONFIG_PATH
@@ -344,17 +342,6 @@ def positions_table():
         logger.error(f"Error in positions_table: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@positions_bp.route("/blast_radius", methods=["GET"])
-def blast_radius():
-    try:
-        # Optionally, you can fetch the data you need from PositionService here
-        # For now, we simply render the template.
-        return render_template("blast_radius.html")
-    except Exception as e:
-        logger.error(f"Error rendering blast_radius page: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
 
 @positions_bp.route("/edit/<position_id>", methods=["POST"])
 def edit_position(position_id):
@@ -443,167 +430,6 @@ def positions_data_api():
         return jsonify({"error": str(e)}), 500
 
 
-@positions_bp.route("/mobile", methods=["GET"])
-def positions_mobile():
-    try:
-        dl = DataLocker.get_instance(DB_PATH)
-        calc = CalcServices()
-        positions = PositionService.get_all_positions(DB_PATH)
-        for pos in positions:
-            wallet_name = pos.get("wallet_name")
-            pos["wallet_name"] = dl.get_wallet_by_name(wallet_name) if wallet_name else None
-        config_data = load_config(CONFIG_PATH)
-        alert_dict = config_data.get("alert_ranges", {})
-
-        def get_alert_class_local(value, low_thresh, med_thresh, high_thresh):
-            try:
-                low_thresh = float(low_thresh) if low_thresh not in (None, "") else float('-inf')
-            except ValueError:
-                low_thresh = float('-inf')
-            try:
-                med_thresh = float(med_thresh) if med_thresh not in (None, "") else float('inf')
-            except ValueError:
-                med_thresh = float('inf')
-            try:
-                high_thresh = float(high_thresh) if high_thresh not in (None, "") else float('inf')
-            except ValueError:
-                high_thresh = float('inf')
-            if value >= high_thresh:
-                return "alert-high"
-            elif value >= med_thresh:
-                return "alert-medium"
-            elif value >= low_thresh:
-                return "alert-low"
-            else:
-                return ""
-
-        hi_cfg = alert_dict.get("heat_index_ranges", {})
-        hi_low = hi_cfg.get("low", 0.0)
-        hi_med = hi_cfg.get("medium", 0.0)
-        hi_high = hi_cfg.get("high", None)
-        coll_cfg = alert_dict.get("collateral_ranges", {})
-        coll_low = coll_cfg.get("low", 0.0)
-        coll_med = coll_cfg.get("medium", 0.0)
-        coll_high = coll_cfg.get("high", None)
-        val_cfg = alert_dict.get("value_ranges", {})
-        val_low = val_cfg.get("low", 0.0)
-        val_med = val_cfg.get("medium", 0.0)
-        val_high = val_cfg.get("high", None)
-        size_cfg = alert_dict.get("size_ranges", {})
-        size_low = size_cfg.get("low", 0.0)
-        size_med = size_cfg.get("medium", 0.0)
-        size_high = size_cfg.get("high", None)
-        lev_cfg = alert_dict.get("leverage_ranges", {})
-        lev_low = lev_cfg.get("low", 0.0)
-        lev_med = lev_cfg.get("medium", 0.0)
-        lev_high = lev_cfg.get("high", None)
-        liqd_cfg = alert_dict.get("liquidation_distance_ranges", {})
-        liqd_low = liqd_cfg.get("low", 0.0)
-        liqd_med = liqd_cfg.get("medium", 0.0)
-        liqd_high = liqd_cfg.get("high", None)
-        tliq_cfg = alert_dict.get("travel_percent_liquid_ranges", {})
-        tliq_low = tliq_cfg.get("low", 0.0)
-        tliq_med = tliq_cfg.get("medium", 0.0)
-        tliq_high = tliq_cfg.get("high", None)
-        tprof_cfg = alert_dict.get("travel_percent_profit_ranges", {})
-        tprof_low = tprof_cfg.get("low", 0.0)
-        tprof_med = tprof_cfg.get("medium", 0.0)
-        tprof_high = tprof_cfg.get("high", None)
-        profit_cfg = alert_dict.get("profit_ranges", {})
-        profit_low = profit_cfg.get("low", 0.0)
-        profit_med = profit_cfg.get("medium", 0.0)
-        profit_high = profit_cfg.get("high", None)
-        for pos in positions:
-            heat_val = float(pos.get("heat_index", 0.0))
-            pos["heat_alert_class"] = get_alert_class_local(heat_val, hi_low, hi_med, hi_high)
-            coll_val = float(pos.get("collateral", 0.0))
-            pos["collateral_alert_class"] = get_alert_class_local(coll_val, coll_low, coll_med, coll_high)
-            val = float(pos.get("value", 0.0))
-            pos["value_alert_class"] = get_alert_class_local(val, val_low, val_med, val_high)
-            sz = float(pos.get("size", 0.0))
-            pos["size_alert_class"] = get_alert_class_local(sz, size_low, size_med, size_high)
-            lev = float(pos.get("leverage", 0.0))
-            pos["leverage_alert_class"] = get_alert_class_local(lev, lev_low, lev_med, lev_high)
-            liqd = float(pos.get("liquidation_distance", 0.0))
-            pos["liqdist_alert_class"] = get_alert_class_local(liqd, liqd_low, liqd_med, liqd_high)
-            tliq_val = float(pos.get("current_travel_percent", 0.0))
-            pos["travel_liquid_alert_class"] = get_alert_class_local(tliq_val, tliq_low, tliq_med, tliq_high)
-            tprof_val = float(pos.get("current_travel_percent", 0.0))
-            pos["travel_profit_alert_class"] = get_alert_class_local(tprof_val, tprof_low, tprof_med, tprof_high)
-            profit_val = float(pos.get("pnl_after_fees_usd", 0.0))
-            pos["profit_alert_class"] = get_profit_alert_class(profit_val, profit_low, profit_med, profit_high)
-        times_dict = DataLocker.get_instance(DB_PATH).get_last_update_times() or {}
-        pos_time_iso = times_dict.get("last_update_time_positions", "N/A")
-        pos_time_formatted = _convert_iso_to_pst(pos_time_iso)
-        return render_template("positions_mobile.html",
-                               positions=positions,
-                               totals=CalcServices().calculate_totals(positions),
-                               last_update_positions=pos_time_formatted,
-                               last_update_positions_source=times_dict.get("last_update_positions_source", "N/A"))
-    except Exception as e:
-        logger.error(f"Error in /positions_mobile: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/heat", methods=["GET"])
-def heat_report():
-    """
-    Prepares a heat report by updating positions with the latest prices,
-    formatting them for display, grouping by asset and position type,
-    and calculating aggregated totals.
-    """
-    try:
-        dl = DataLocker.get_instance(DB_PATH)
-        # Get raw positions
-        positions_data = dl.read_positions()
-        logger.debug(f"Raw positions count: {len(positions_data)}")
-
-        # Update positions with latest prices and prepare them for display
-        positions_data = PositionService.fill_positions_with_latest_price(positions_data)
-        positions_data = CalcServices().prepare_positions_for_display(positions_data)
-
-        # Ensure a defined travel percent and normalize asset keys
-        for pos in positions_data:
-            if 'travel_percent' not in pos or pos['travel_percent'] is None:
-                pos['travel_percent'] = pos.get('current_travel_percent', 0)
-            pos['asset'] = pos.get('asset_type', 'Unknown').upper()
-
-        totals = CalcServices().calculate_totals(positions_data)
-
-        # Group positions by asset and position type (short/long)
-        grouped = {}
-        for pos in positions_data:
-            asset = pos.get("asset", "UNKNOWN")
-            pos_type = pos.get("position_type", "").lower()
-            if asset not in grouped:
-                grouped[asset] = {"short": [], "long": []}
-            if pos_type in ["short", "long"]:
-                grouped[asset][pos_type].append(pos)
-
-        heat_data = {"totals": totals}
-        for asset, groups in grouped.items():
-            heat_data[asset] = {
-                "short": groups["short"][0] if groups["short"] else {},
-                "long": groups["long"][0] if groups["long"] else {}
-            }
-        # Ensure default keys for BTC, ETH, SOL
-        for asset in ["BTC", "ETH", "SOL"]:
-            if asset not in heat_data:
-                heat_data[asset] = {"short": {}, "long": {}}
-
-        logger.debug(f"Aggregated heat_data: {heat_data}")
-
-        times_dict = dl.get_last_update_times() or {}
-        pos_time_iso = times_dict.get("last_update_time_positions", "N/A")
-        pos_time_formatted = _convert_iso_to_pst(pos_time_iso)
-
-        return render_template("hedge_report.html",
-                               hd=heat_data,
-                               last_update_positions=pos_time_formatted,
-                               last_update_positions_source=times_dict.get("last_update_positions_source", "N/A"))
-    except Exception as e:
-        logger.error(f"Error in /heat route: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
 
 
 @positions_bp.route("/delete-alert/<alert_id>", methods=["POST"])
@@ -675,7 +501,7 @@ def update_jupiter():
             return jsonify(update_result), 500
 
         # Updated logger call: pass operation_type as positional argument and source as keyword.
-        u_logger.log_operation("Jupiter Updated", "Jupiter positions updated successfully.", source=source)
+       # u_logger.log_operation("Jupiter Updated", "Jupiter positions updated successfully.", source=source)
 
     except Exception as e:
         logger.error(f"Exception during Jupiter positions update: {e}", exc_info=True)
@@ -787,14 +613,14 @@ def update_jupiter():
     # Step 9: Log final operation.
     try:
         logger.debug("Step 9: Logging operation with OperationsLogger...")
-        u_logger.log_operation("Jupiter Update Complete", f"Totals updated; {len(hedges)} hedges found.",
-                               source="system")
+        #u_logger.log_operation("Jupiter Update Complete", f"Totals updated; {len(hedges)} hedges found.",
+         #                      source="system")
 
         logger.debug("Operation logged successfully.")
-        print("[DEBUG] Operation logged successfully.")
+     #   print("[DEBUG] Operation logged successfully.")
     except Exception as e:
         logger.error("Error logging operation: %s", e, exc_info=True)
-        print(f"[ERROR] Error logging operation: {e}")
+   #     print(f"[ERROR] Error logging operation: {e}")
 
     response_data = {
         "message": f"Jupiter positions + Prices updated successfully by {source}! Hedge update: {len(hedges)} hedges found.",
@@ -803,7 +629,7 @@ def update_jupiter():
         "last_update_time_prices": now.isoformat()
     }
     logger.debug("update_jupiter route completed successfully.")
-    print("[DEBUG] update_jupiter route completed successfully.")
+    #print("[DEBUG] update_jupiter route completed successfully.")
     return jsonify(response_data), 200
 
 
@@ -841,60 +667,6 @@ def save_theme():
     except Exception as e:
         current_app.logger.error("Error saving theme: %s", e, exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
-
-
-@positions_bp.route("/top_positions", methods=["GET"])
-@positions_bp.route("/top_positions", methods=["GET"])
-def show_top_positions():
-    try:
-        all_positions = PositionService.get_all_positions(DB_PATH)
-        # Filter positions with a valid current_travel_percent
-        valid_positions = [pos for pos in all_positions if pos.get("current_travel_percent") is not None]
-
-        # Sort positions for top and bottom lists
-        top_positions = sorted(valid_positions, key=lambda pos: pos["current_travel_percent"], reverse=True)[:3]
-        bottom_positions = sorted(valid_positions, key=lambda pos: pos["current_travel_percent"])[:3]
-
-        # Print alert state for each top position
-        print("DEBUG: Alert States for Top Positions:")
-        for pos in top_positions:
-            print("Top Position - ID: {}, Alert State: {}".format(pos.get("id", "unknown"),
-                                                                  pos.get("alert_state", "N/A")))
-
-        # Print alert state for each bottom position
-        print("DEBUG: Alert States for Bottom Positions:")
-        for pos in bottom_positions:
-            print("Bottom Position - ID: {}, Alert State: {}".format(pos.get("id", "unknown"),
-                                                                     pos.get("alert_state", "N/A")))
-
-        return render_template("top_positions.html", top_positions=top_positions, bottom_positions=bottom_positions)
-    except Exception as e:
-        print("Error retrieving top positions: {}".format(e))
-        return render_template("top_positions.html", top_positions=[], bottom_positions=[])
-
-
-@positions_bp.route("/top_bottom", methods=["GET"])
-def top_bottom_positions():
-    try:
-        # Retrieve and enrich all positions
-        positions = PositionService.get_all_positions(DB_PATH)
-
-        # Filter out any positions without a travel percent value
-        valid_positions = [p for p in positions if p.get("travel_percent") is not None]
-
-        # Sort positions for top 3 (most positive travel_percent) and bottom 3 (most negative)
-        top_positions = sorted(valid_positions, key=lambda p: p["travel_percent"], reverse=True)[:3]
-        bottom_positions = sorted(valid_positions, key=lambda p: p["travel_percent"])[:3]
-
-        # Render a template that displays these two groups
-        return render_template(
-            "top_bottom_positions.html",
-            top_positions=top_positions,
-            bottom_positions=bottom_positions
-        )
-    except Exception as e:
-        logger.error(f"Error retrieving top and bottom positions: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
 
 
 @positions_bp.context_processor

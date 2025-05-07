@@ -1,5 +1,6 @@
 from typing import Optional, List, Dict
-from utils.console_logger import ConsoleLogger as Log
+from core.logging import log
+
 import sqlite3
 from config.config_constants import ALERT_LIMITS_PATH
 
@@ -12,23 +13,23 @@ class CalcServices:
         }
 
     def update_calcs_for_cyclone(self, data_locker) -> (list, dict):
-        Log.banner("Cyclone Calculation Update Started")
-        Log.start_timer("update_calcs_for_cyclone")
+        log.banner("Cyclone Calculation Update Started")
+        log.start_timer("update_calcs_for_cyclone")
 
         positions = data_locker.read_positions()
-        Log.info("Loaded positions", "update_calcs_for_cyclone", {"count": len(positions)})
+        log.info("Loaded positions", "update_calcs_for_cyclone", {"count": len(positions)})
 
         updated_positions = self.aggregator_positions(positions, data_locker.db_path)
         totals = self.calculate_totals(updated_positions)
 
         confirmed_positions = data_locker.read_positions()
-        Log.success("Cyclone update completed", "update_calcs_for_cyclone", totals)
-        Log.end_timer("update_calcs_for_cyclone", "update_calcs_for_cyclone")
+        log.success("Cyclone update completed", "update_calcs_for_cyclone", totals)
+        log.end_timer("update_calcs_for_cyclone", "update_calcs_for_cyclone")
         return confirmed_positions, totals
 
     def aggregator_positions(self, positions: List[dict], db_path: str) -> List[dict]:
-        Log.start_timer("aggregator_positions")
-        Log.info("Starting aggregation on positions", "aggregator_positions", {"count": len(positions)})
+        log.start_timer("aggregator_positions")
+        log.info("Starting aggregation on positions", "aggregator_positions", {"count": len(positions)})
 
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -36,7 +37,7 @@ class CalcServices:
         for pos in positions:
             pos_id = pos.get("id", "UNKNOWN")
             try:
-                Log.debug(f"Aggregating position {pos_id}", "aggregator_positions", pos)
+                log.debug(f"Aggregating position {pos_id}", "aggregator_positions", pos)
 
                 position_type = (pos.get("position_type") or "LONG").upper()
                 entry_price = float(pos.get("entry_price", 0.0))
@@ -70,18 +71,18 @@ class CalcServices:
                 cursor.execute("SELECT heat_index, current_heat_index, current_price FROM positions WHERE id = ?", (pos_id,))
                 updated_row = cursor.fetchone()
 
-                Log.success("Updated DB for position", "aggregator_positions", {
+                log.success("Updated DB for position", "aggregator_positions", {
                     "id": pos_id,
                     "heat_index": updated_row[0] if updated_row else None,
                     "current_price": updated_row[2] if updated_row else None
                 })
 
             except Exception as e:
-                Log.error(f"Error processing position {pos_id}: {e}", "aggregator_positions")
+                log.error(f"Error processing position {pos_id}: {e}", "aggregator_positions")
 
         conn.commit()
         conn.close()
-        Log.end_timer("aggregator_positions", "aggregator_positions")
+        log.end_timer("aggregator_positions", "aggregator_positions")
         return positions
 
     def calculate_composite_risk_index(self, position: dict) -> Optional[float]:
@@ -114,29 +115,30 @@ class CalcServices:
             risk_index = (distance_factor ** 0.45) * (normalized_leverage ** 0.35) * (risk_collateral_factor ** 0.20) * 100.0
             risk_index = self.apply_minimum_risk_floor(risk_index, 5.0)
 
-            Log.debug("Calculated composite risk index", "calculate_composite_risk_index", {
+            log.debug("Calculated composite risk index", "calculate_composite_risk_index", {
                 "position_id": position.get("id"),
                 "risk_index": risk_index
             })
 
             return round(risk_index, 2)
         except Exception as e:
-            Log.error(f"Risk index calculation failed: {e}", "calculate_composite_risk_index", position)
+            log.error(f"Risk index calculation failed: {e}", "calculate_composite_risk_index", position)
             return None
 
     def calculate_value(self, position):
+
         value = round(float(position.get("size") or 0.0), 2)
-        Log.debug("Calculated value", "calculate_value", {"value": value})
+        log.debug("Calculated value", "calculate_value", {"value": value})
         return value
 
     def calculate_leverage(self, size: float, collateral: float) -> float:
         leverage = round(size / collateral, 2) if size > 0 and collateral > 0 else 0.0
-        Log.debug("Calculated leverage", "calculate_leverage", {"leverage": leverage})
+        log.debug("Calculated leverage", "calculate_leverage", {"leverage": leverage})
         return leverage
 
     def calculate_travel_percent(self, position_type: str, entry_price: float, current_price: float, liquidation_price: float) -> float:
         if entry_price <= 0 or liquidation_price <= 0 or entry_price == liquidation_price:
-            Log.warning("Invalid price parameters in travel percent", "calculate_travel_percent")
+            log.warning("Invalid price parameters in travel percent", "calculate_travel_percent")
             return 0.0
 
         ptype = position_type.strip().upper()
@@ -158,16 +160,16 @@ class CalcServices:
                     profit_target = entry_price - (liquidation_price - entry_price)
                     result = ((entry_price - current_price) / (entry_price - profit_target)) * 100
             else:
-                Log.warning(f"Unknown position type {position_type}", "calculate_travel_percent")
+                log.warning(f"Unknown position type {position_type}", "calculate_travel_percent")
         except Exception as e:
-            Log.error(f"Failed to calculate travel percent: {e}", "calculate_travel_percent")
+            log.error(f"Failed to calculate travel percent: {e}", "calculate_travel_percent")
 
-        Log.debug("Travel percent calculated", "calculate_travel_percent", {"result": result})
+        log.debug("Travel percent calculated", "calculate_travel_percent", {"result": result})
         return result
 
     def calculate_liquid_distance(self, current_price: float, liquidation_price: float) -> float:
         distance = round(abs(liquidation_price - current_price), 2)
-        Log.debug("Calculated liquidation distance", "calculate_liquid_distance", {"distance": distance})
+        log.debug("Calculated liquidation distance", "calculate_liquid_distance", {"distance": distance})
         return distance
 
     def calculate_heat_index(self, position: dict) -> Optional[float]:
@@ -178,14 +180,14 @@ class CalcServices:
             if collateral <= 0:
                 return None
             hi = (size * leverage) / collateral
-            Log.debug("Heat index calculated", "calculate_heat_index", {"heat_index": hi})
+            log.debug("Heat index calculated", "calculate_heat_index", {"heat_index": hi})
             return round(hi, 2)
         except Exception as e:
-            Log.error(f"Failed to calculate heat index: {e}", "calculate_heat_index", position)
+            log.error(f"Failed to calculate heat index: {e}", "calculate_heat_index", position)
             return None
 
     def calculate_totals(self, positions: List[dict]) -> dict:
-        Log.info("Calculating totals from positions", "calculate_totals")
+        log.info("Calculating totals from positions", "calculate_totals")
         total_size = total_value = total_collateral = total_heat_index = 0.0
         heat_index_count = 0
         weighted_leverage_sum = weighted_travel_percent_sum = 0.0
@@ -220,7 +222,7 @@ class CalcServices:
             "avg_heat_index": avg_heat_index
         }
 
-        Log.success("Totals calculated", "calculate_totals", totals)
+        log.success("Totals calculated", "calculate_totals", totals)
         return totals
 
     def apply_minimum_risk_floor(self, risk_index: float, floor: float = 5.0) -> float:

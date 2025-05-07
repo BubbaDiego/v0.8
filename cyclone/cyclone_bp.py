@@ -38,7 +38,7 @@ def run_market_updates():
 @cyclone_bp.route("/run_position_updates", methods=["POST"])
 def run_position_updates():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_position_updates())
+        run_in_background(lambda: asyncio.run(Cyclone(poll_interval=60).position_runner.update_positions_from_jupiter()))
         return jsonify({"message": "Position Updates Started."}), 202
     except Exception as e:
         logger.error(f"Position Updates Error: {e}")

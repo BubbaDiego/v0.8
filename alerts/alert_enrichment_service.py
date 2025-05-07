@@ -194,6 +194,12 @@ class AlertEnrichmentService:
                             source="AlertEnrichment")
 
             alert.evaluated_value = travel_percent
+
+            # ✅ Inject wallet
+            wallet_name = position.get("wallet_name")
+            wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
+            alert.wallet = wallet
+
             return alert
 
         except Exception as e:
@@ -217,17 +223,15 @@ class AlertEnrichmentService:
             log.error(f"Position not found for alert {alert.id}", source="AlertEnrichment")
             return alert
 
-        pnl = position.get("pnl_after_fees_usd")
-
-        if pnl is None:
-            pnl = 0.0  # ✅ Fallback default
-            alert.notes = (alert.notes or "") + " 🔸 Default profit applied (0.0).\n"
-            log.warning(f"⚠️ Profit missing for position {position.get('id')} on alert {alert.id} → using default 0.0",
-                        source="AlertEnrichment")
-        else:
-            log.success(f"✅ Enriched Profit Alert {alert.id} evaluated_value={pnl}", source="AlertEnrichment")
-
+        pnl = position.get("pnl_after_fees_usd") or 0.0
         alert.evaluated_value = pnl
+
+        # ✅ Inject wallet metadata
+        wallet_name = position.get("wallet_name")
+        wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
+        alert.wallet = wallet
+
+        log.success(f"✅ Enriched Profit Alert {alert.id} → {pnl}", source="AlertEnrichment")
         return alert
 
     async def _enrich_heat_index(self, alert):
@@ -245,6 +249,11 @@ class AlertEnrichmentService:
                         source="AlertEnrichment")
         else:
             log.success(f"✅ Enriched HeatIndex Alert {alert.id} evaluated_value={heat}", source="AlertEnrichment")
+
+        # ✅ Inject wallet
+        wallet_name = position.get("wallet_name")
+        wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
+        alert.wallet = wallet
 
         alert.evaluated_value = heat
         return alert
