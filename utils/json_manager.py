@@ -10,6 +10,7 @@ from enum import Enum
 from typing import Optional
 from utils.console_logger import ConsoleLogger
 
+
 from config.config_constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):

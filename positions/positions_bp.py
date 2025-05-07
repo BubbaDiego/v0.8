@@ -7,7 +7,7 @@ Description:
     It also manages alert configuration, theme updates, and integrates with SocketIO and external services.
 """
 
-import logging
+#import logging
 import json
 import os
 import pytz
@@ -21,8 +21,7 @@ from data.data_locker import DataLocker
 from config.config_constants import DB_PATH
 #from utils.calc_services import CalcServices, get_profit_alert_class
 from positions.position_service import PositionService
-#from positions.Dydx_api import DydxAPI
-#from api.Dydx_API import DydxAPI
+
 
 
 
@@ -65,50 +64,6 @@ def _convert_iso_to_pst(iso_str):
         return "N/A"
 
 
-
-
-def get_strategy_performance():
-    """
-    Retrieve strategy performance data using persisted values in system_vars.
-    If a persisted strategy start value exists (nonzero), use it; otherwise default to the first snapshot's total value.
-    """
-    dl = DataLocker.get_instance()
-    persisted = dl.get_strategy_performance_data()  # Returns dict with keys: strategy_start_value, strategy_description
-    portfolio_history = dl.get_portfolio_history() or []
-    if portfolio_history:
-        if float(persisted.get("strategy_start_value", 0)) > 0:
-            start_value = float(persisted["strategy_start_value"])
-            description = persisted.get("strategy_description", "Strategy performance since reset")
-        else:
-            start_entry = portfolio_history[0]
-            start_value = float(start_entry.get("total_value", 0))
-            description = "Strategy performance since reset"
-        current_entry = portfolio_history[-1]
-        current_value = float(current_entry.get("total_value", 0))
-        diff = current_value - start_value
-        percent_change = (diff / start_value * 100) if start_value != 0 else 0
-        start_date = portfolio_history[0].get("snapshot_time", "N/A")
-        return {
-            "description": description,
-            "start_date": start_date,
-            "strategy_start_value": start_value,
-            "current_value": current_value,
-            "diff": diff,
-            "percent_change": percent_change
-        }
-    else:
-        return {
-            "description": "No performance data available",
-            "start_date": "N/A",
-            "strategy_start_value": 0,
-            "current_value": 0,
-            "diff": 0,
-            "percent_change": 0
-        }
-
-
-
-@positions_bp.route("/", methods=["GET"])
 @positions_bp.route("/", methods=["GET"])
 def list_positions():
     try:
@@ -174,96 +129,6 @@ def list_positions():
         logger.error(f"Error in listing positions: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-
-
-@positions_bp.route("/dydx", methods=["GET"])
-def dydx_data():
-    try:
-        # Import the dYdX API client. This module should implement methods such as get_subaccounts
-        # and get_perpetual_positions as per our earlier design.
-        from Dydx_API import DydxAPI
-        client = DydxAPI()
-
-        # Retrieve the wallet address and subaccount number from the configuration.
-        # You can set these in your config; otherwise, default values are used.
-        wallet_address = current_app.config.get("DYDX_WALLET_ADDRESS", "default_wallet_address")
-        subaccount_number = current_app.config.get("DYDX_SUBACCOUNT_NUMBER", 0)
-
-        # Fetch data from the dYdX API
-        subaccounts = client.get_subaccounts(wallet_address)
-        positions = client.get_perpetual_positions(wallet_address, subaccount_number)
-
-        # Render the dxdy.html template with the fetched data.
-        return render_template("dxdy.html", subaccounts=subaccounts, positions=positions)
-    except Exception as e:
-        current_app.logger.error("Error fetching dYdX data: %s", e, exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-@positions_bp.route("/position_trends", methods=["GET"])
-def position_trends():
-    """
-    Renders historical trends for positions totals using data from the positions_totals_history table.
-    The timeframe is determined by the 'hours' query parameter (default 24 hours).
-    """
-    try:
-        # Use "hours" from query parameters instead of "timeframe"
-        hours = request.args.get("hours", default=24, type=int)
-        threshold = datetime.now() - timedelta(hours=hours)
-        logger.debug(f"Querying snapshots from {threshold.isoformat()} onward (last {hours} hours).")
-        dl = DataLocker.get_instance(DB_PATH)
-        dl._init_sqlite_if_needed()  # Ensure connection is ready.
-        cursor = dl.conn.cursor()
-        cursor.execute("""
-            SELECT *
-              FROM positions_totals_history
-             WHERE snapshot_time >= ?
-             ORDER BY snapshot_time ASC
-        """, (threshold.isoformat(),))
-        rows = cursor.fetchall()
-        cursor.close()
-        logger.debug(f"Found {len(rows)} snapshot rows in the selected timeframe.")
-
-        # Build chart_data with consistent key names for the front-end.
-        chart_data = {
-            "collateral": [],
-            "value": [],
-            "size": [],
-            "avg_leverage": [],
-            "avg_travel_percent": [],
-            "avg_heat": []
-        }
-
-        if not rows:
-            # Fallback: if no snapshot rows exist, use current totals to produce a data point.
-            calc_services = CalcServices()
-            positions = dl.get_positions()
-            totals = calc_services.calculate_totals(positions)
-            current_timestamp = int(datetime.now().timestamp() * 1000)
-            chart_data = {
-                "collateral": [[current_timestamp, totals.get("total_collateral", 0)]],
-                "value": [[current_timestamp, totals.get("total_value", 0)]],
-                "size": [[current_timestamp, totals.get("total_size", 0)]],
-                "avg_leverage": [[current_timestamp, totals.get("avg_leverage", 0)]],
-                "avg_travel_percent": [[current_timestamp, totals.get("avg_travel_percent", 0)]],
-                "avg_heat": [[current_timestamp, totals.get("avg_heat_index", 0)]]
-            }
-            logger.debug("No snapshots found; using fallback current totals.")
-        else:
-            for row in rows:
-                # Since rows are sqlite3.Row objects, use bracket notation.
-                snapshot_time = datetime.fromisoformat(row["snapshot_time"])
-                epoch_ms = int(snapshot_time.timestamp() * 1000)
-                chart_data["collateral"].append([epoch_ms, float(row["total_collateral"] or 0)])
-                chart_data["value"].append([epoch_ms, float(row["total_value"] or 0)])
-                chart_data["size"].append([epoch_ms, float(row["total_size"] or 0)])
-                chart_data["avg_leverage"].append([epoch_ms, float(row["avg_leverage"] or 0)])
-                chart_data["avg_travel_percent"].append([epoch_ms, float(row["avg_travel_percent"] or 0)])
-                chart_data["avg_heat"].append([epoch_ms, float(row["avg_heat_index"] or 0)])
-
-        return render_template("position_trends.html", chart_data=chart_data, timeframe=hours)
-    except Exception as e:
-        logger.error("Error in position_trends: %s", e, exc_info=True)
-        return jsonify({"error": str(e)}), 500@positions_bp.route("/position_trends", methods=["GET"])
 def position_trends():
     """
     Renders historical trends for positions totals using data from the positions_totals_history table.

@@ -16,7 +16,7 @@ import time
 import logging
 from datetime import datetime
 from monitor.monitor_utils import BaseMonitor
-from utils.unified_logger import UnifiedLogger
+#from utils.unified_logger import UnifiedLogger
 
 # Optional Notification Imports
 from xcom.xcom import send_email, send_sms, load_com_config
@@ -36,7 +36,7 @@ class OperationsMonitor(BaseMonitor):
         self.continuous_mode = continuous_mode
         self.notifications_enabled = notifications_enabled
         self.logger = logging.getLogger("OperationsMonitor")
-        self.unified_logger = UnifiedLogger()
+#        self.unified_logger = UnifiedLogger()
 
     def run_startup_post(self) -> dict:
         """
@@ -47,9 +47,6 @@ class OperationsMonitor(BaseMonitor):
         if not os.path.exists(test_path):
             print("[⚠️] Skipping POST: test file not found.")
             return {"post_success": True, "skipped": True}
-
-        # 🔥 Ensure we are in project root before running pytest
-        os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
         start_time = datetime.now()
         result = subprocess.run(

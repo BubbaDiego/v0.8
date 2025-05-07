@@ -11,7 +11,7 @@ from monitor.price_monitor import PriceMonitor
 from monitor.monitor_utils import LedgerWriter
 from alerts.alert_utils import log_alert_summary
 from alerts.alert_service_manager import AlertServiceManager
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log  # 🔁 Updated logging import
 from config.config_loader import load_config
 from config.config_constants import ALERT_LIMITS_PATH
 
@@ -21,12 +21,29 @@ from cyclone.cyclone_alert_service import CycloneAlertService
 from cyclone.cyclone_hedge_service import CycloneHedgeService
 
 
+def configure_cyclone_console_log():
+    """
+    🧠 Centralized Cyclone Console Log Config
+
+    Enables grouped filtering and sets initial silence/enable flags.
+    """
+    log.silence_module("werkzeug")
+    log.silence_module("fuzzy_wuzzy")
+    log.assign_group("cyclone_core", [
+        "cyclone_engine", "Cyclone", "CycloneHedgeService",
+        "CyclonePortfolioService", "CycloneAlertService", "CyclonePositionService"
+    ])
+    log.enable_group("cyclone_core")
+    log.init_status()
+
+
 class Cyclone:
     def __init__(self, poll_interval=60):
         self.logger = logging.getLogger("Cyclone")
         self.poll_interval = poll_interval
         self.logger.setLevel(logging.DEBUG)
 
+        log.info("Initializing Cyclone engine...", source="Cyclone")
         self.data_locker = DataLocker.get_instance()
         self.price_monitor = PriceMonitor()
         self.alert_service = AlertServiceManager.get_instance()
@@ -74,7 +91,10 @@ class Cyclone:
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             success = self.data_locker.create_alert(dummy_alert)
-            log.success("Market alert created successfully." if success else "Failed to create market alert.", source="Cyclone")
+            if success:
+                log.success("Market alert created successfully.", source="Cyclone")
+            else:
+                log.warning("Market alert creation failed.", source="Cyclone")
         except Exception as e:
             log.error(f"Error creating market alert: {e}", source="Cyclone")
 
@@ -93,7 +113,7 @@ class Cyclone:
                 cursor.execute(f"DELETE FROM {table}")
                 self.data_locker.conn.commit()
                 cursor.close()
-                log.info(f"Cleared {table}", source="Cyclone")
+                log.info(f"Cleared table: {table}", source="Cyclone")
         except Exception as e:
             log.error(f"Error clearing data: {e}", source="Cyclone")
 
@@ -126,8 +146,12 @@ class Cyclone:
 
         run_list = steps or default_order
         for step in run_list:
+            log.info(f"🧩 Executing step: {step}", source="Cyclone")
             if step in available_steps:
-                await available_steps[step]()
+                try:
+                    await available_steps[step]()
+                except Exception as e:
+                    log.error(f"❌ Step '{step}' failed: {e}", source="Cyclone")
             else:
                 log.warning(f"Unknown step: {step}", source="Cyclone")
 
@@ -143,9 +167,9 @@ class Cyclone:
 if __name__ == "__main__":
     from cyclone_console_helper import CycloneConsoleHelper
 
+    configure_cyclone_console_log()
     log.banner("🌀 Cyclone CLI Console Activated 🌀")
+
     cyclone = Cyclone(poll_interval=60)
     helper = CycloneConsoleHelper(cyclone)
     helper.run()
-2
-

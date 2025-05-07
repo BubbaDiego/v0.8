@@ -62,7 +62,7 @@ def configure_console_debug_log():
     # 🔇 Disable werkzeug by default
     log.silence_module("werkzeug")
 
-    #log.silence_prefix("calculate")
+    log.silence_prefix("calculate")
    # log.silence_prefix("hedge")
     log.silence_module("fuzzy_wuzzy")
 
