@@ -1,0 +1,61 @@
+# dl_alerts.py
+"""
+Author: BubbaDiego
+Module: DLAlertManager
+Description:
+    Handles creation, retrieval, and deletion of alert records in the SQLite database.
+    This module is part of the modular DataLocker architecture and is focused purely
+    on alert-related persistence operations.
+
+Dependencies:
+    - DatabaseManager from database.py
+    - ConsoleLogger from console_logger.py
+"""
+
+from utils.console_logger import ConsoleLogger as log
+
+class DLAlertManager:
+    def __init__(self, db):
+        self.db = db
+        log.info("DLAlertManager initialized.", source="DLAlertManager")
+
+    def create_alert(self, alert: dict) -> bool:
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                INSERT INTO alerts (
+                    id, created_at, alert_type, alert_class,
+                    trigger_value, notification_type, status, frequency,
+                    counter, liquidation_distance, travel_percent,
+                    liquidation_price, notes, position_reference_id,
+                    level, evaluated_value
+                ) VALUES (
+                    :id, :created_at, :alert_type, :alert_class,
+                    :trigger_value, :notification_type, :status, :frequency,
+                    :counter, :liquidation_distance, :travel_percent,
+                    :liquidation_price, :notes, :position_reference_id,
+                    :level, :evaluated_value
+                )
+            """, alert)
+            self.db.commit()
+            log.success(f"Alert created: {alert['id']}", source="DLAlertManager")
+            return True
+        except Exception as e:
+            log.error(f"Failed to create alert: {e}", source="DLAlertManager")
+            return False
+
+    def get_alert(self, alert_id: str) -> dict:
+        cursor = self.db.get_cursor()
+        cursor.execute("SELECT * FROM alerts WHERE id = ?", (alert_id,))
+        row = cursor.fetchone()
+        if row:
+            log.debug(f"Fetched alert {alert_id}", source="DLAlertManager")
+        else:
+            log.warning(f"No alert found with ID {alert_id}", source="DLAlertManager")
+        return dict(row) if row else {}
+
+    def delete_alert(self, alert_id: str) -> None:
+        cursor = self.db.get_cursor()
+        cursor.execute("DELETE FROM alerts WHERE id = ?", (alert_id,))
+        self.db.commit()
+        log.info(f"Deleted alert {alert_id}", source="DLAlertManager")

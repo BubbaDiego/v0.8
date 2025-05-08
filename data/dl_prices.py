@@ -1,0 +1,63 @@
+# dl_prices.py
+"""
+Author: BubbaDiego
+Module: DLPriceManager
+Description:
+    Handles CRUD operations for price data stored in the SQLite database.
+    Supports insertion and retrieval of latest price entries for specific assets.
+
+Dependencies:
+    - DatabaseManager from database.py
+    - ConsoleLogger from console_logger.py
+"""
+
+from utils.console_logger import ConsoleLogger as log
+from uuid import uuid4
+from datetime import datetime
+
+class DLPriceManager:
+    def __init__(self, db):
+        self.db = db
+        log.info("DLPriceManager initialized.", source="DLPriceManager")
+
+    def insert_price(self, price_data: dict):
+        try:
+            cursor = self.db.get_cursor()
+            if "id" not in price_data:
+                price_data["id"] = str(uuid4())
+            if "last_update_time" not in price_data:
+                price_data["last_update_time"] = datetime.now().isoformat()
+
+            cursor.execute("""
+                INSERT INTO prices (
+                    id, asset_type, current_price, previous_price,
+                    last_update_time, previous_update_time, source
+                ) VALUES (
+                    :id, :asset_type, :current_price, :previous_price,
+                    :last_update_time, :previous_update_time, :source
+                )
+            """, price_data)
+
+            self.db.commit()
+            log.success(f"Inserted price for {price_data['asset_type']}", source="DLPriceManager")
+        except Exception as e:
+            log.error(f"Failed to insert price: {e}", source="DLPriceManager")
+
+    def get_latest_price(self, asset_type: str) -> dict:
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                SELECT * FROM prices
+                WHERE asset_type = ?
+                ORDER BY last_update_time DESC
+                LIMIT 1
+            """, (asset_type,))
+            row = cursor.fetchone()
+            if row:
+                log.debug(f"Latest price fetched for {asset_type}", source="DLPriceManager")
+            else:
+                log.warning(f"No price data found for {asset_type}", source="DLPriceManager")
+            return dict(row) if row else {}
+        except Exception as e:
+            log.error(f"Error retrieving price for {asset_type}: {e}", source="DLPriceManager")
+            return {}
