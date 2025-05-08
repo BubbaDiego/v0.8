@@ -14,33 +14,32 @@ from core.core_imports import DB_PATH, log
 
 print("👁 Viewer using DB path:", os.path.abspath(DB_PATH))
 
+def validate_position_service_source():
+    import inspect
+    from positions.position_service import PositionService
+
+    print("📂 [Validator] PositionService loaded from:", inspect.getfile(PositionService))
+    print("🔍 Has method update_jupiter_positions():", hasattr(PositionService, "update_jupiter_positions"))
+
+
 class CyclonePositionService:
     def __init__(self):
         self.dl = DataLocker(str(DB_PATH))
 
-
-
     async def update_positions_from_jupiter(self):
         print("🛰️ [TRACE] CyclonePositionService.update_positions_from_jupiter() CALLED")
 
-        log.info("🚀 Starting Position Updates", source="CyclonePosition")
-        try:
-            result = await asyncio.to_thread(PositionService.update_jupiter_positions)
-            message = result.get("message", "No message returned")
-            log.success(f"✅ Jupiter positions updated: {message}", source="CyclonePosition")
-            print("📦 Jupiter Update Result:", result)
+        from positions.position_service import PositionService
+        import inspect
 
-            from monitor.monitor_utils import LedgerWriter
-            ledger = LedgerWriter()
-            ledger.write("position_ledger.json", {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "component": "PositionMonitor",
-                "operation": "position_update",
-                "status": "Success",
-                "metadata": result
-            })
-        except Exception as e:
-            log.error(f"❌ Position update failed: {e}", source="CyclonePosition")
+        print("📂 [DEBUG] PositionService imported from:", inspect.getfile(PositionService))
+        print("🔍 Has method update_jupiter_positions:", hasattr(PositionService, "update_jupiter_positions"))
+
+        if hasattr(PositionService, "update_jupiter_positions"):
+            result = PositionService.update_jupiter_positions()
+            print("✅ CALL SUCCEEDED — Result:", result)
+        else:
+            print("❌ PositionService.update_jupiter_positions() not defined or broken.")
 
     async def enrich_positions(self):
         log.info("✨ Starting Position Enrichment", source="CyclonePosition")

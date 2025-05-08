@@ -10,7 +10,7 @@ Description:
       - Record snapshots of aggregated positions data.
 """
 
-import core.logging as logging
+
 import os
 from typing import List, Dict, Any
 import requests
@@ -19,6 +19,9 @@ from data.data_locker import DataLocker
 from utils.calc_services import CalcServices
 from core.locker_factory import get_locker
 from core.constants import DB_PATH
+import core.logging as logging
+
+
 
 
 class PositionService:
@@ -263,6 +266,10 @@ class PositionService:
             for wallet in wallets_list:
                 public_addr = wallet.get("public_address", "").strip()
                 wallet_name = wallet.get("name")
+
+
+                print(f"[🛰️] Requesting Jupiter positions for {wallet_name} → {public_addr}")
+
                 if not public_addr:
                     logger.warning(f"⚠️ Skipping wallet {wallet_name} — missing public address.")
                     continue
@@ -274,7 +281,8 @@ class PositionService:
                     resp.raise_for_status()
                     data = resp.json()
                     data_list = data.get("dataList", [])
-                    print(f"🌐 [Jupiter] Positions returned for {wallet_name}: {len(data_list)}")
+                    print(f"🌐 Jupiter returned {len(data_list)} positions for {wallet_name}")
+
 
                     print(f"[🌐] Found {len(data_list)} positions for {wallet_name}")
                 except Exception as e:
