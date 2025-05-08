@@ -1,4 +1,4 @@
-from config.config_constants import (
+from core.constants import (
     DB_PATH, CONFIG_PATH, ALERT_LIMITS_PATH, BASE_DIR
 )
 #from utils.path_audit import maybe_create_mother_brain

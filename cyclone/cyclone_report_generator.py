@@ -3,7 +3,7 @@ import json
 import datetime
 import requests
 import sqlite3
-from config.config_constants import DB_PATH, LOG_DATE_FORMAT, LOG_DIR  # Import LOG_DIR
+from core.constants import DB_PATH, LOG_DATE_FORMAT, LOG_DIR  # Import LOG_DIR
 
 def query_update_ledger():
     """

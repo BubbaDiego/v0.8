@@ -1,4 +1,3 @@
-import os
 import json
 import logging
 import smtplib
@@ -7,7 +6,7 @@ from email.mime.text import MIMEText
 from twilio.rest import Client
 
 # Import constants from your config_constants module
-from config.config_constants import COM_CONFIG_PATH
+from core.constants import COM_CONFIG_PATH
 
 # Configure module-level logging
 logging.basicConfig(level=logging.DEBUG)

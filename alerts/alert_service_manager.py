@@ -9,9 +9,9 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from xcom.notification_service import NotificationService
 from config.config_loader import load_config
 from data.data_locker import DataLocker
+from core.constants import DB_PATH
+from core.constants import ALERT_LIMITS_PATH
 
-from config.config_constants import ALERT_LIMITS_PATH
-#config_loader = lambda: load_config() or {}
 print(f"[CONFIG] ✅ Using alert config: {ALERT_LIMITS_PATH}")
 
 
@@ -28,7 +28,7 @@ class AlertServiceManager:
 
     @classmethod
     def _create_service(cls):
-        data_locker = DataLocker.get_instance()
+        data_locker = DataLocker(str(DB_PATH))
         repo = AlertRepository(data_locker)
         enrichment = AlertEnrichmentService(data_locker)
         config_loader = lambda: load_config("alert_limitsz.json") or {}

@@ -4,18 +4,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import asyncio
 import uuid
-import json
-import re
-import inspect
 
 from data.alert import Alert, AlertType, Condition, NotificationType
 from data.data_locker import DataLocker
 from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
 from alerts.alert_repository import AlertRepository
-from utils.json_manager import JsonManager
 from config.config_loader import load_config
-from config.config_constants import ALERT_LIMITS_PATH
+from core.constants import ALERT_LIMITS_PATH
 
 
 def test_heat_index_limits_validation():

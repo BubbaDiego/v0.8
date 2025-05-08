@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 
 # Import configuration constants and modules
-from config.config_constants import DB_PATH, CONFIG_PATH
+from core.constants import DB_PATH, CONFIG_PATH
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
 

@@ -1,5 +1,5 @@
 from config.config_loader import load_config
-from config.config_constants import ALERT_LIMITS_PATH
+from core.constants import ALERT_LIMITS_PATH
 from data.alert import AlertType
 
 

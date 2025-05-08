@@ -6,15 +6,13 @@ Main Flask app for Sonic Dashboard.
 import os
 import sys
 import json
-import asyncio
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO
-from config.config_constants import DB_PATH, CONFIG_PATH, BASE_DIR
+from core.constants import DB_PATH, CONFIG_PATH, BASE_DIR
 #from utils.console_logger import ConsoleLogger as log
 from core.logging import log
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager
-from cyclone.cyclone_engine import Cyclone
 from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp
 from alerts.alerts_bp import alerts_bp
@@ -24,7 +22,6 @@ from portfolio.portfolio_bp import portfolio_bp
 from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
 from wallets.wallets_bp import wallet_bp
-from utils.startup_checker import verify_paths
 
 
 def configure_console_debug_log():
@@ -150,7 +147,7 @@ def delete_wallet(wallet_name):
         wallet = dl.get_wallet_by_name(wallet_name)
         if wallet:
             dl.cursor.execute("DELETE FROM wallets WHERE name=?", (wallet_name,))
-            dl.conn.commit()
+            dl.db.commit()
             flash(f"Wallet '{wallet_name}' deleted!", "success")
             log.success(f"Wallet '{wallet_name}' deleted.", source="Wallets")
         else:

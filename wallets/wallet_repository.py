@@ -14,9 +14,13 @@ from wallets.wallet_schema import WalletIn
 # 📁 Fallback JSON path (ensure file exists or can be written)
 WALLETS_JSON_PATH = "wallets.json"
 
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
+
 class WalletRepository:
-    def __init__(self, db_path: Optional[str] = None):
-        self.dl = DataLocker.get_instance(db_path)
+    def __init__(self):
+        self.dl = DataLocker(str(DB_PATH))
+
 
     # 🧾 Get all wallets from DB
     def get_all_wallets(self) -> List[Wallet]:
@@ -38,9 +42,9 @@ class WalletRepository:
         if not wallet:
             return False
         self.dl.delete_positions_for_wallet(wallet.name)  # 🔥 Optional: delete linked positions
-        cursor = self.dl.conn.cursor()
+        cursor = self.dl.db.get_cursor()
         cursor.execute("DELETE FROM wallets WHERE name = ?", (name,))
-        self.dl.conn.commit()
+        self.dl.db.commit()
         return True
 
     # 🔁 Update wallet by name

@@ -7,11 +7,12 @@ from data.data_locker import DataLocker
 from data.alert import AlertType, Condition
 from utils.console_logger import ConsoleLogger as log
 from alerts.alert_utils import log_alert_summary
+from core.constants import DB_PATH
 
 
 class CyclonePortfolioService:
     def __init__(self):
-        self.dl = DataLocker.get_instance()
+        self.data_locker = DataLocker(str(DB_PATH))
 
     async def create_portfolio_alerts(self):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

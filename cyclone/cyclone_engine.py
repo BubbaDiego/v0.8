@@ -3,17 +3,18 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from uuid import uuid4
 
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
-from monitor.monitor_utils import LedgerWriter
-from alerts.alert_utils import log_alert_summary
 from alerts.alert_service_manager import AlertServiceManager
 from core.logging import log  # 🔁 Updated logging import
 from config.config_loader import load_config
-from config.config_constants import ALERT_LIMITS_PATH
+from core.constants import ALERT_LIMITS_PATH
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
+
 
 from cyclone.cyclone_position_service import CyclonePositionService
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService
@@ -44,7 +45,8 @@ class Cyclone:
         self.logger.setLevel(logging.DEBUG)
 
         log.info("Initializing Cyclone engine...", source="Cyclone")
-        self.data_locker = DataLocker.get_instance()
+
+        self.data_locker = DataLocker(str(DB_PATH))
         self.price_monitor = PriceMonitor()
         self.alert_service = AlertServiceManager.get_instance()
         self.config = load_config(str(ALERT_LIMITS_PATH))
@@ -109,9 +111,9 @@ class Cyclone:
     def _clear_all_data_core(self):
         try:
             for table in ["alerts", "prices", "positions"]:
-                cursor = self.data_locker.conn.cursor()
+                cursor = self.data_locker.db.get_cursor()
                 cursor.execute(f"DELETE FROM {table}")
-                self.data_locker.conn.commit()
+                self.data_locker.db.commit()
                 cursor.close()
                 log.info(f"Cleared table: {table}", source="Cyclone")
         except Exception as e:

@@ -18,7 +18,7 @@ from flask import (
 )
 from data.data_locker import DataLocker
 #from config.config_manager import load_config, update_config
-from config.config_constants import DB_PATH
+from core.constants import DB_PATH
 #from utils.calc_services import CalcServices, get_profit_alert_class
 from positions.position_service import PositionService
 
@@ -34,10 +34,8 @@ import asyncio  # Ensure asyncio is imported
 # Assume that socketio is initialized in your main app and imported here.
 #from your_app import socketio  # Replace with the actual import if different
 
-from core.logging import log
 
-
-from config.config_constants import CONFIG_PATH
+from core.constants import CONFIG_PATH
 SONIC_SAUCE_PATH = os.path.join(os.path.dirname(CONFIG_PATH), "sonic_sauce.json")
 
 positions_bp = Blueprint("positions", __name__, url_prefix='/alerts', template_folder='.')
@@ -141,7 +139,7 @@ def position_trends():
         logger.debug(f"Querying snapshots from {threshold.isoformat()} onward (last {hours} hours).")
         dl = DataLocker.get_instance(DB_PATH)
         dl._init_sqlite_if_needed()  # Ensure connection is ready.
-        cursor = dl.conn.cursor()
+        cursor = dl.db.get_cursor()
         cursor.execute("""
             SELECT *
               FROM positions_totals_history

@@ -9,11 +9,14 @@ from utils.console_logger import ConsoleLogger as log
 from monitor.monitor_utils import LedgerWriter
 from data.alert import AlertType, Condition
 from alerts.alert_utils import log_alert_summary
+from core.constants import DB_PATH
 
 
 class CyclonePositionService:
     def __init__(self):
-        self.dl = DataLocker.get_instance()
+
+        self.data_locker = DataLocker(str(DB_PATH))
+
 
     async def update_positions_from_jupiter(self):
         log.info("Starting Position Updates", source="CyclonePosition")

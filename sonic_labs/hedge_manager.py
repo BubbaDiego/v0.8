@@ -14,7 +14,7 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import uuid4
 from data.models import Position, Hedge
-from config.config_constants import DB_PATH
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 from utils.console_logger import ConsoleLogger as log
 
@@ -84,7 +84,8 @@ class HedgeManager:
     def find_hedges(db_path: str = DB_PATH) -> List[list]:
         log.debug("🔍 Entering find_hedges()", source="HedgeManager")
         try:
-            dl = DataLocker.get_instance(db_path)
+           #1 dl = DataLocker.get_instance(DB_PATH)
+            dl = DataLocker(str(DB_PATH))
             raw_positions = dl.read_positions()
             log.debug(f"Retrieved {len(raw_positions)} raw positions", source="HedgeManager")
 
@@ -114,9 +115,9 @@ class HedgeManager:
 
                     for pos in pos_list:
                         pos["hedge_buddy_id"] = hedge_id
-                        cursor = dl.conn.cursor()
+                        cursor = dl.db.get_cursor()
                         cursor.execute("UPDATE positions SET hedge_buddy_id = ? WHERE id = ?", (hedge_id, pos["id"]))
-                        dl.conn.commit()
+                        dl.db.commit()
                         cursor.close()
 
                         log.debug(f"Updated position {pos['id']} with hedge_buddy_id", source="HedgeManager")
@@ -136,9 +137,9 @@ class HedgeManager:
     def clear_hedge_data(db_path: str = DB_PATH) -> None:
         try:
             dl = DataLocker.get_instance(db_path)
-            cursor = dl.conn.cursor()
+            cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id IS NOT NULL")
-            dl.conn.commit()
+            dl.db.commit()
             cursor.close()
             log.success("🧹 Cleared hedge association data", source="HedgeManager")
         except Exception as e:

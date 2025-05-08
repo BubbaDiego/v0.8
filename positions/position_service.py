@@ -15,11 +15,10 @@ from typing import List, Dict, Any
 import requests
 from datetime import datetime
 from data.data_locker import DataLocker
-from config.config_constants import DB_PATH
+from core.constants import DB_PATH
 from utils.calc_services import CalcServices
 #from alerts.alert_evaluator import AlertEvaluator
 #from utils.unified_logger import UnifiedLogger
-from sonic_labs.hedge_manager import HedgeManager
 #from api.dydx_api import DydxAPI
 
 logger = logging.getLogger(__name__)
@@ -192,9 +191,9 @@ class PositionService:
 
             # Step 2: Clear hedge associations referencing this position.
             # If the position is part of any hedge, reset its hedge_buddy_id to NULL.
-            cursor = dl.conn.cursor()
+            cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id = ?", (position_id,))
-            dl.conn.commit()
+            dl.db.commit()
             logger.info(f"Cleared hedge associations for position {position_id}")
 
             # Step 3: Delete the position record
@@ -304,7 +303,7 @@ class PositionService:
 
             imported, skipped = 0, 0
             for pos in new_positions:
-                cursor = dl.conn.cursor()
+                cursor = dl.db.get_cursor()
                 cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos["id"],))
                 dup = cursor.fetchone()[0]
                 cursor.close()
@@ -331,9 +330,9 @@ class PositionService:
     def delete_all_jupiter_positions(db_path: str = DB_PATH):
         try:
             dl = DataLocker.get_instance(db_path)
-            cursor = dl.conn.cursor()
+            cursor = dl.db.get_cursor()
             cursor.execute("DELETE FROM positions WHERE wallet_name IS NOT NULL")
-            dl.conn.commit()
+            dl.db.commit()
             cursor.close()
             logger.info("All Jupiter positions deleted.")
         except Exception as e:
@@ -372,7 +371,7 @@ class PositionService:
                     "current_heat_index": 0.0,
                     "pnl_after_fees_usd": float(pos.get("pnlAfterFeesUsd", 0.0)) if pos.get("pnlAfterFeesUsd") else 0.0,
                 }
-                cursor = dl.conn.cursor()
+                cursor = dl.db.get_cursor()
                 cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos_dict["id"],))
                 dup_count = cursor.fetchone()[0]
                 cursor.close()
@@ -426,9 +425,9 @@ class PositionService:
     def clear_hedge_data(db_path: str = DB_PATH) -> None:
         try:
             dl = DataLocker.get_instance(db_path)
-            cursor = dl.conn.cursor()
+            cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id IS NOT NULL")
-            dl.conn.commit()
+            dl.db.commit()
             cursor.close()
             UnifiedLogger().log_operation(
                 operation_type="Clear Hedge Data",

@@ -52,7 +52,7 @@ class AlertRepository:
             alert_dict = self.data_locker.initialize_alert_data(alert_dict)
 
             # 📥 DB insert
-            cursor = self.data_locker.conn.cursor()
+            cursor = self.data_locker.db.get_cursor()
             sql = """
                 INSERT INTO alerts (
                     id,
@@ -86,7 +86,7 @@ class AlertRepository:
                 )
             """
             cursor.execute(sql, alert_dict)
-            self.data_locker.conn.commit()
+            self.data_locker.db.commit()
             cursor.close()
 
             log.success(f"✅ Alert created: {alert_dict['id']}", source="AlertRepository")
@@ -134,14 +134,14 @@ class AlertRepository:
 
     def update_alert_evaluated_value(self, alert_id: str, evaluated_value: float):
         try:
-            cursor = self.data_locker.conn.cursor()  # ✅ use the injected DataLocker
+            cursor = self.data_locker.db.get_cursor()  # ✅ use the injected DataLocker
             sql = """
                 UPDATE alerts
                    SET evaluated_value = ?
                  WHERE id = ?
             """
             cursor.execute(sql, (evaluated_value, alert_id))
-            self.data_locker.conn.commit()
+            self.data_locker.db.commit()
             log.info(f"✅ Updated evaluated_value for alert {alert_id}", source="AlertRepository")
         except Exception as e:
             log.error(f"❌ Failed to update evaluated_value for alert {alert_id}: {e}", source="AlertRepository")
@@ -166,14 +166,14 @@ class AlertRepository:
             else:
                 level_str = str(new_level).capitalize()
 
-            cursor = self.data_locker.conn.cursor()
+            cursor = self.data_locker.db.get_cursor()
             sql = """
                 UPDATE alerts
                    SET level = ?
                  WHERE id = ?
             """
             cursor.execute(sql, (level_str, alert_id))
-            self.data_locker.conn.commit()
+            self.data_locker.db.commit()
 
             log.info(f"🧪 Updated alert level to '{level_str}' for {alert_id}", source="AlertRepository")
 

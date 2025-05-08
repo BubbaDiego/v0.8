@@ -3,10 +3,9 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from data.alert import AlertLevel, Condition
-from utils.console_logger import ConsoleLogger as log
 from config.config_loader import load_config
 from data.alert import AlertType
-from config.config_constants import ALERT_LIMITS_PATH
+from core.constants import ALERT_LIMITS_PATH
 from utils.json_manager import JsonManager
 
 from utils.fuzzy_wuzzy import fuzzy_match_enum
@@ -81,7 +80,7 @@ class AlertEvaluationService:
     def _evaluate_portfolio(self, alert):
         try:
             from config.config_loader import load_config
-            from config.config_constants import ALERT_LIMITS_PATH
+            from core.constants import ALERT_LIMITS_PATH
 
             config = load_config(ALERT_LIMITS_PATH)
             alert_limits = config.get("alert_limits", config)

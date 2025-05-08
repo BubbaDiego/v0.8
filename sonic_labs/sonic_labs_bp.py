@@ -3,7 +3,7 @@
 from flask import Blueprint, render_template, jsonify, current_app, request
 import json
 from positions.position_service import PositionService
-from config.config_constants import DB_PATH, THEME_CONFIG_PATH
+from core.constants import DB_PATH, THEME_CONFIG_PATH
 from utils.json_manager import JsonType
 
 sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")

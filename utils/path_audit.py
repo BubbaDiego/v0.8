@@ -1,4 +1,3 @@
-from config.config_constants import ALERT_LIMITS_PATH
 # utils/path_audit.py
 
 import os

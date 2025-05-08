@@ -1,6 +1,6 @@
 # utils/startup_checker.py
 
-from config.config_constants import (
+from core.constants import (
     DB_PATH,
     CONFIG_PATH,
     ALERT_LIMITS_PATH,

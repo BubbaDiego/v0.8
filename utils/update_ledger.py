@@ -1,6 +1,3 @@
-from config.config_constants import ALERT_LIMITS_PATH
-import os
-import sqlite3
 from uuid import uuid4
 from datetime import datetime
 
@@ -14,7 +11,7 @@ def log_alert_update(data_locker, alert_id: str, modified_by: str, reason: str, 
     :param before_value: The state before the update.
     :param after_value: The new state.
     """
-    cursor = data_locker.conn.cursor()
+    cursor = data_locker.db.get_cursor()
     ledger_entry = {
         "id": str(uuid4()),
         "alert_id": alert_id,
@@ -32,4 +29,4 @@ def log_alert_update(data_locker, alert_id: str, modified_by: str, reason: str, 
         )
     """
     cursor.execute(sql, ledger_entry)
-    data_locker.conn.commit()
+    data_locker.db.commit()

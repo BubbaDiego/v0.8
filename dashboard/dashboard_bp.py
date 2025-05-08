@@ -13,7 +13,6 @@ from positions.position_service import PositionService
 #from monitor.position_ledger import PositionLedger
 #from monitor.sonic_ledger import SonicLedger
 #from monitor.ledger_reader import get_ledger_age_seconds
-from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -22,8 +21,7 @@ from utils.fuzzy_wuzzy import fuzzy_match_key
 
 
 
-from config.config_constants import DB_PATH, THEME_CONFIG_PATH
-import os, json
+from core.constants import DB_PATH, THEME_CONFIG_PATH
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
@@ -244,7 +242,6 @@ def api_ledger_ages():
 # ---------------------------------
 # API: Get Alert Limits (for title bar timers)
 # ---------------------------------
-from config.config_constants import ALERT_LIMITS_PATH
 import json
 
 

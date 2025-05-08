@@ -3,11 +3,13 @@
 from utils.console_logger import ConsoleLogger as log
 from sonic_labs.hedge_manager import HedgeManager
 from data.data_locker import DataLocker
+from core.constants import DB_PATH
 
 
 class CycloneHedgeService:
     def __init__(self):
-        self.dl = DataLocker.get_instance()
+        self.data_locker = DataLocker(str(DB_PATH))
+
 
     async def update_hedges(self):
         log.info("🔄 Starting Hedge Update", source="CycloneHedge")

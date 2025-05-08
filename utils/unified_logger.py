@@ -1,4 +1,3 @@
-from config.config_constants import ALERT_LIMITS_PATH
 #!/usr/bin/env python
 """
 unified_logger.py
@@ -17,7 +16,7 @@ import json
 import logging
 import pytz
 from datetime import datetime
-from config.config_constants import BASE_DIR, LOG_DATE_FORMAT, LOG_DIR
+from core.constants import LOG_DATE_FORMAT, LOG_DIR
 
 # Ensure the logs directory exists using LOG_DIR.
 LOGS_DIR = str(LOG_DIR)

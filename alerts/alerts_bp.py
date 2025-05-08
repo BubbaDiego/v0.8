@@ -1,17 +1,12 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import json
 import logging
 import asyncio
-from flask import Blueprint, request, jsonify, render_template, current_app
-from markupsafe import Markup
+from flask import Blueprint, jsonify, render_template
 from alerts.alert_service_manager import AlertServiceManager
-from utils.json_manager import JsonManager, JsonType
 #from dashboard.dashboard_view_model import DashboardViewModel
-from config.config_constants import ALERT_LIMITS_PATH
 from utils.console_logger import ConsoleLogger as log
 from data.data_locker import DataLocker
-from time import time
 
 # --- Blueprint Setup ---
 alerts_bp = Blueprint('alerts_bp', __name__, url_prefix='/alerts', template_folder='.')

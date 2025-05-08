@@ -2,16 +2,14 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import re
 
 import json
-import inspect
 from enum import Enum
 from typing import Optional
 from utils.console_logger import ConsoleLogger
 
 
-from config.config_constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
+from core.constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):
     ALERT_LIMITS = "alert_limitsz.json"

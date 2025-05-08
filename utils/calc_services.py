@@ -1,8 +1,8 @@
-from typing import Optional, List, Dict
+from typing import Optional, List
 from core.logging import log
 
 import sqlite3
-from config.config_constants import ALERT_LIMITS_PATH
+
 
 class CalcServices:
     def __init__(self):

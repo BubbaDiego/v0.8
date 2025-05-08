@@ -19,7 +19,7 @@ THIS_DIR    = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
 sys.path.insert(0, PROJECT_ROOT)
 
-from config.config_constants import BASE_DIR, CONFIG_PATH
+from core.constants import BASE_DIR
 from common_monitor_utils import load_timer_config, update_timer_config
 from utils.unified_logger import UnifiedLogger
 from alerts.alert_manager import trigger_twilio_flow

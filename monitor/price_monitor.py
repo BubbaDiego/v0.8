@@ -8,8 +8,8 @@ from typing import Dict
 import requests
 from monitor.monitor_utils import BaseMonitor
 from data.data_locker import DataLocker
-from config.config_constants import COM_CONFIG_PATH
 
+from core.constants import DB_PATH
 from utils.console_logger import ConsoleLogger as log
 
 
@@ -54,7 +54,7 @@ class PriceMonitor(BaseMonitor):
             timer_config_path=timer_config_path,
             ledger_filename=ledger_filename or "price_ledger.json"
         )
-        self.data_locker = DataLocker.get_instance()
+        self.data_locker = DataLocker(str(DB_PATH))
         self.fetcher = PriceFetcher()
 
     def _do_work(self) -> dict:
