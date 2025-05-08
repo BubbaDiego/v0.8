@@ -43,5 +43,5 @@ class DataLocker:
         return self.positions.get_all_positions()
 
     def close(self):
-        self.db.close()
+        self.db.close()  # Hey
         log.info("DataLocker shutdown complete.", source="DataLocker")
