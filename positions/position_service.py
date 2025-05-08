@@ -24,6 +24,18 @@ import core.logging as logging
 
 
 
+import logging
+
+logger = logging.getLogger("PositionService")
+logger.setLevel(logging.DEBUG)
+
+if not logger.hasHandlers():
+    import sys
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter('[%(levelname)s] %(asctime)s - %(name)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 class PositionService:
     # Mapping for market mints to asset types
     MINT_TO_ASSET = {
@@ -250,7 +262,7 @@ class PositionService:
         logger.info("🔄 Updating Jupiter positions from API...")
         try:
             dl = get_locker()
-            wallets_list = dl.read_wallets()
+            wallets_list = dl.wallets.get_wallets()
 
             print(f"📦 [TRACE] Wallets found: {len(wallets_list)}")
             if not wallets_list:
@@ -332,7 +344,7 @@ class PositionService:
                 cursor.close()
 
                 if dup == 0:
-                    dl.create_position(pos)
+                    dl.positions.create_position(pos)
                     print(f"[✅] Imported Jupiter position {pos['id']} for wallet {pos['wallet_name']}")
                     imported += 1
                 else:
