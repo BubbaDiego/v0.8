@@ -1,7 +1,7 @@
 import pytest
 from data.alert import Alert, AlertType, AlertLevel, Condition
 from alerts.alert_evaluation_service import AlertEvaluationService
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 @pytest.fixture
 def evaluation_service():

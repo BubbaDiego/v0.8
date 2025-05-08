@@ -1,6 +1,6 @@
 from config.config_loader import load_config
-from core.constants import ALERT_LIMITS_PATH
 from data.alert import AlertType
+from core.core_imports import ALERT_LIMITS_PATH
 
 
 def get_default_trigger_value(alert_type: AlertType) -> float:

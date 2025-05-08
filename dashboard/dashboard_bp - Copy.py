@@ -13,7 +13,7 @@ from positions.position_service import PositionService
 #from monitor.position_ledger import PositionLedger
 #from monitor.sonic_ledger import SonicLedger
 #from monitor.ledger_reader import get_ledger_age_seconds
-from utils.json_manager import JsonManager, JsonType
+from utils.json_manager import JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -21,7 +21,7 @@ from dashboard.dashboard_service import get_dashboard_context
 
 
 
-from config.config_constants import DB_PATH, THEME_CONFIG_PATH
+from config.config_constants import THEME_CONFIG_PATH
 import os, json
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
@@ -44,7 +44,7 @@ DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 # ---------------------------------
 @dashboard_bp.route("/database_viewer")
 def database_viewer():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     datasets = dl.get_all_tables_as_dict()
     return render_template('database_viewer.html', datasets=datasets)
 
@@ -53,7 +53,7 @@ def database_viewer():
 # ---------------------------------
 @dashboard_bp.route("/theme_setup")
 def theme_setup():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     theme_data = dl.load_theme_data()
     return render_template('theme_setup.html', theme=theme_data)
 
@@ -63,7 +63,7 @@ def theme_setup():
 @dashboard_bp.route("/save_theme_mode", methods=["POST"])
 def save_theme_mode():
     theme_mode = request.json.get("theme_mode")
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     dl.set_theme_mode(theme_mode)
     return jsonify({"success": True})
 
@@ -77,7 +77,7 @@ def save_theme():
 @dashboard_bp.route("/api/get_prices")
 def get_prices():
     try:
-        dl = DataLocker.get_instance()
+        dl = get_locker()
         prices = dl.get_price_dict()  # Make sure this returns a dict with BTC/ETH/SOL keys
         return jsonify({
             "BTC": prices.get("BTC"),
@@ -152,7 +152,7 @@ def dash_page():
 # ---------------------------------
 @dashboard_bp.route("/api/graph_data")
 def api_graph_data():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     portfolio_history = dl.get_portfolio_history() or []
     timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
     values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
@@ -207,8 +207,8 @@ def api_ledger_ages():
 # ---------------------------------
 # API: Get Alert Limits (for title bar timers)
 # ---------------------------------
-from config.config_constants import ALERT_LIMITS_PATH
 import json
+from core.core_imports import ALERT_LIMITS_PATH, DB_PATH, JsonManager, get_locker
 
 @dashboard_bp.route("/get_alert_limits")
 def get_alert_limits():

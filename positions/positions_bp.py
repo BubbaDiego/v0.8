@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """
 Module: positions_bp.py
@@ -18,7 +19,6 @@ from flask import (
 )
 from data.data_locker import DataLocker
 #from config.config_manager import load_config, update_config
-from core.constants import DB_PATH
 #from utils.calc_services import CalcServices, get_profit_alert_class
 from positions.position_service import PositionService
 
@@ -35,15 +35,12 @@ import asyncio  # Ensure asyncio is imported
 #from your_app import socketio  # Replace with the actual import if different
 
 
-from core.constants import CONFIG_PATH
-SONIC_SAUCE_PATH = os.path.join(os.path.dirname(CONFIG_PATH), "sonic_sauce.json")
+#SONIC_SAUCE_PATH = os.path.join(os.path.dirname(CONFIG_PATH), "sonic_sauce.json")
 
 positions_bp = Blueprint("positions", __name__, url_prefix='/alerts', template_folder='.')
 
 alerts_bp = Blueprint('alerts_bp', __name__, url_prefix='/alerts', template_folder='.')
 
-def get_socketio():
-    return current_app.extensions.get('socketio')
 
 def _convert_iso_to_pst(iso_str):
     """Converts an ISO timestamp string to a formatted PST time string."""
@@ -66,7 +63,7 @@ def _convert_iso_to_pst(iso_str):
 def list_positions():
     try:
         positions = PositionService.get_all_positions(DB_PATH)
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
 
         # ✅ config setup for thresholds
         config_data = load_config(CONFIG_PATH)
@@ -137,7 +134,7 @@ def position_trends():
         hours = request.args.get("hours", default=24, type=int)
         threshold = datetime.now() - timedelta(hours=hours)
         logger.debug(f"Querying snapshots from {threshold.isoformat()} onward (last {hours} hours).")
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         dl._init_sqlite_if_needed()  # Ensure connection is ready.
         cursor = dl.db.get_cursor()
         cursor.execute("""
@@ -197,7 +194,7 @@ def position_trends():
 @positions_bp.route("/table", methods=["GET"])
 def positions_table():
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         positions = PositionService.get_all_positions(DB_PATH)
         totals = CalcServices().calculate_totals(positions)
         return render_template("positions_table.html", positions=positions, totals=totals)
@@ -209,7 +206,7 @@ def positions_table():
 @positions_bp.route("/edit/<position_id>", methods=["POST"])
 def edit_position(position_id):
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         size = float(request.form.get("size", 0.0))
         collateral = float(request.form.get("collateral", 0.0))
         dl.update_position(position_id, size, collateral)
@@ -222,7 +219,7 @@ def edit_position(position_id):
 @positions_bp.route("/delete/<position_id>", methods=["POST"])
 def delete_position(position_id):
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         dl.delete_position(position_id)
         return redirect(url_for("positions.list_positions"))
     except Exception as e:
@@ -233,7 +230,7 @@ def delete_position(position_id):
 @positions_bp.route("/delete-all", methods=["POST"])
 def delete_all_positions():
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         dl.delete_all_positions()
         return redirect(url_for("positions.list_positions"))
     except Exception as e:
@@ -244,7 +241,7 @@ def delete_all_positions():
 @positions_bp.route("/upload", methods=["POST"])
 def upload_positions():
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         if "file" not in request.files:
             return jsonify({"error": "No file part in request"}), 400
         file = request.files["file"]
@@ -269,7 +266,7 @@ def upload_positions():
 @positions_bp.route("/api/data", methods=["GET"])
 def positions_data_api():
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         mini_prices = []
         for asset in ["BTC", "ETH", "SOL"]:
             row = dl.get_latest_price(asset)
@@ -298,7 +295,7 @@ def positions_data_api():
 @positions_bp.route("/delete-alert/<alert_id>", methods=["POST"])
 def delete_alert(alert_id):
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         dl.delete_alert(alert_id)
         flash("Alert deleted!", "success")
         # Assuming an alerts blueprint or endpoint exists for redirection
@@ -315,7 +312,7 @@ def get_socketio():
 # Define the helper function update_prices_wrapper.
 def update_prices_wrapper(source="undefined"):
     try:
-        from monitor.price_monitor import PriceMonitor
+
         # Run the asynchronous price update, passing the source parameter.
         asyncio.run(PriceMonitor(db_path=DB_PATH, config_path=CONFIG_PATH).update_prices(source=source))
         class DummyResponse:
@@ -376,7 +373,6 @@ def update_jupiter():
         logger.debug("Step 2.5: Updating hedges using HedgeManager...")
         positions = PositionService.get_all_positions(DB_PATH)
         logger.debug(f"Fetched {len(positions)} positions for hedge update.")
-        from sonic_labs.hedge_manager import HedgeManager
         hedge_manager = HedgeManager(positions)
         hedges = hedge_manager.get_hedges()
         logger.debug(f"HedgeManager created {len(hedges)} hedges.")
@@ -420,7 +416,7 @@ def update_jupiter():
         logger.debug("Step 5: Updating last update timestamps...")
         now = datetime.now()
         logger.debug(f"Current timestamp: {now.isoformat()}")
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         dl.set_last_update_times(
             positions_dt=now,
             positions_source=source,

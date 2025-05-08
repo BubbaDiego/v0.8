@@ -21,7 +21,7 @@ from utils.fuzzy_wuzzy import fuzzy_match_key
 
 
 
-from core.constants import DB_PATH, THEME_CONFIG_PATH
+from core.constants import THEME_CONFIG_PATH
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
 
@@ -42,7 +42,7 @@ DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 # ---------------------------------
 @dashboard_bp.route("/database_viewer")
 def database_viewer():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     datasets = dl.get_all_tables_as_dict()
     return render_template('database_viewer.html', datasets=datasets)
 
@@ -51,7 +51,7 @@ def database_viewer():
 # ---------------------------------
 @dashboard_bp.route("/theme_setup")
 def theme_setup():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     theme_data = dl.load_theme_data()
     return render_template('theme_setup.html', theme=theme_data)
 
@@ -61,7 +61,7 @@ def theme_setup():
 @dashboard_bp.route("/save_theme_mode", methods=["POST"])
 def save_theme_mode():
     theme_mode = request.json.get("theme_mode")
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     dl.set_theme_mode(theme_mode)
     return jsonify({"success": True})
 
@@ -75,7 +75,7 @@ def save_theme():
 @dashboard_bp.route("/api/get_prices")
 def get_prices():
     try:
-        dl = DataLocker.get_instance()
+        dl = get_locker()
         prices = dl.get_price_dict()  # Make sure this returns a dict with BTC/ETH/SOL keys
         return jsonify({
             "BTC": prices.get("BTC"),
@@ -166,8 +166,8 @@ def alert_config_page():
 # ---------------------------------
 @dashboard_bp.route("/api/graph_data")
 def api_graph_data():
-    dl = DataLocker.get_instance()
-    portfolio_history = dl.get_portfolio_history() or []
+    dl = get_locker()
+    portfolio_history = dl.portfolio.get_snapshots() or []
     timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
     values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
     collaterals = [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
@@ -243,6 +243,7 @@ def api_ledger_ages():
 # API: Get Alert Limits (for title bar timers)
 # ---------------------------------
 import json
+from core.core_imports import DB_PATH, get_locker
 
 
 

@@ -4,7 +4,6 @@ from data.alert import Alert, AlertType, AlertLevel, Condition
 from alerts.alert_service import AlertService
 from alerts.alert_repository import AlertRepository
 from alerts.alert_enrichment_service import AlertEnrichmentService
-from utils.console_logger import ConsoleLogger as log
 from utils.config_loader import load_config
 
 # --- Mock Data Locker (Universal) ---
@@ -50,7 +49,8 @@ class MockDataLockerSystem:
                     a.last_triggered = fields['last_triggered']
 
     def get_current_timestamp(self):
-        from datetime import datetime
+from datetime import datetime
+from core.core_imports import log
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # --- SYSTEM TEST ---

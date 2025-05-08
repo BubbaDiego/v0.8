@@ -1,7 +1,7 @@
 # cyclone/cyclone_alert_service.py
 
-from utils.console_logger import ConsoleLogger as log
 from alerts.alert_service_manager import AlertServiceManager
+from core.core_imports import log
 
 
 class CycloneAlertService:

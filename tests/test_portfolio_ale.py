@@ -1,10 +1,10 @@
 # clear_alerts.py
 from data.data_locker import DataLocker
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import get_locker, log
 
 def clear_all_alerts():
     try:
-        dl = DataLocker.get_instance()
+        dl = get_locker()
         count_before = len(dl.get_alerts())
         dl.clear_alerts()
         count_after = len(dl.get_alerts())

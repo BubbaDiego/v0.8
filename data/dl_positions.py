@@ -11,9 +11,9 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 from uuid import uuid4
 from datetime import datetime
+from core.core_imports import log
 
 class DLPositionManager:
     def __init__(self, db):
@@ -69,3 +69,14 @@ class DLPositionManager:
             log.info(f"Deleted position {position_id}", source="DLPositionManager")
         except Exception as e:
             log.error(f"Failed to delete position {position_id}: {e}", source="DLPositionManager")
+
+    def clear_positions(self):
+        print("🔥 DLPositionManager.clear_positions CALLED")
+
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("DELETE FROM positions")
+            self.db.commit()
+            log.warning("🧹 All positions cleared from DB.", source="DLPositionManager")
+        except Exception as e:
+            log.error(f"❌ Failed to clear positions: {e}", source="DLPositionManager")

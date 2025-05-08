@@ -11,10 +11,9 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
 from alerts.alert_repository import AlertRepository
 from config.config_loader import load_config
-from core.constants import ALERT_LIMITS_PATH
-from utils.console_logger import ConsoleLogger as log
 from alerts.alert_threshold_utils import get_default_trigger_value
 from dashboard import dashboard_service
+from core.core_imports import ALERT_LIMITS_PATH, get_locker, log
 
 
 # ==================================================================================
@@ -33,7 +32,7 @@ from dashboard import dashboard_service
 
 def test_portfolio_alerts_EE_multirun():
     log.banner("STARTING FULL END-TO-END ALERT SYSTEM TEST")
-    locker = DataLocker.get_instance()
+    locker = get_locker()
 
     # ✅ Step 1: Load config
     try:

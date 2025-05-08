@@ -1,3 +1,4 @@
+
 """
 🌐 Module: wallet_controller.py
 📌 Purpose: Flask routes for managing wallets (UI + image upload).
@@ -9,6 +10,7 @@ from werkzeug.utils import secure_filename
 
 from wallets.wallet_service import WalletService
 from wallets.wallet_schema import WalletIn
+from core.core_imports import retry_on_locked
 
 wallet_bp = Blueprint("wallets", __name__, url_prefix="/wallets")
 service = WalletService()
@@ -19,6 +21,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # 🔍 Show wallet manager
 @wallet_bp.route("/", methods=["GET"])
+@retry_on_locked()
 def list_wallets():
     try:
         wallets = service.list_wallets()

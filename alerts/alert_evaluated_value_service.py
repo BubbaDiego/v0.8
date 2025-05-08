@@ -1,12 +1,11 @@
 # alerts/alert_evaluated_value_service.py
 
-from utils.console_logger import ConsoleLogger as log
-from utils.json_manager import JsonManager
 
 
 class AlertEvaluatedValueServicez:
     def __init__(self, dashboard_context: callable = None):
-        from dashboard.dashboard_service import get_dashboard_context
+from dashboard.dashboard_service import get_dashboard_context
+from core.core_imports import JsonManager, log
         self.get_dashboard_context = dashboard_context or get_dashboard_context
 
     def get_portfolio_metric_value(self, alert) -> float | None:

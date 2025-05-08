@@ -11,7 +11,7 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
 from alerts.alert_repository import AlertRepository
 from config.config_loader import load_config
-from core.constants import ALERT_LIMITS_PATH
+from core.core_imports import ALERT_LIMITS_PATH, get_locker
 
 
 def test_heat_index_limits_validation():
@@ -27,7 +27,7 @@ def test_heat_index_limits_validation():
     print(f"✅ Loaded total_heat_limits: {thresholds}")
 
     # === Set Up System ===
-    locker = DataLocker.get_instance()
+    locker = get_locker()
     repo = AlertRepository(locker)
     enrichment = AlertEnrichmentService(locker)
     evaluation = AlertEvaluationService()

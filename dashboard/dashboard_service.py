@@ -70,12 +70,12 @@ def determine_color(age):
 
 from data.data_locker import DataLocker
 from positions.position_service import PositionService
-from utils.json_manager import JsonManager, JsonType
+from utils.json_manager import JsonType
 from monitor.ledger_reader import get_ledger_status
-from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from utils.fuzzy_wuzzy import fuzzy_match_key
+from core.core_imports import ALERT_LIMITS_PATH, DB_PATH, JsonManager, get_locker
 
 
 def apply_color(metric_name, value, limits):
@@ -139,8 +139,8 @@ def format_monitor_time(iso_str):
 def get_dashboard_context():
     log.info("📊 Assembling dashboard context", source="DashboardContext")
 
-    dl = DataLocker.get_instance()
-    positions = PositionService.get_all_positions(DB_PATH) or []
+    dl = get_locker()
+    positions = PositionService.get_all_positions() or []
 
     for pos in positions:
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
@@ -208,7 +208,7 @@ def get_dashboard_context():
     log.debug("📐 Portfolio limit config", source="DashboardContext", payload=portfolio_limits)
 
     return {
-        "theme_mode": dl.get_theme_mode(),
+        "theme_mode": dl.system.get_theme_mode(),
         "positions": positions,
         "liquidation_positions": positions,
         "portfolio_value": "${:,.2f}".format(totals["total_value"]),

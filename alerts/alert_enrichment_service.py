@@ -10,16 +10,9 @@ import asyncio
 import re
 from dashboard.dashboard_service import get_dashboard_context
 from utils.calc_services import CalcServices
-from utils.console_logger import ConsoleLogger as log
 from data.alert import AlertType
-from alerts.alert_utils import (
-    normalize_alert_type,
-    normalize_condition,
-    normalize_notification_type,
-    normalize_alert_fields
-)
 
-from utils.json_manager import JsonManager
+
 
 class AlertEnrichmentService:
     def __init__(self, data_locker):

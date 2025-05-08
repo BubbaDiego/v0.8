@@ -4,7 +4,7 @@ import random
 from data.alert import Alert, AlertType, Condition
 from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 # --- Mock DataLocker for Batch Enrichment ---
 

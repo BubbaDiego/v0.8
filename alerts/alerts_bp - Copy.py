@@ -1,3 +1,4 @@
+
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
@@ -5,9 +6,7 @@ import logging
 import asyncio
 from flask import Blueprint, request, jsonify, render_template, current_app
 from alerts.alert_service_manager import AlertServiceManager
-from utils.json_manager import JsonManager, JsonType
-from config.config_constants import ALERT_LIMITS_PATH
-from utils.console_logger import ConsoleLogger as log
+from utils.json_manager import JsonType
 from data.data_locker import DataLocker
 from time import time
 
@@ -26,6 +25,7 @@ if not logger.handlers:
 
 # --- Utilities ---
 
+@retry_on_locked()
 def convert_types_in_dict(d):
     if isinstance(d, dict):
         return {k: convert_types_in_dict(v) for k, v in d.items()}
@@ -82,8 +82,9 @@ def monitor_alerts():
     Enriches each alert with wallet image & name via alert_utils.resolve_wallet_metadata().
     """
     try:
-        from alerts.alert_utils import resolve_wallet_metadata  # ✅ new import
-        data_locker = DataLocker.get_instance()
+from alerts.alert_utils import resolve_wallet_metadata  # ✅ new import
+from core.core_imports import ALERT_LIMITS_PATH, JsonManager, get_locker, log, retry_on_locked
+        data_locker = get_locker()
         alerts = data_locker.get_alerts()
 
         output = []
@@ -131,7 +132,7 @@ def create_all_alerts():
     Create sample alerts for testing purposes.
     """
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         sample_alerts = [
             {
                 "id": "alert-sample-1",
@@ -172,7 +173,7 @@ def delete_all_alerts():
     Delete all alerts from the database.
     """
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         data_locker.clear_alerts()
         log.success("All alerts deleted successfully.", source="AlertsBP")
         return jsonify({"success": True, "message": "All alerts cleared."})
@@ -210,7 +211,7 @@ def alert_config_page():
 @alerts_bp.route('/alert_matrix', methods=['GET'])
 def alert_matrix_page():
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         alerts = data_locker.get_alerts()
         positions = data_locker.read_positions()
         json_manager = current_app.json_manager
@@ -264,7 +265,7 @@ def alert_matrix():
     Display the Alert Matrix (visuals for current alerts).
     """
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         alerts = data_locker.get_alerts()
         positions = data_locker.read_positions()
         json_manager = current_app.json_manager

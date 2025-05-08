@@ -1,3 +1,4 @@
+from core.core_imports import log
 # dl_wallets.py
 """
 Author: BubbaDiego
@@ -11,7 +12,6 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 
 class DLWalletManager:
     def __init__(self, db):
@@ -32,7 +32,7 @@ class DLWalletManager:
                 wallet.get("image_path", ""),
                 wallet.get("balance", 0.0)
             ))
-            self.db.commit()
+            self.db.commit()  # ✅ not self.db.db
             log.success(f"Wallet created: {wallet['name']}", source="DLWalletManager")
         except Exception as e:
             log.error(f"Failed to create wallet: {e}", source="DLWalletManager")
@@ -69,6 +69,19 @@ class DLWalletManager:
             log.info(f"Wallet updated: {name}", source="DLWalletManager")
         except Exception as e:
             log.error(f"Failed to update wallet {name}: {e}", source="DLWalletManager")
+
+
+
+    def get_wallet_by_name(self, name: str) -> dict:
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("SELECT * FROM wallets WHERE name = ?", (name,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+        except Exception as e:
+            from console_logger import ConsoleLogger as log
+            log.error(f"DLWalletManager failed to get wallet '{name}': {e}", source="DLWalletManager")
+            return None
 
     def delete_wallet(self, name: str):
         try:

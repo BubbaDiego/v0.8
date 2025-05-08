@@ -7,9 +7,9 @@ from utils.config_loader import load_config
 from alerts.alert_repository import AlertRepository
 from alerts.alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
-from utils.console_logger import ConsoleLogger as log
 
 from tests.system.system_test_helpers import create_temp_alert_limits_json
+from core.core_imports import get_locker, log
 
 
 @pytest.mark.system
@@ -46,7 +46,7 @@ async def test_alert_limits_dynamic_behavior(tmp_path):
 
     # --- Step 3: Create First Alert ---
     log.banner("SYSTEM TEST: Create First Alert")
-    data_locker = DataLocker.get_instance()
+    data_locker = get_locker()
     repo = AlertRepository(data_locker)
 
     first_alert = {

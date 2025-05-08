@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """
 Module: prices_bp.py
@@ -20,22 +21,23 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
 
 # Import configuration constants and modules
-from core.constants import DB_PATH, CONFIG_PATH
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
+from core.core_imports import CONFIG_PATH, DB_PATH, get_locker, retry_on_locked
 
 
 # ---------------------------------------------------------------------------
 # Helper Functions (Replace with your actual implementations if available)
 # ---------------------------------------------------------------------------
+@retry_on_locked()
 def _get_top_prices_for_assets(db_path, assets):
     """
     Retrieve the latest price for each asset.
     """
-    dl = DataLocker.get_instance(db_path)
+    dl = get_locker()
     top_prices = []
     for asset in assets:
-        row = dl.get_latest_price(asset)
+        row = dl.prices.get_latest_price(asset)
         if row:
             top_prices.append(row)
     return top_prices
@@ -45,7 +47,7 @@ def _get_recent_prices(db_path, limit=15):
     """
     Retrieve the most recent price entries.
     """
-    dl = DataLocker.get_instance(db_path)
+    dl = get_locker()
     prices = dl.get_prices()
     return prices[:limit]
 
@@ -127,7 +129,7 @@ def price_list():
             asset: asset type (e.g., "BTC", "SP500")
             price: the new price value
     """
-    dl = DataLocker.get_instance(DB_PATH)
+    dl = get_locker()
     if request.method == "POST":
         try:
             asset = request.form.get("asset", "BTC")
@@ -170,7 +172,7 @@ def update_prices_route():
         source = request.args.get("source") or request.form.get("source") or "API"
         pm = PriceMonitor(db_path=DB_PATH, config_path=CONFIG_PATH)
         asyncio.run(pm.update_prices())
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         now = datetime.now()
         dl.set_last_update_times(
             prices_dt=now,
@@ -198,10 +200,10 @@ def prices_data_api():
       - Full price list (top prices)
     """
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         mini_prices = []
         for asset in ASSETS_LIST:
-            row = dl.get_latest_price(asset)
+            row = dl.prices.get_latest_price(asset)
             if row:
                 mini_prices.append({
                     "asset_type": row["asset_type"],

@@ -1,218 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Alert Monitor Variants</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f4f4f8;
-      padding: 2rem;
-    }
+{% extends "base.html" %}
+{% block title %}Console Logs + Limits{% endblock %}
 
-    .variant-box {
-      background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.06);
-      margin-bottom: 2rem;
-    }
+{% block extra_styles %}
+{{ super() }}
+<style>
+  .logger-box {
+    max-height: 350px;
+    overflow-y: auto;
+    font-family: monospace;
+    background: #111;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .log-line {
+    padding: 0.3rem;
+    border-left: 4px solid;
+    margin-bottom: 4px;
+    background: #1e1e1e;
+    border-radius: 4px;
+  }
+  .log-info { border-color: #3498db; color: #3498db; }
+  .log-success { border-color: #2ecc71; color: #2ecc71; }
+  .log-warning { border-color: #f1c40f; color: #f1c40f; }
+  .log-error { border-color: #e74c3c; color: #e74c3c; }
+  .log-debug { border-color: #e67e22; color: #e67e22; }
+  .log-confidence { border-color: #00ffff; color: #00ffff; }
+</style>
+{% endblock %}
 
-    /* Variant A */
-    .table-hover tbody tr:hover {
-      background-color: #f8f9fa;
-    }
+{% block content %}
+<div class="container-fluid pt-4">
 
-    .badge-level-High { background-color: #dc3545; }
-    .badge-level-Medium { background-color: #ffc107; color: #000; }
-    .badge-level-Low { background-color: #0d6efd; }
-    .badge-status-Active { background-color: #198754; }
-    .badge-status-Inactive { background-color: #6c757d; }
-
-    /* Variant B - Card Grid */
-    .alert-card {
-      border-left: 6px solid #0d6efd;
-      background: #fff;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-
-    .alert-card .level-High { border-left-color: #dc3545; }
-    .alert-card .level-Medium { border-left-color: #ffc107; }
-    .alert-card .level-Low { border-left-color: #0d6efd; }
-
-    .alert-img { width: 28px; border-radius: 50%; }
-
-    /* Variant C - Accent Row Panels */
-    .alert-panel {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-left: 6px solid #adb5bd;
-      background-color: #ffffff;
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    }
-
-    .alert-panel.level-High { border-left-color: #dc3545; }
-    .alert-panel.level-Medium { border-left-color: #ffc107; }
-    .alert-panel.level-Low { border-left-color: #0d6efd; }
-
-    .alert-panel .left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .alert-panel .middle {
-      flex-grow: 1;
-    }
-    .alert-panel .right {
-      text-align: right;
-    }
-  </style>
-</head>
-<body>
-  <h2 class="mb-4">🧪 Alert Monitor – Design Variants</h2>
-
-  <!-- Variant A -->
-  <div class="variant-box">
-    <h4>🧱 Variant A: Enhanced Table</h4>
-    <table class="table table-hover align-middle">
-      <thead class="table-dark">
-        <tr>
-          <th>Asset</th><th>Wallet</th><th>Type</th><th>Trigger</th><th>Eval</th>
-          <th>Level</th><th>Status</th><th>Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><img src="/static/images/btc_logo.png" width="24"> BTC</td>
-          <td><img src="/static/images/obivault.jpg" width="24"></td>
-          <td>Profit</td>
-          <td>1000</td>
-          <td>640</td>
-          <td><span class="badge badge-level-High">High</span></td>
-          <td><span class="badge badge-status-Active">Active</span></td>
-          <td>5/3/2025, 5:30:00 AM</td>
-        </tr>
-        <tr>
-          <td><img src="/static/images/eth_logo.png" width="24"> ETH</td>
-          <td><img src="/static/images/r2vault.jpg" width="24"></td>
-          <td>HeatIndex</td>
-          <td>50</td>
-          <td>35</td>
-          <td><span class="badge badge-level-Medium">Medium</span></td>
-          <td><span class="badge badge-status-Active">Active</span></td>
-          <td>5/3/2025, 5:35:00 AM</td>
-        </tr>
-        <tr>
-          <td><img src="/static/images/sol_logo.png" width="24"> SOL</td>
-          <td><img src="/static/images/landovault.jpg" width="24"></td>
-          <td>TravelPercentLiquid</td>
-          <td>-25</td>
-          <td>-18</td>
-          <td><span class="badge badge-level-Low">Low</span></td>
-          <td><span class="badge badge-status-Inactive">Inactive</span></td>
-          <td>5/3/2025, 5:40:00 AM</td>
-        </tr>
-      </tbody>
-    </table>
+  <h3 class="mb-4">🖥️ Console Log Viewer</h3>
+  <div class="logger-box mb-5" id="loggerContent">
+    <!-- Live log lines go here -->
   </div>
 
-  <!-- Variant B -->
-  <div class="variant-box">
-    <h4>📦 Variant B: Card Grid</h4>
-    <div class="row">
+  <hr>
+
+  <h3 class="mb-3">⚙️ Alert Limits Editor</h3>
+  <form id="alertForm" method="POST" action="{{ url_for('alerts_bp.update_alert_config') }}">
+    <div class="row mb-4">
       <div class="col-md-4">
-        <div class="alert-card level-High">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6><i class="fas fa-dollar-sign"></i> Profit</h6>
-            <span class="badge bg-danger">High</span>
-          </div>
-          <p>BTC @ ObiVault</p>
-          <p><strong>640 / 1000</strong></p>
-          <small class="text-muted">Last: 5:30 AM</small>
-        </div>
+        <label class="form-label">Profit Threshold</label>
+        <input type="number" step="0.01" class="form-control" name="thresholds[profit]" value="10">
       </div>
       <div class="col-md-4">
-        <div class="alert-card level-Medium">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6><i class="fas fa-thermometer-half"></i> HeatIndex</h6>
-            <span class="badge bg-warning text-dark">Medium</span>
-          </div>
-          <p>ETH @ R2Vault</p>
-          <p><strong>35 / 50</strong></p>
-          <small class="text-muted">Last: 5:35 AM</small>
-        </div>
+        <label class="form-label">Travel Threshold</label>
+        <input type="number" step="0.01" class="form-control" name="thresholds[travel_percent]" value="15">
       </div>
       <div class="col-md-4">
-        <div class="alert-card level-Low">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6><i class="fas fa-plane-departure"></i> Travel %</h6>
-            <span class="badge bg-primary">Low</span>
-          </div>
-          <p>SOL @ LandoVault</p>
-          <p><strong>-18 / -25</strong></p>
-          <small class="text-muted">Last: 5:40 AM</small>
-        </div>
+        <label class="form-label">Heat Index Threshold</label>
+        <input type="number" step="0.01" class="form-control" name="thresholds[heat_index]" value="50">
       </div>
     </div>
-  </div>
+    <button type="submit" class="btn btn-primary">💾 Save Limits</button>
+  </form>
 
-  <!-- Variant C -->
-  <div class="variant-box">
-    <h4>📊 Variant C: Panel Rows</h4>
-    <div class="alert-panel level-High">
-      <div class="left">
-        <img src="/static/images/btc_logo.png" width="28">
-        <img src="/static/images/obivault.jpg" width="28">
-      </div>
-      <div class="middle">
-        <strong>BTC / Profit</strong><br>
-        <small>640 / 1000 - High</small>
-      </div>
-      <div class="right">
-        <span class="badge bg-success">Active</span><br>
-        <small>5:30 AM</small>
-      </div>
-    </div>
+</div>
+{% endblock %}
 
-    <div class="alert-panel level-Medium">
-      <div class="left">
-        <img src="/static/images/eth_logo.png" width="28">
-        <img src="/static/images/r2vault.jpg" width="28">
-      </div>
-      <div class="middle">
-        <strong>ETH / HeatIndex</strong><br>
-        <small>35 / 50 - Medium</small>
-      </div>
-      <div class="right">
-        <span class="badge bg-success">Active</span><br>
-        <small>5:35 AM</small>
-      </div>
-    </div>
+{% block extra_scripts %}
+{{ super() }}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  const loggerBox = document.getElementById("loggerContent");
 
-    <div class="alert-panel level-Low">
-      <div class="left">
-        <img src="/static/images/sol_logo.png" width="28">
-        <img src="/static/images/landovault.jpg" width="28">
-      </div>
-      <div class="middle">
-        <strong>SOL / TravelPercentLiquid</strong><br>
-        <small>-18 / -25 - Low</small>
-      </div>
-      <div class="right">
-        <span class="badge bg-secondary">Inactive</span><br>
-        <small>5:40 AM</small>
-      </div>
-    </div>
-  </div>
+  function addLogLine(level, icon, text) {
+    const div = document.createElement("div");
+    div.className = `log-line log-${level}`;
+    div.textContent = `${icon} ${text}`;
+    loggerBox.appendChild(div);
+    loggerBox.scrollTop = loggerBox.scrollHeight;
+  }
 
-</body>
-</html>
+  socket.on("new_log", function(log) {
+    addLogLine(log.level, log.icon, log.text);
+  });
+
+  // Load initial history
+  fetch("/api/logs")
+    .then(res => res.json())
+    .then(logs => logs.forEach(log => addLogLine(log.level, log.icon, log.text)));
+</script>
+{% endblock %}

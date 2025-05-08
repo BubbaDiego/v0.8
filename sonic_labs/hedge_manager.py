@@ -14,9 +14,8 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import uuid4
 from data.models import Position, Hedge
-from core.constants import DB_PATH
 from data.data_locker import DataLocker
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import DB_PATH, get_locker, log
 
 
 class HedgeManager:
@@ -84,7 +83,7 @@ class HedgeManager:
     def find_hedges(db_path: str = DB_PATH) -> List[list]:
         log.debug("🔍 Entering find_hedges()", source="HedgeManager")
         try:
-           #1 dl = DataLocker.get_instance(DB_PATH)
+           #1 dl = get_locker()
             dl = DataLocker(str(DB_PATH))
             raw_positions = dl.read_positions()
             log.debug(f"Retrieved {len(raw_positions)} raw positions", source="HedgeManager")
@@ -136,7 +135,7 @@ class HedgeManager:
     @staticmethod
     def clear_hedge_data(db_path: str = DB_PATH) -> None:
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id IS NOT NULL")
             dl.db.commit()

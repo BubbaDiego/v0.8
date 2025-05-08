@@ -2,7 +2,7 @@ import pytest
 import asyncio
 from data.alert import Alert, AlertType, Condition
 from alerts.alert_enrichment_service import AlertEnrichmentService
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 # --- Mock DataLocker for Bulk Travel Percent Enrichment ---
 

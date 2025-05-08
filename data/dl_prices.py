@@ -11,9 +11,9 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 from uuid import uuid4
 from datetime import datetime
+from core.core_imports import log
 
 class DLPriceManager:
     def __init__(self, db):
@@ -61,3 +61,17 @@ class DLPriceManager:
         except Exception as e:
             log.error(f"Error retrieving price for {asset_type}: {e}", source="DLPriceManager")
             return {}
+
+    def get_all_prices(self) -> list:
+        """
+        Returns a list of all price entries in the database.
+        """
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("SELECT * FROM prices ORDER BY last_update_time DESC")
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            log.error(f"Failed to retrieve all prices: {e}", source="DLPriceManager")
+            return []
+

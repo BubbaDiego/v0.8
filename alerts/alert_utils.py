@@ -61,13 +61,11 @@ def resolve_wallet_metadata(alert, data_locker=None):
     Given an Alert object, resolve the wallet info (name, image_path) by following:
     alert → position_reference_id → position.wallet_name → wallet → image_path
     """
-    from data.data_locker import DataLocker
-
     if not alert or not alert.position_reference_id:
         return {"wallet_name": None, "wallet_image": None, "wallet_id": None}
 
     if not data_locker:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
 
     position = data_locker.get_position_by_reference_id(alert.position_reference_id)
     if not position:
@@ -91,8 +89,6 @@ def normalize_alert_type(alert_type_input):
     - If already an AlertType Enum, return as-is
     - If string, try to convert to AlertType Enum
     """
-    from data.alert import AlertType
-
     if isinstance(alert_type_input, AlertType):
         return alert_type_input
 
@@ -152,7 +148,6 @@ def log_alert_summary(alert):
     """
     Print a clean, emoji-annotated summary of a created alert.
     """
-    from utils.console_logger import ConsoleLogger as log
 
     alert_type = alert.get("alert_type") if isinstance(alert, dict) else getattr(alert, "alert_type", None)
     alert_class = alert.get("alert_class") if isinstance(alert, dict) else getattr(alert, "alert_class", None)

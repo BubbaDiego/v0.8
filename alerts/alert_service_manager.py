@@ -9,8 +9,7 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from xcom.notification_service import NotificationService
 from config.config_loader import load_config
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
-from core.constants import ALERT_LIMITS_PATH
+from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
 
 print(f"[CONFIG] ✅ Using alert config: {ALERT_LIMITS_PATH}")
 

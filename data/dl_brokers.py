@@ -1,3 +1,4 @@
+from core.core_imports import log
 # dl_brokers.py
 """
 Author: BubbaDiego
@@ -11,7 +12,6 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 
 class DLBrokerManager:
     def __init__(self, db):

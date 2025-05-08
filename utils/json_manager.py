@@ -7,9 +7,12 @@ import json
 from enum import Enum
 from typing import Optional
 from utils.console_logger import ConsoleLogger
+import re
+from difflib import get_close_matches
+from core.core_imports import ALERT_LIMITS_PATH
 
 
-from core.constants import ALERT_LIMITS_PATH, THEME_CONFIG_PATH, SONIC_SAUCE_PATH
+from core.constants import THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):
     ALERT_LIMITS = "alert_limitsz.json"
@@ -134,8 +137,6 @@ class JsonManager:
         2. Normalized exact match
         3. Fuzzy matching
         """
-        import re
-        from difflib import get_close_matches
 
         if not isinstance(json_dict, dict):
             raise ValueError("Provided json_dict must be a dictionary.")

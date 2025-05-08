@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import subprocess
 from pathlib import Path
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 
 class TestRunnerManager:

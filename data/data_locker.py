@@ -21,7 +21,7 @@ from data.dl_wallets import DLWalletManager
 from data.dl_brokers import DLBrokerManager
 from data.dl_portfolio import DLPortfolioManager
 from data.dl_system_data import DLSystemDataManager
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 class DataLocker:
     def __init__(self, db_path: str):

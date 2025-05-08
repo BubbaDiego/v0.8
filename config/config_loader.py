@@ -1,8 +1,7 @@
 import json
 import os
 from pathlib import Path
-from core.constants import ALERT_LIMITS_PATH
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import ALERT_LIMITS_PATH, log
 
 def load_config(filename=None):
     """

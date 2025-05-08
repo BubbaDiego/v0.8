@@ -8,9 +8,8 @@ from typing import Dict
 import requests
 from monitor.monitor_utils import BaseMonitor
 from data.data_locker import DataLocker
+from core.core_imports import DB_PATH, log
 
-from core.constants import DB_PATH
-from utils.console_logger import ConsoleLogger as log
 
 
 class PriceFetcher:

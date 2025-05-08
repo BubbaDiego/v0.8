@@ -1,6 +1,9 @@
+
 import json
 import os
+from core.core_imports import retry_on_locked
 
+@retry_on_locked()
 def create_temp_alert_limits_json(filepath="alert_limitsz.json"):
     """
     Create a dummy alert_limitsz.json if it doesn't exist.

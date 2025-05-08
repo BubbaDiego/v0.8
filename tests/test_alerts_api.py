@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from alerts.alerts_bp import alerts_bp
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 # Setup the Flask Test App
 @pytest.fixture

@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from data.alert import AlertType, Condition, Status
 from alerts.alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
+from core.core_imports import get_locker
 
 
 def test_create_evaluate_portfolio_alerts():
@@ -20,7 +21,7 @@ def test_create_evaluate_portfolio_alerts():
     ✅ Logs results to console
     """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     dl.delete_all_alerts()
 
     metrics = [

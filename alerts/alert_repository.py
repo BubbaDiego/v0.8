@@ -9,8 +9,8 @@ from alerts.alert_utils import (
 )
 
 from data.alert import Alert, AlertLevel
+from core.core_imports import log
 #import asyncio
-from utils.console_logger import ConsoleLogger as log
 
 
 class AlertRepository:

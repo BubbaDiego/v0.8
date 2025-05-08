@@ -2,7 +2,7 @@ import pytest
 import os
 import json
 from utils.config_loader import load_config
-from utils.console_logger import ConsoleLogger as log
+from core.core_imports import log
 
 @pytest.fixture
 def tmp_config_file(tmp_path):

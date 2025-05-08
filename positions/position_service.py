@@ -10,26 +10,16 @@ Description:
       - Record snapshots of aggregated positions data.
 """
 
-import logging
+import core.logging as logging
+import os
 from typing import List, Dict, Any
 import requests
 from datetime import datetime
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 from utils.calc_services import CalcServices
-#from alerts.alert_evaluator import AlertEvaluator
-#from utils.unified_logger import UnifiedLogger
-#from api.dydx_api import DydxAPI
+from core.locker_factory import get_locker
+from core.constants import DB_PATH
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.CRITICAL)
-if not logger.handlers:
-    import sys
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('[%(levelname)s] %(asctime)s - %(name)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
 
 class PositionService:
     # Mapping for market mints to asset types
@@ -49,14 +39,16 @@ class PositionService:
         evaluator.update_alert_for_position(pos)
 
     @staticmethod
-    @staticmethod
-    def get_all_positions(db_path: str = DB_PATH) -> List[Dict[str, Any]]:
+    def get_all_positions() -> List[Dict[str, Any]]:
+
+        print("👁 DB path being read:", os.path.abspath(DB_PATH))
+
         """
         Retrieve all positions from the database, enrich each,
         and inject wallet info as `wallet` object.
         """
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             raw_positions = dl.read_positions()
             positions = []
 
@@ -66,7 +58,7 @@ class PositionService:
 
                 # 🔗 Attach wallet object
                 wallet_name = enriched.get("wallet_name")
-                wallet_data = dl.get_wallet_by_name(wallet_name) if wallet_name else None
+                wallet_data = dl.wallets.get_wallet_by_name(wallet_name) if wallet_name else None
                 enriched["wallet"] = wallet_data
 
                 positions.append(enriched)
@@ -75,6 +67,27 @@ class PositionService:
 
         except Exception as e:
             logger.error(f"Error retrieving and enriching positions: {e}", exc_info=True)
+            raise
+
+    @staticmethod
+    @staticmethod
+    def clear_positions():
+        import sqlite3
+        import os
+        from core.core_imports import DB_PATH
+
+        db_path = os.path.abspath(DB_PATH)
+        print(f"🧨 PositionService.clear_positions → targeting DB: {db_path}")
+
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM positions")
+            conn.commit()
+            conn.close()
+            print("🧹 PositionService: positions wiped clean ✅")
+        except Exception as e:
+            print(f"❌ Error wiping positions: {e}")
             raise
 
     @staticmethod
@@ -162,18 +175,11 @@ class PositionService:
             logger.error(f"Error enriching position data: {e}", exc_info=True)
             raise
 
-    def delete_position_and_cleanup(position_id: str, db_path: str = DB_PATH) -> None:
-        """
-        Deletes a position and cleans up all associated alerts and hedge references.
+    def delete_position_and_cleanup(position_id: str) -> None:
 
-        Steps:
-          1. Delete all alerts whose position_reference_id equals position_id.
-          2. Clear hedge associations in positions that reference the position.
-          3. Delete the position record from the database.
-        """
         try:
             # Get the DataLocker instance
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             # Instantiate AlertController for alert deletion operations
             alert_ctrl = AlertController(db_path)
 
@@ -207,7 +213,7 @@ class PositionService:
     @staticmethod
     def fill_positions_with_latest_price(positions: List[Any]) -> List[Dict[str, Any]]:
         try:
-            dl = DataLocker.get_instance()
+            dl = get_locker()
             for i, pos in enumerate(positions):
                 if not isinstance(pos, dict):
                     pos = dict(pos)
@@ -231,16 +237,23 @@ class PositionService:
             raise
 
     @staticmethod
-    @staticmethod
-    def update_jupiter_positions(db_path: str = DB_PATH) -> dict:
+    def update_jupiter_positions() -> dict:
+        print("🌐 [TRACE] PositionService.update_jupiter_positions() CALLED")
+
         """
         Fetches latest Jupiter positions, maps them, and inserts them into the database.
         Logs every step and confirms wallet linkage.
         """
         logger.info("🔄 Updating Jupiter positions from API...")
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             wallets_list = dl.read_wallets()
+
+            print(f"📦 [TRACE] Wallets found: {len(wallets_list)}")
+            if not wallets_list:
+                return {"message": "No wallets in DB", "imported": 0, "skipped": 0}
+
+
             if not wallets_list:
                 logger.warning("⚠️ No wallets found in DB.")
                 return {"message": "No wallets in DB", "imported": 0, "skipped": 0}
@@ -261,6 +274,8 @@ class PositionService:
                     resp.raise_for_status()
                     data = resp.json()
                     data_list = data.get("dataList", [])
+                    print(f"🌐 [Jupiter] Positions returned for {wallet_name}: {len(data_list)}")
+
                     print(f"[🌐] Found {len(data_list)} positions for {wallet_name}")
                 except Exception as e:
                     print(f"[ERROR] Failed to fetch Jupiter positions for {wallet_name}: {e}")
@@ -327,9 +342,9 @@ class PositionService:
             return {"error": str(e)}
 
     @staticmethod
-    def delete_all_jupiter_positions(db_path: str = DB_PATH):
+    def delete_all_jupiter_positions():
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             cursor = dl.db.get_cursor()
             cursor.execute("DELETE FROM positions WHERE wallet_name IS NOT NULL")
             dl.db.commit()
@@ -340,59 +355,12 @@ class PositionService:
             raise
 
     @staticmethod
-    def update_dydx_positions(db_path: str = DB_PATH) -> dict:
-        try:
-            from uuid import uuid4
-            client = DydxAPI()
-            wallet_address = "dydx1unfl20nw9xep6vyl78jktjgrywvr5m7z7ru9e8"
-            subaccount_number = 0
-
-            dydx_positions = client.get_perpetual_positions(wallet_address, subaccount_number)
-            dl = DataLocker.get_instance(db_path)
-            new_count = 0
-
-            for pos in dydx_positions:
-                pos_dict = {
-                    "id": pos.get("id", str(uuid4())),
-                    "asset_type": pos.get("market", "BTC"),
-                    "position_type": pos.get("side", ""),
-                    "entry_price": float(pos.get("entryPrice", 0.0)),
-                    "liquidation_price": 0.0,
-                    "travel_percent": 0.0,
-                    "value": float(pos.get("size", 0.0)) * float(pos.get("entryPrice", 0.0)),
-                    "collateral": 0.0,
-                    "size": float(pos.get("size", 0.0)),
-                    "leverage": 0.0,
-                    "wallet_name": wallet_address,
-                    "last_updated": pos.get("createdAt", datetime.now().isoformat()),
-                    "current_price": float(pos.get("entryPrice", 0.0)),
-                    "liquidation_distance": None,
-                    "heat_index": 0.0,
-                    "current_heat_index": 0.0,
-                    "pnl_after_fees_usd": float(pos.get("pnlAfterFeesUsd", 0.0)) if pos.get("pnlAfterFeesUsd") else 0.0,
-                }
-                cursor = dl.db.get_cursor()
-                cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos_dict["id"],))
-                dup_count = cursor.fetchone()[0]
-                cursor.close()
-                if dup_count == 0:
-                    dl.create_position(pos_dict)
-                    new_count += 1
-
-            msg = f"Imported {new_count} new dYdX position(s)."
-            logger.info(msg)
-            return {"message": msg, "imported": new_count}
-        except Exception as e:
-            logger.error("Error updating dYdX positions: %s", e, exc_info=True)
-            return {"error": str(e)}
-
-    @staticmethod
-    def record_positions_snapshot(db_path: str = DB_PATH):
+    def record_positions_snapshot():
         try:
             positions = PositionService.get_all_positions(db_path)
             calc_services = CalcServices()
             totals = calc_services.calculate_totals(positions)
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             dl.record_positions_totals_snapshot(totals)
             logger.info("Positions snapshot recorded.")
         except Exception as e:
@@ -400,12 +368,11 @@ class PositionService:
             raise
 
     @staticmethod
-    def find_hedges(db_path: str = DB_PATH) -> list:
+    def find_hedges() -> list:
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             raw_positions = dl.read_positions()
             positions = [dict(pos) for pos in raw_positions]
-            from sonic_labs.hedge_manager import HedgeManager
             hedge_manager = HedgeManager(positions)
             hedges = hedge_manager.get_hedges()
             u_logger.log_operation("Hedge Updated", f"Hedge update complete; {len(hedges)} hedges created.",
@@ -422,9 +389,9 @@ class PositionService:
             return []
 
     @staticmethod
-    def clear_hedge_data(db_path: str = DB_PATH) -> None:
+    def clear_hedge_data() -> None:
         try:
-            dl = DataLocker.get_instance(db_path)
+            dl = get_locker()
             cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id IS NOT NULL")
             dl.db.commit()

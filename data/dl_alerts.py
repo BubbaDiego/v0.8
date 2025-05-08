@@ -1,3 +1,4 @@
+from core.core_imports import log
 # dl_alerts.py
 """
 Author: BubbaDiego
@@ -12,7 +13,6 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 
 class DLAlertManager:
     def __init__(self, db):
@@ -59,3 +59,17 @@ class DLAlertManager:
         cursor.execute("DELETE FROM alerts WHERE id = ?", (alert_id,))
         self.db.commit()
         log.info(f"Deleted alert {alert_id}", source="DLAlertManager")
+
+    def get_all_alerts(self) -> list:
+        """
+        Retrieves all alert records from the database.
+        """
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("SELECT * FROM alerts ORDER BY created_at DESC")
+            rows = cursor.fetchall()
+            return [dict(row) for row in rows]
+        except Exception as e:
+            log.error(f"Failed to retrieve all alerts: {e}", source="DLAlertManager")
+            return []
+

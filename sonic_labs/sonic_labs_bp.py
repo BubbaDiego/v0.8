@@ -1,14 +1,17 @@
+
 # sonic_labs_bp.py
 
 from flask import Blueprint, render_template, jsonify, current_app, request
 import json
 from positions.position_service import PositionService
-from core.constants import DB_PATH, THEME_CONFIG_PATH
+from core.constants import THEME_CONFIG_PATH
 from utils.json_manager import JsonType
+from core.core_imports import DB_PATH, retry_on_locked
 
 sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")
 
 @sonic_labs_bp.route("/hedge_calculator", methods=["GET"])
+@retry_on_locked()
 def hedge_calculator():
     try:
         positions = PositionService.get_all_positions(DB_PATH)

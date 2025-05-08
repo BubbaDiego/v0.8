@@ -6,7 +6,6 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from xcom.notification_service import NotificationService
 from data.alert import Alert, AlertType, AlertLevel
 from utils.config_loader import load_config
-from utils.console_logger import ConsoleLogger as log
 
 # --- Mock Services ---
 
@@ -56,7 +55,8 @@ class MockDataLockerProfit:
                     a.last_triggered = fields['last_triggered']
 
     def get_current_timestamp(self):
-        from datetime import datetime
+from datetime import datetime
+from core.core_imports import log
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 

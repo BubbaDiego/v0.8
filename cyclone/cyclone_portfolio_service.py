@@ -5,9 +5,8 @@ from uuid import uuid4
 
 from data.data_locker import DataLocker
 from data.alert import AlertType, Condition
-from utils.console_logger import ConsoleLogger as log
 from alerts.alert_utils import log_alert_summary
-from core.constants import DB_PATH
+from core.core_imports import DB_PATH, log
 
 
 class CyclonePortfolioService:

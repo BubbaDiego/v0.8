@@ -1,9 +1,8 @@
 # cyclone/cyclone_hedge_service.py
 
-from utils.console_logger import ConsoleLogger as log
 from sonic_labs.hedge_manager import HedgeManager
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
+from core.core_imports import DB_PATH, log
 
 
 class CycloneHedgeService:

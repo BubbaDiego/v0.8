@@ -6,11 +6,10 @@ from data.alert import AlertLevel, Condition
 from config.config_loader import load_config
 from data.alert import AlertType
 from core.constants import ALERT_LIMITS_PATH
-from utils.json_manager import JsonManager
+
 
 from utils.fuzzy_wuzzy import fuzzy_match_enum
-#from alerts.enums import AlertType
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 
 log.debug_module()
@@ -79,8 +78,6 @@ class AlertEvaluationService:
 
     def _evaluate_portfolio(self, alert):
         try:
-            from config.config_loader import load_config
-            from core.constants import ALERT_LIMITS_PATH
 
             config = load_config(ALERT_LIMITS_PATH)
             alert_limits = config.get("alert_limits", config)

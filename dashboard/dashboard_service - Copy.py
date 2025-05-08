@@ -1,8 +1,7 @@
 from data.data_locker import DataLocker
 from positions.position_service import PositionService
-from utils.json_manager import JsonManager, JsonType
+from utils.json_manager import JsonType
 from monitor.ledger_reader import get_ledger_status
-from config.config_constants import DB_PATH, ALERT_LIMITS_PATH
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -54,15 +53,15 @@ def determine_color(age):
 
 from data.data_locker import DataLocker
 from positions.position_service import PositionService
-from utils.json_manager import JsonManager, JsonType
+from utils.json_manager import JsonType
 from monitor.ledger_reader import get_ledger_status
-from config.config_constants import DB_PATH, ALERT_LIMITS_PATH
 from utils.calc_services import CalcServices
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from core.core_imports import ALERT_LIMITS_PATH, DB_PATH, JsonManager, get_locker
 
 def get_dashboard_context():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     positions = PositionService.get_all_positions(DB_PATH) or []
 
     for pos in positions:

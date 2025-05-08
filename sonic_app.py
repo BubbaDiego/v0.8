@@ -3,16 +3,24 @@
 sonic_app.py
 Main Flask app for Sonic Dashboard.
 """
+
 import os
 import sys
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
 import json
+import asyncio
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO
-from core.constants import DB_PATH, CONFIG_PATH, BASE_DIR
-#from utils.console_logger import ConsoleLogger as log
-from core.logging import log
-from data.data_locker import DataLocker
-from utils.json_manager import JsonManager
+
+from core.core_imports import log, configure_console_log, get_locker, DB_PATH, CONFIG_PATH, BASE_DIR, retry_on_locked, JsonManager
+#from utils.unified_config_manager import UnifiedConfigManager
+#from utils.unified_logger import UnifiedLogger
+#from twilio_message_api import trigger_twilio_flow
+from positions.positions_bp import update_jupiter
+from alerts.alert_service_manager import AlertServiceManager
+
 from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp
 from alerts.alerts_bp import alerts_bp
@@ -23,68 +31,16 @@ from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
 from wallets.wallets_bp import wallet_bp
 
-
-def configure_console_debug_log():
-    """
-    🔧 configure_console_debug_log()
-
-    Centralized debug logging configuration for the Sonic Dashboard. 🧠
-
-    🧭 Features:
-    - Silences noisy modules during normal operation (e.g. calc_services)
-    - Enables grouped logging control (e.g. "analytics" or "infra")
-    - Ensures clean, informative CLI output with emoji-coded logs
-
-    📦 Module Controls:
-    - "calc_services"     🔇 Disabled by default
-    - "positions_bp"      🔇 Disabled
-    - "alerts_bp"         🔊 Enabled
-    - "cyclone_engine"    🔊 Enabled
-
-    📛 Group Controls:
-    - Group "analytics" includes: ["calc_services", "positions_bp"]
-    - Group "system"    includes: ["alerts_bp", "cyclone_engine"]
-    """
-
-    # 🔇 Disable specific modules by default
-    log.silence_module("calc_services")
-    # Log.silence_module("positions_bp")  # Can enable as needed
-
-    # 🔊 Allow these to be chatty
-    #log.enable_module("alerts_bp")
-    #log.enable_module("cyclone_engine")
-
-    #🕵️ Hijack
-    log.hijack_logger("werkzeug")
-    # 🔇 Disable werkzeug by default
-    log.silence_module("werkzeug")
-
-    log.silence_prefix("calculate")
-   # log.silence_prefix("hedge")
-    log.silence_module("fuzzy_wuzzy")
-
-    # 🧠 Group management
-    #log.assign_group("analytics", ["calc_services", "positions_bp"])
-   # log.assign_group("system", ["alerts_bp", "cyclone_engine"])
-
-    # 🧩 Emit status ping
-    log.init_status()
-
-
-
-
-# Flask App Initialization
+# --- Flask Setup ---
 app = Flask(__name__)
 app.debug = False
 app.secret_key = "i-like-lamp"
 socketio = SocketIO(app)
 
-configure_console_debug_log()
-
 log.banner("SONIC DASHBOARD STARTUP")
 
-# Register Blueprints
-log.info(f"Registering blueprints...", source="Startup")
+# --- Register Blueprints ---
+log.info("Registering blueprints...", source="Startup")
 app.register_blueprint(positions_bp, url_prefix="/positions")
 app.register_blueprint(alerts_bp, url_prefix="/alerts")
 app.register_blueprint(prices_bp, url_prefix="/prices")
@@ -95,35 +51,32 @@ app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
 app.register_blueprint(wallet_bp)
 
-
-# Startup Checks
-log.info(f"Verifying paths...", source="Startup")
-#verify_paths()
-
 app.json_manager = JsonManager(logger=log)
+configure_console_log()
 
-# Aliases
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 
 
-# Flask Routes
 @app.route("/")
+@retry_on_locked()
 def index():
     return redirect(url_for('dashboard.dash_page'))
 
+
 @app.route("/assets")
 def assets():
-    dl = DataLocker.get_instance(DB_PATH)
-    balances = dl.get_balance_vars()
-    brokers = dl.read_brokers()
-    wallets = dl.read_wallets()
+    dl = get_locker()
+    balances = dl.system.get_strategy_performance_data()
+    brokers = dl.brokers.read_brokers()
+    wallets = dl.wallets.get_wallets()
     return render_template("assets.html", **balances, brokers=brokers, wallets=wallets)
+
 
 @app.route("/add_wallet", methods=["POST"])
 def add_wallet():
     try:
-        dl = DataLocker.get_instance(DB_PATH)
+        dl = get_locker()
         balance_value = float(request.form.get("balance", "0") or 0.0)
         wallet = {
             "name": request.form.get("name"),
@@ -132,7 +85,7 @@ def add_wallet():
             "image_path": request.form.get("image_path"),
             "balance": balance_value
         }
-        dl.create_wallet(wallet)
+        dl.wallets.create_wallet(wallet)
         flash(f"Wallet {wallet['name']} added successfully!", "success")
         log.success(f"Wallet {wallet['name']} added.", source="Wallets")
     except Exception as e:
@@ -140,13 +93,15 @@ def add_wallet():
         log.error(f"Failed to add wallet: {e}", source="Wallets")
     return redirect(url_for("assets"))
 
+
 @app.route("/delete_wallet/<wallet_name>", methods=["POST"])
 def delete_wallet(wallet_name):
     try:
-        dl = DataLocker.get_instance(DB_PATH)
-        wallet = dl.get_wallet_by_name(wallet_name)
+        dl = get_locker()
+        wallet = dl.wallets.get_wallet_by_name(wallet_name)
         if wallet:
-            dl.cursor.execute("DELETE FROM wallets WHERE name=?", (wallet_name,))
+            with dl.db.get_cursor() as cursor:
+                cursor.execute("DELETE FROM wallets WHERE name=?", (wallet_name,))
             dl.db.commit()
             flash(f"Wallet '{wallet_name}' deleted!", "success")
             log.success(f"Wallet '{wallet_name}' deleted.", source="Wallets")
@@ -158,11 +113,12 @@ def delete_wallet(wallet_name):
         log.error(f"Error deleting wallet: {e}", source="Wallets")
     return redirect(url_for("assets"))
 
+
 @app.route("/api/get_config")
 def api_get_config():
     try:
         conf = UnifiedConfigManager.load_config()
-        log.success(f"Loaded config.", source="API")
+        log.success("Loaded config.", source="API")
         return jsonify(conf)
     except Exception as e:
         log.error(f"Error loading config: {e}", source="API")
@@ -174,22 +130,19 @@ def api_update_row():
     try:
         data = request.get_json()
         table = data.get('table')
-        pk_field = data.get('pk_field')
         pk_value = data.get('pk_value')
         row_data = data.get('row')
 
-        dl = DataLocker.get_instance()
+        dl = get_locker()
 
         if table == 'wallets':
-            dl.update_wallet(pk_value, row_data)
+            dl.wallets.update_wallet(pk_value, row_data)
         elif table == 'positions':
-            pass
-        else:
-            pass
+            pass  # TODO
 
         return jsonify({"status": "success"}), 200
     except Exception as e:
-        logger.exception("Error updating row")
+        log.error(f"Error updating row: {e}", source="API")
         return jsonify({"error": str(e)}), 500
 
 
@@ -198,28 +151,25 @@ def api_delete_row():
     try:
         data = request.get_json()
         table = data.get('table')
-        pk_field = data.get('pk_field')
         pk_value = data.get('pk_value')
 
-        dl = DataLocker.get_instance()
+        dl = get_locker()
 
         if table == 'wallets':
             return jsonify({"error": "Wallet deletion is disabled"}), 400
         elif table == 'positions':
-            dl.delete_position(pk_value)
-        else:
-            pass
+            dl.positions.delete_position(pk_value)
 
         return jsonify({"status": "success"}), 200
     except Exception as e:
-        logger.exception("Error deleting row")
+        log.error(f"Error deleting row: {e}", source="API")
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/system_config", methods=["GET"])
 def system_config_page():
-    dl = DataLocker.get_instance(DB_PATH)
-    db_conn = dl.get_db_connection()
+    dl = get_locker()
+    db_conn = dl.db.connect()
     config_manager = UnifiedConfigManager(CONFIG_PATH, db_conn=db_conn)
     config = config_manager.load_config()
     return render_template("system_config.html", config=config)
@@ -227,22 +177,26 @@ def system_config_page():
 
 @app.route("/update_system_config", methods=["POST"])
 def update_system_config():
-    dl = DataLocker.get_instance(DB_PATH)
-    db_conn = dl.get_db_connection()
+    dl = get_locker()
+    db_conn = dl.db.connect()
     config_manager = UnifiedConfigManager(CONFIG_PATH, db_conn=db_conn)
-    new_config = {}
-    new_config.setdefault("system_config", {})["db_path"] = request.form.get("db_path")
-    new_config["system_config"]["log_file"] = request.form.get("log_file")
-    new_config["twilio_config"] = {
-        "account_sid": request.form.get("account_sid"),
-        "auth_token": request.form.get("auth_token"),
-        "flow_sid": request.form.get("flow_sid"),
-        "to_phone": request.form.get("to_phone"),
-        "from_phone": request.form.get("from_phone")
+    new_config = {
+        "system_config": {
+            "db_path": request.form.get("db_path"),
+            "log_file": request.form.get("log_file")
+        },
+        "twilio_config": {
+            "account_sid": request.form.get("account_sid"),
+            "auth_token": request.form.get("auth_token"),
+            "flow_sid": request.form.get("flow_sid"),
+            "to_phone": request.form.get("to_phone"),
+            "from_phone": request.form.get("from_phone")
+        }
     }
     config_manager.update_config(new_config)
     flash("Configuration updated successfully!", "success")
     return redirect(url_for("system_config_page"))
+
 
 @app.context_processor
 def update_theme_context():
@@ -250,15 +204,14 @@ def update_theme_context():
     try:
         with open(config_path, 'r') as f:
             conf = json.load(f)
-    except Exception as e:
+    except Exception:
         conf = {}
     theme_config = conf.get("theme_config", {})
     return dict(theme=theme_config)
 
+
 @app.route('/test_twilio', methods=["POST"])
 def send_test_twilio():
-    from twilio_message_api import trigger_twilio_flow
-    # Using UnifiedLogger here as well.
     unified_logger = UnifiedLogger()
     try:
         message = request.form.get("message", "Test message from system config")
@@ -269,28 +222,24 @@ def send_test_twilio():
         unified_logger.log_operation("Notification Failed", "Testing Twilio Failed", source="system test")
         return jsonify({"success": False, "error": str(e)}), 500
 
-# NEW: Global update route alias using the update_jupiter function from positions_bp.
+
 @app.route("/update", methods=["GET"])
 def update():
-    from positions.positions_bp import update_jupiter
     return update_jupiter()
 
-# NEW: Additional alias to allow "/dashboard/update" as well.
+
 @app.route("/dashboard/update", methods=["GET"])
 def dashboard_update():
     return update()
 
-# NEW: Debug endpoint to manually trigger check_alerts for testing.
+
 @app.route("/debug_check_alerts")
 def debug_check_alerts():
-    from alerts.alert_service_manager import AlertServiceManager
-    import asyncio
     service = AlertServiceManager.get_instance()
     asyncio.run(service.process_all_alerts())
     return "check_alerts executed; please check the logs for debug messages."
 
 
-# Main
 if __name__ == "__main__":
     monitor = "--monitor" in sys.argv
     if monitor:
@@ -306,7 +255,5 @@ if __name__ == "__main__":
     host = "0.0.0.0"
     port = 5001
     log.success(f"Starting Flask server at {host}:{port}", source="Startup")
-   # log.print_dashboard_link(host="127.0.0.1", port=port)  # 👈 Add this line here
-    log.print_dashboard_link(host="127.0.0.1", port=port, route="/")  # use '/' instead of '/dashboard'
-
+    log.print_dashboard_link(host="127.0.0.1", port=port, route="/")
     app.run(debug=False, host=host, port=port)

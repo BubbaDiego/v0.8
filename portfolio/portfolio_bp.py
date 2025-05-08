@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """
 Module: portfolio_bp.py
@@ -11,12 +12,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import uuid
 from data.data_locker import DataLocker
+from core.core_imports import get_locker, retry_on_locked
 
 portfolio_bp = Blueprint("portfolio", __name__, url_prefix="/portfolio", template_folder="templates")
 
 @portfolio_bp.route("/", methods=["GET"])
+@retry_on_locked()
 def index():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     portfolio_history = dl.get_portfolio_history()  # Returns a list of portfolio snapshot dictionaries
     percent_change = None
     if portfolio_history and len(portfolio_history) >= 2:
@@ -28,7 +31,7 @@ def index():
 
 @portfolio_bp.route("/add", methods=["GET", "POST"])
 def add_entry():
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     if request.method == "POST":
         total_value_str = request.form.get("total_value", "")
         try:
@@ -51,7 +54,7 @@ def add_entry():
 
 @portfolio_bp.route("/edit/<entry_id>", methods=["GET", "POST"])
 def edit_entry(entry_id):
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     if request.method == "POST":
         total_value_str = request.form.get("total_value", "")
         try:
@@ -75,7 +78,7 @@ def edit_entry(entry_id):
 
 @portfolio_bp.route("/delete/<entry_id>", methods=["POST"])
 def delete_entry(entry_id):
-    dl = DataLocker.get_instance()
+    dl = get_locker()
     try:
         dl.delete_portfolio_entry(entry_id)
         flash("Portfolio entry deleted successfully!", "success")

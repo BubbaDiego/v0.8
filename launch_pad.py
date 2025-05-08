@@ -11,10 +11,10 @@ import time
 from datetime import datetime
 from functools import wraps
 from time import time as timer_time
-from utils.console_logger import ConsoleLogger as log
 #from tests.test_runner_manager import TestRunnerManager
 from utils.schema_validation_service import SchemaValidationService
 from tests.verification_console import VerificationConsole
+from core.core_imports import log
 
 
 

@@ -11,9 +11,9 @@ Dependencies:
     - ConsoleLogger from console_logger.py
 """
 
-from utils.console_logger import ConsoleLogger as log
 from uuid import uuid4
 from datetime import datetime
+from core.core_imports import log
 
 class DLPortfolioManager:
     def __init__(self, db):

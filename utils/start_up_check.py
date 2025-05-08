@@ -2,7 +2,6 @@ from core.constants import (
     DB_PATH, CONFIG_PATH, ALERT_LIMITS_PATH, BASE_DIR
 )
 #from utils.path_audit import maybe_create_mother_brain
-from utils.console_logger import ConsoleLogger as log
 import os
 from pathlib import Path
 
@@ -48,7 +47,8 @@ class StartUpCheck:
                     "thresholds": {}
                 }
             }
-            from utils.config_loader import save_config
+from utils.config_loader import save_config
+from core.core_imports import log
             save_config("alert_limitsz.json", default)
             log.success("✅ Default alert_limitsz.json created.", source="StartUpCheck")
         else:

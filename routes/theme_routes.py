@@ -1,8 +1,10 @@
+
 # /routes/theme_routes.py
 
 from flask import Blueprint, request, jsonify
 import os
 import json
+from core.core_imports import retry_on_locked
 
 # Define Blueprint
 theme_bp = Blueprint('theme', __name__, url_prefix='/theme')
@@ -24,6 +26,7 @@ DEFAULT_THEME = {
 }
 
 # Helper to load theme config
+@retry_on_locked()
 def load_theme_config():
     if not os.path.exists(THEME_CONFIG_PATH):
         save_theme_config(DEFAULT_THEME)

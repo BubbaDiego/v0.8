@@ -1,42 +1,33 @@
-#!/usr/bin/env python3
-import os
+
 import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# 1. Make sure your project root is on the path
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-sys.path.insert(0, PROJECT_ROOT)
 
-# 2. Import DataLocker
+from core.core_imports import DB_PATH
 from data.data_locker import DataLocker
 
-# 3. Define your wallets list exactly as given
-wallets = [
+dl = DataLocker(str(DB_PATH))
+
+wallets_to_add = [
     {
         "name": "R2Vault",
-        "public_address": "Gwk8DdAZPyonAcxfJDs7fZazC2bDKmpASWsBEbtxvAY6",
-        "private_address": "",
-        "image_path": "\\static\\images\\r2vault.jpg",
-        "balance": 1.23
+        "public_address": "FhNRk...VALID1",
+        "private_address": "privatekey1",
+        "image_path": "",
+        "balance": 1000.0
     },
     {
         "name": "LandoVault",
-        "public_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
-        "private_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
-        "image_path": "1.23",
-        "balance": 1.23
+        "public_address": "DjsRU...VALID2",
+        "private_address": "privatekey2",
+        "image_path": "",
+        "balance": 2500.0
     }
 ]
 
-def main():
-    # Initialize the singleton DataLocker
-    dl = DataLocker.get_instance()
-
-    for w in wallets:
-        try:
-            dl.create_wallet(w)
-            print(f"✅ Inserted wallet: {w['name']}")
-        except Exception as e:
-            print(f"❌ Failed to insert {w['name']}: {e}")
-
-if __name__ == "__main__":
-    main()
+for w in wallets_to_add:
+    try:
+        dl.wallets.create_wallet(w)  # ✅ Use the wallets manager
+    except Exception as e:
+        print(f"❌ Failed to insert {w['name']}: {e}")

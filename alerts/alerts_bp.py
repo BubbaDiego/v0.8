@@ -1,11 +1,13 @@
+
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import logging
 import asyncio
+from flask import current_app
+
 from flask import Blueprint, jsonify, render_template
 from alerts.alert_service_manager import AlertServiceManager
 #from dashboard.dashboard_view_model import DashboardViewModel
-from utils.console_logger import ConsoleLogger as log
 from data.data_locker import DataLocker
 
 # --- Blueprint Setup ---
@@ -22,7 +24,6 @@ if not logger.handlers:
     logger.addHandler(ch)
 
 # --- Utilities ---
-
 def convert_types_in_dict(d):
     if isinstance(d, dict):
         return {k: convert_types_in_dict(v) for k, v in d.items()}
@@ -64,7 +65,7 @@ def create_all_alerts():
     Create sample alerts for testing purposes.
     """
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         sample_alerts = [
             {
                 "id": "alert-sample-1",
@@ -105,7 +106,7 @@ def delete_all_alerts():
     Delete all alerts from the database.
     """
     try:
-        data_locker = DataLocker.get_instance()
+        data_locker = get_locker()
         data_locker.clear_alerts()
         log.success("All alerts deleted successfully.", source="AlertsBP")
         return jsonify({"success": True, "message": "All alerts cleared."})
@@ -123,8 +124,6 @@ def alert_config_page():
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
 def monitor_page():
-    import os
-    from flask import current_app
     path = os.path.join(current_app.template_folder, 'alert_monitor.html')
     print(f"🧪 CHECKING TEMPLATE PATH: {path}")
     exists = os.path.exists(path)

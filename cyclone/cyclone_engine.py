@@ -10,16 +10,17 @@ from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
 from alerts.alert_service_manager import AlertServiceManager
 from core.logging import log  # 🔁 Updated logging import
+from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from config.config_loader import load_config
-from core.constants import ALERT_LIMITS_PATH
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 
 
 from cyclone.cyclone_position_service import CyclonePositionService
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService
 from cyclone.cyclone_alert_service import CycloneAlertService
 from cyclone.cyclone_hedge_service import CycloneHedgeService
+
+
 
 
 def configure_cyclone_console_log():
@@ -67,6 +68,60 @@ class Cyclone:
         except Exception as e:
             log.error(f"Market Updates failed: {e}", source="Cyclone")
 
+    def clear_wallets_backend(self):
+        try:
+            cursor = self.data_locker.db.get_cursor()
+            cursor.execute("DELETE FROM wallets")
+            self.data_locker.db.commit()
+            deleted = cursor.rowcount
+            cursor.close()
+            print(f"🧹 Wallets cleared. {deleted} record(s) deleted.")
+        except Exception as e:
+            print(f"Error clearing wallets: {e}")
+
+    def add_wallet_backend(self):
+        try:
+            name = input("Enter wallet name: ").strip()
+            public_address = input("Enter public address: ").strip()
+            private_address = input("Enter private address: ").strip()
+            image_path = input("Enter image path (optional): ").strip()
+            balance_str = input("Enter balance (optional): ").strip()
+            try:
+                balance = float(balance_str)
+            except Exception:
+                balance = 0.0
+
+            wallet = {
+                "name": name,
+                "public_address": public_address,
+                "private_address": private_address,
+                "image_path": image_path,
+                "balance": balance
+            }
+
+            self.data_locker.wallets.create_wallet(wallet)
+            print(f"✅ Wallet '{name}' added successfully.")
+        except Exception as e:
+            print(f"Error adding wallet: {e}")
+
+    def view_wallets_backend(self):
+        try:
+            wallets = self.data_locker.wallets.get_wallets()
+            if not wallets:
+                print("⚠️ No wallets found.")
+                return
+
+            print("💼 Wallets")
+            print(f"📦 Total: {len(wallets)}\n")
+            for w in wallets:
+                print(f"🧾 Name:     {w['name']}")
+                print(f"🏦 Address:  {w['public_address']}")
+                print(f"💰 Balance:  {w['balance']}")
+                print(f"🖼️ Image:    {w['image_path']}")
+                print("-" * 40)
+        except Exception as e:
+            print(f"❌ Error viewing wallets: {e}")
+
     async def run_create_market_alerts(self):
         log.info("Creating Market Alerts", source="Cyclone")
         try:
@@ -109,15 +164,24 @@ class Cyclone:
             log.error(f"Clear All Data failed: {e}", source="Cyclone")
 
     def _clear_all_data_core(self):
-        try:
-            for table in ["alerts", "prices", "positions"]:
+        """
+        ⚠️ Wipe all critical tables: alerts, prices, positions.
+        """
+        tables = ["alerts", "prices", "positions"]
+
+        for table in tables:
+            try:
                 cursor = self.data_locker.db.get_cursor()
                 cursor.execute(f"DELETE FROM {table}")
                 self.data_locker.db.commit()
                 cursor.close()
-                log.info(f"Cleared table: {table}", source="Cyclone")
-        except Exception as e:
-            log.error(f"Error clearing data: {e}", source="Cyclone")
+                log.success(f"✅ Cleared all rows from `{table}`", source="Cyclone")
+            except Exception as e:
+                log.error(f"❌ Failed to clear `{table}`: {e}", source="Cyclone")
+
+    async def _debugged_position_update(self):
+        print("🧠 [DEBUG] Entered Cyclone.run_cycle → position step")
+        await self.position_runner.update_positions_from_jupiter()
 
     async def run_cycle(self, steps=None):
         """
@@ -126,10 +190,11 @@ class Cyclone:
         available_steps = {
             "clear_all_data": self.run_clear_all_data,
             "market": self.run_market_updates,
+            "position": self._debugged_position_update,
             "position": self.position_runner.update_positions_from_jupiter,
             "cleanse_ids": self.alert_runner.clear_stale_alerts,
-            "link_hedges": self.hedge_runner.link_hedges,
-            "update_hedges": self.hedge_runner.update_hedges,
+          #  "link_hedges": self.hedge_runner.link_hedges,
+        #    "update_hedges": self.hedge_runner.update_hedges,
             "enrich positions": self.position_runner.enrich_positions,
             "enrich alerts": self.alert_runner.enrich_all_alerts,
             "create_market_alerts": self.run_create_market_alerts,
@@ -157,6 +222,10 @@ class Cyclone:
             else:
                 log.warning(f"Unknown step: {step}", source="Cyclone")
 
+    async def run_debug_position_update(self):
+        print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
+        await self.position_runner.update_positions_from_jupiter()
+
     def run_delete_all_data(self):
         """
         ⚠️ Compatibility alias for legacy menu option.
@@ -167,11 +236,10 @@ class Cyclone:
 
 
 if __name__ == "__main__":
-    from cyclone_console_helper import CycloneConsoleHelper
 
     configure_cyclone_console_log()
     log.banner("🌀 Cyclone CLI Console Activated 🌀")
-
+    from cyclone.cyclone_console_service import CycloneConsoleService
     cyclone = Cyclone(poll_interval=60)
-    helper = CycloneConsoleHelper(cyclone)
+    helper = CycloneConsoleService(cyclone)
     helper.run()
