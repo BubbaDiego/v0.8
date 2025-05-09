@@ -198,3 +198,54 @@ class AlertEvaluationService:
             log.error(f"❌ Evaluation fallback error for alert {alert.id}: {e}", source="AlertEvaluation")
             alert.level = AlertLevel.NORMAL
             return alert
+
+    def inject_repo(self, repo):
+        self.repo = repo
+
+    def update_alert_evaluated_value(self, alert_id: str, value: float):
+        if not self.repo:
+            log.error("❌ Alert repository not injected", source="AlertEvaluation")
+            return
+        try:
+            cursor = self.repo.data_locker.db.get_cursor()
+            cursor.execute(
+                "UPDATE alerts SET evaluated_value = ? WHERE id = ?", (value, alert_id)
+            )
+            self.repo.data_locker.db.commit()
+
+            log.success(
+                f"✅ Updated evaluated_value",
+                source="AlertEvaluation",
+                payload={"alert_id": alert_id, "evaluated_value": value},
+            )
+        except Exception as e:
+            log.error(
+                f"❌ Failed to update evaluated_value",
+                source="AlertEvaluation",
+                payload={"alert_id": alert_id, "error": str(e)},
+            )
+
+    def update_alert_level(self, alert_id: str, level):
+        if not self.repo:
+            log.error("❌ Alert repository not injected", source="AlertEvaluation")
+            return
+        try:
+            level_str = level.value if hasattr(level, "value") else str(level).capitalize()
+
+            cursor = self.repo.data_locker.db.get_cursor()
+            cursor.execute(
+                "UPDATE alerts SET level = ? WHERE id = ?", (level_str, alert_id)
+            )
+            self.repo.data_locker.db.commit()
+
+            log.success(
+                "🧪 Updated alert level",
+                source="AlertEvaluation",
+                payload={"alert_id": alert_id, "level": level_str},
+            )
+        except Exception as e:
+            log.error(
+                "❌ Failed to update alert level",
+                source="AlertEvaluation",
+                payload={"alert_id": alert_id, "error": str(e)},
+            )
