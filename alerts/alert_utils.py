@@ -5,7 +5,7 @@ from threading import Condition
 from data.alert import AlertType
 from data.alert import NotificationType
 from data.alert import Condition
-#from alerts.alert_utils import normalize_alert_fields
+from core.logging import log
 
 
 

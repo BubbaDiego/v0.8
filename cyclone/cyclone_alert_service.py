@@ -179,14 +179,14 @@ class CycloneAlertService:
     async def enrich_all_alerts(self):
         alerts = self.data_locker.alerts.get_all_alerts()
         if not alerts:
-            log.warning("⚠️ No alerts found to enrich", source="CycloneAlertService")
+            logger.warning("⚠️ No alerts found to enrich", source="CycloneAlertService")
             return []
 
         alerts = [normalize_alert_fields(a) for a in alerts]
         logger.info(f"🔬 Enriching {len(alerts)} alerts", source="CycloneAlertService")
 
         enriched = await self.enrichment_service.enrich_all(alerts)
-        log.success(f"✅ Enriched {len(enriched)} alerts", source="CycloneAlertService")
+        logger.success(f"✅ Enriched {len(enriched)} alerts", source="CycloneAlertService")
         return enriched
 
     async def run_alert_evaluation(self):
@@ -209,7 +209,7 @@ class CycloneAlertService:
             try:
                 if alert.get("evaluated_value") is None:
                     skipped += 1
-                    log.warning(f"⚠️ Alert {alert['id'][:6]} missing evaluated_value, skipping",
+                    logger.warning(f"⚠️ Alert {alert['id'][:6]} missing evaluated_value, skipping",
                                 source="CycloneAlertService")
                     continue
 
@@ -232,7 +232,7 @@ class CycloneAlertService:
     async def update_evaluated_values(self):
         alerts = self.data_locker.alerts.get_all_alerts()
         if not alerts:
-            log.warning("⚠️ No alerts found to evaluate", source="CycloneAlertService")
+            logger.warning("⚠️ No alerts found to evaluate", source="CycloneAlertService")
             return
 
         updated = 0
