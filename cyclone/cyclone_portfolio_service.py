@@ -57,7 +57,8 @@ class CyclonePortfolioService:
                     "position_type": "N/A"  # 🔥 add this to prevent DB crash if column is NOT NULL
                 }
 
-                success = self.dl.create_alert(alert)
+
+                success = self.dl.alerts.create_alert(alert)
                 if success:
                     log_alert_summary(alert)
                     created += 1
