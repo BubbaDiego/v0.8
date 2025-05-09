@@ -6,7 +6,7 @@ import asyncio
 from flask import current_app
 
 from flask import Blueprint, jsonify, render_template
-from alerts.alert_service_manager import AlertServiceManager
+#from alerts.alert_service_manager import AlertServiceManager
 #from dashboard.dashboard_view_model import DashboardViewModel
 from data.data_locker import DataLocker
 

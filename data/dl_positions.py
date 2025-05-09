@@ -115,3 +115,64 @@ class DLPositionManager:
         except Exception as e:
             log.error(f"❌ Failed to record position snapshot: {e}", source="DataLocker")
             raise
+
+    def initialize_schema(db):
+        cursor = db.get_cursor()
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS positions (
+            id TEXT PRIMARY KEY,
+            asset_type TEXT,
+            entry_price REAL,
+            liquidation_price REAL,
+            position_type TEXT,
+            wallet_name TEXT,
+            current_heat_index REAL,
+            pnl_after_fees_usd REAL,
+            travel_percent REAL,
+            liquidation_distance REAL
+        )""")
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS alerts (
+            id TEXT PRIMARY KEY,
+            created_at TEXT,
+            alert_type TEXT,
+            alert_class TEXT,
+            asset TEXT,
+            asset_type TEXT,
+            trigger_value REAL,
+            condition TEXT,
+            notification_type TEXT,
+            level TEXT,
+            last_triggered TEXT,
+            status TEXT,
+            frequency INTEGER,
+            counter INTEGER,
+            liquidation_distance REAL,
+            travel_percent REAL,
+            liquidation_price REAL,
+            notes TEXT,
+            description TEXT,
+            position_reference_id TEXT,
+            evaluated_value REAL,
+            position_type TEXT
+        )""")
+        db.commit()
+
+    def insert_position(self, position: dict):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                INSERT INTO positions (
+                    id, asset_type, entry_price, liquidation_price,
+                    position_type, wallet_name, current_heat_index,
+                    pnl_after_fees_usd, travel_percent, liquidation_distance
+                ) VALUES (
+                    :id, :asset_type, :entry_price, :liquidation_price,
+                    :position_type, :wallet_name, :current_heat_index,
+                    :pnl_after_fees_usd, :travel_percent, :liquidation_distance
+                )
+            """, position)
+            self.db.commit()
+            log.success(f"✅ Position inserted for test: {position['id']}", source="DLPositionManager")
+        except Exception as e:
+            log.error(f"❌ Failed to insert test position: {e}", source="DLPositionManager")

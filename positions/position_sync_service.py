@@ -1,16 +1,13 @@
+from datetime import datetime
+import requests
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import requests
-from datetime import datetime
 from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
-from core.constants import DB_PATH
 from utils.calc_services import CalcServices
-
-#from positions.hedge
-
 
 class PositionSyncService:
     def __init__(self, data_locker):
@@ -23,10 +20,13 @@ class PositionSyncService:
     }
 
     def run_full_jupiter_sync(self, source="user") -> dict:
+
+       # now = datetime.now()
+
         from positions.hedge_manager import HedgeManager  # if needed
 
         try:
-            deleted = self.dl.positions.delete_all_positions()
+          #  deleted = self.dl.positions.delete_all_positions()
 
             result = self.update_jupiter_positions()
             if "error" in result:

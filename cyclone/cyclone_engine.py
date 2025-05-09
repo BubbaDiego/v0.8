@@ -6,18 +6,14 @@ import logging
 from datetime import datetime
 from uuid import uuid4
 from monitor.price_monitor import PriceMonitor
-from alerts.alert_service_manager import AlertServiceManager
+from alerts.alert_core import AlertCore #alert_service_manager import AlertServiceManager
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
 from core.logging import log
 from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from config.config_loader import load_config
-
-from cyclone.cyclone_position_service import CyclonePositionService
-from cyclone.cyclone_portfolio_service import CyclonePortfolioService
-from cyclone.cyclone_alert_service import CycloneAlertService
-from cyclone.cyclone_hedge_service import CycloneHedgeService
-
-from data.data_locker import DataLocker
-from core.constants import DB_PATH
+from alerts.alert_core import AlertCore
+from positions.position_core import PositionCore
 
 global_data_locker = DataLocker(str(DB_PATH))  # There can be only one
 
@@ -68,16 +64,12 @@ class Cyclone:
         log.info("Initializing Cyclone engine...", source="Cyclone")
 
         self.data_locker = global_data_locker
-
-       # self.data_locker = DataLocker(str(DB_PATH))
         self.price_monitor = PriceMonitor()
-        self.alert_manager = AlertServiceManager.get_instance()
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
-        self.portfolio_runner = CyclonePortfolioService(self.data_locker)
-        self.position_runner = CyclonePositionService(self.data_locker)
-        self.alert_runner = CycloneAlertService(self.data_locker)
-        self.hedge_runner = CycloneHedgeService(self.data_locker)
+        self.position_core = PositionCore(self.data_locker)
+
+        self.alert_core = AlertCore(self.data_locker, lambda: self.config)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
 
@@ -90,7 +82,7 @@ class Cyclone:
             log.error(f"📉Market Updates failed 💥💥💥💥💥💥: {e}", source="Cyclone")
 
     async def run_composite_position_pipeline(self):
-        await asyncio.to_thread(self.position_runner.update_positions_from_jupiter)
+        await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
 
     def clear_prices_backend(self):
         try:
@@ -212,7 +204,7 @@ class Cyclone:
 
     def run_debug_position_update(self):
         print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
-        self.position_runner.update_positions_from_jupiter()
+        self.position_core.update_positions_from_jupiter()
 
     async def run_cycle(self, steps=None):
         available_steps = {
@@ -243,28 +235,29 @@ class Cyclone:
         asyncio.run(self.run_clear_all_data())
 
     async def run_create_position_alerts(self):
-        await self.position_runner.create_position_alerts()
+        await self.position_core.create_position_alerts()
 
     async def run_create_portfolio_alerts(self):
         await self.portfolio_runner.create_portfolio_alerts()
 
     async def run_link_hedges(self):
-        await self.hedge_runner.link_hedges()
+        self.position_core.link_hedges()
 
     async def run_update_hedges(self):
-        await self.hedge_runner.update_hedges()
+        await self.position_core.update_hedges()
 
     async def run_alert_evaluation(self):
-        await self.alert_runner.run_alert_evaluation()
+        await self.alert_core.run_alert_evaluation()
 
     async def run_create_position_alerts(self):
-        await self.alert_runner.create_position_alerts()
+        await self.alert_core.create_position_alerts()
 
     async def run_create_portfolio_alerts(self):
-        await self.alert_runner.create_portfolio_alerts()
+        await self.alert_core.create_portfolio_alerts()
 
     async def run_create_global_alerts(self):
-        await self.alert_runner.create_global_alerts()
+        #await self.alert_core.create_global_alerts()
+        log.success("Global Alerts PlLace Holder", source="Cyclone")
 
     def clear_alerts_backend(self):
         self.data_locker.alerts.clear_all_alerts()
@@ -272,26 +265,28 @@ class Cyclone:
 
     async def run_cleanse_ids(self):
         log.info("🧹 Running cleanse_ids: clearing stale alerts", source="Cyclone")
-        self.alert_manager.clear_stale_alerts()
+        self.alert_core.clear_stale_alerts()
         log.success("✅ Alert IDs cleansed", source="Cyclone")
 
     async def run_enrich_positions(self):
-        await self.position_runner.enrich_positions()
+        await self.position_core.enrich_positions()
         log.success("✅ Position enrichment complete", source="Cyclone")
 
     async def run_alert_enrichment(self):
-        await self.alert_runner.enrich_all_alerts()
+        await self.alert_core.enrich_all_alerts()
         log.success("✅ Alert enrichment complete", source="Cyclone")
 
     async def run_update_evaluated_value(self):
-        await self.alert_runner.update_evaluated_values()
+        await self.alert_core.update_evaluated_values()
         log.success("✅ Evaluated alert values updated", source="Cyclone")
+
+
 
 
 if __name__ == "__main__":
     configure_cyclone_console_log()
 
-    from cyclone.cyclone_console_service import CycloneConsoleService
+#    from cyclone.cyclone_console_service import CycloneConsoleService
     cyclone = Cyclone(poll_interval=60)
     helper = CycloneConsoleService(cyclone)
     helper.run()

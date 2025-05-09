@@ -66,18 +66,19 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
             return SystemVariables()
 
     def set_last_update_times(self, updates: dict):
-        try:
-            cursor = self.db.get_cursor()
-            cursor.execute("""
-                UPDATE system_vars SET
-                    last_update_time_positions = :last_update_time_positions,
-                    last_update_positions_source = :last_update_positions_source,
-                    last_update_time_prices = :last_update_time_prices,
-                    last_update_prices_source = :last_update_prices_source,
-                    last_update_time_jupiter = :last_update_time_jupiter
-                WHERE id = 1
-            """, updates)
-            self.db.commit()
-            log.success("System update times saved", source="DLSystemDataManager")
-        except Exception as e:
-            log.error(f"Error setting system update times: {e}", source="DLSystemDataManager")
+        updates.setdefault("last_update_time_jupiter", datetime.now().isoformat())
+        updates.setdefault("last_update_jupiter_source", "sync_engine")
+
+        cursor = self.db.get_cursor()
+        cursor.execute("""
+            UPDATE system_vars
+               SET last_update_time_positions = :last_update_time_positions,
+                   last_update_positions_source = :last_update_positions_source,
+                   last_update_time_prices = :last_update_time_prices,
+                   last_update_prices_source = :last_update_prices_source,
+                   last_update_time_jupiter = :last_update_time_jupiter,
+                   last_update_jupiter_source = :last_update_jupiter_source
+             WHERE id = 1
+        """, updates)
+        self.db.commit()
+        cursor.close()

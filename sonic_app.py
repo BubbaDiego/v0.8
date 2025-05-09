@@ -18,7 +18,7 @@ from core.core_imports import log, configure_console_log, DB_PATH, CONFIG_PATH, 
 
 #from twilio_message_api import trigger_twilio_flow
 from positions.positions_bp import update_jupiter
-from alerts.alert_service_manager import AlertServiceManager
+#from alerts.alert_service_manager import AlertServiceManager
 
 from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp

@@ -1,6 +1,7 @@
 # cyclone/cyclone_hedge_service.py
 
-from sonic_labs.hedge_manager import HedgeManager
+#from sonic_labs.hedge_manager import HedgeManager
+from positions.position_core import PositionCore
 from data.data_locker import DataLocker
 from core.core_imports import DB_PATH, log
 
