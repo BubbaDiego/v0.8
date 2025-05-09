@@ -176,3 +176,9 @@ class DLPositionManager:
             log.success(f"✅ Position inserted for test: {position['id']}", source="DLPositionManager")
         except Exception as e:
             log.error(f"❌ Failed to insert test position: {e}", source="DLPositionManager")
+
+    def get_position_by_id(self, pos_id: str):
+        cursor = self.db.get_cursor()
+        cursor.execute("SELECT * FROM positions WHERE id = ?", (pos_id,))
+        row = cursor.fetchone()
+        return dict(row) if row else None

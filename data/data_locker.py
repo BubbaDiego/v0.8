@@ -72,3 +72,8 @@ class DataLocker:
         }
         self.prices.insert_price(price_data)
 
+    def get_position_by_reference_id(self, pos_id: str):
+        return self.positions.get_position_by_id(pos_id)
+
+    def get_wallet_by_name(self, wallet_name: str):
+        return self.wallets.get_wallet_by_name(wallet_name)

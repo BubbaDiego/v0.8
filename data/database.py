@@ -10,7 +10,10 @@ class DatabaseManager:
 
     def connect(self):
         if self.conn is None:
-            os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+            dir_name = os.path.dirname(self.db_path)
+            if dir_name and dir_name.strip() != "":
+                os.makedirs(dir_name, exist_ok=True)
+
             self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
             self.conn.row_factory = sqlite3.Row
             self.conn.execute("PRAGMA journal_mode=WAL;")
