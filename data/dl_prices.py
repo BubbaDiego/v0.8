@@ -1,16 +1,4 @@
 # dl_prices.py
-"""
-Author: BubbaDiego
-Module: DLPriceManager
-Description:
-    Handles CRUD operations for price data stored in the SQLite database.
-    Supports insertion and retrieval of latest price entries for specific assets.
-
-Dependencies:
-    - DatabaseManager from database.py
-    - ConsoleLogger from console_logger.py
-"""
-
 from uuid import uuid4
 from datetime import datetime
 from core.core_imports import log
@@ -53,19 +41,12 @@ class DLPriceManager:
                 LIMIT 1
             """, (asset_type,))
             row = cursor.fetchone()
-            if row:
-                log.debug(f"Latest price fetched for {asset_type}", source="DLPriceManager")
-            else:
-                log.warning(f"No price data found for {asset_type}", source="DLPriceManager")
             return dict(row) if row else {}
         except Exception as e:
             log.error(f"Error retrieving price for {asset_type}: {e}", source="DLPriceManager")
             return {}
 
     def get_all_prices(self) -> list:
-        """
-        Returns a list of all price entries in the database.
-        """
         try:
             cursor = self.db.get_cursor()
             cursor.execute("SELECT * FROM prices ORDER BY last_update_time DESC")
@@ -74,4 +55,13 @@ class DLPriceManager:
         except Exception as e:
             log.error(f"Failed to retrieve all prices: {e}", source="DLPriceManager")
             return []
+
+    def clear_prices(self):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("DELETE FROM prices")
+            self.db.commit()
+            log.warning("🧹 All price entries cleared.", source="DLPriceManager")
+        except Exception as e:
+            log.error(f"Failed to clear prices: {e}", source="DLPriceManager")
 

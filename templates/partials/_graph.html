@@ -1,7 +1,17 @@
-{# dashboard/templates/partials/_graph.html #}
-
 <div class="common-box light-mode graph-box" id="graphBox">
   <div id="graphChart" style="height: 300px; position: relative;">
     <div id="graphLoader" class="spinner"></div>
+  </div>
+</div>
+
+<!-- 🥧 PIE CHARTS: Size and Collateral -->
+<div class="common-box light-mode pie-chart-container">
+  <div class="pie-wrapper">
+    <div id="pieChartSize" class="pie-chart-box">
+      <div id="pieSizeLoader" class="spinner"></div>
+    </div>
+    <div id="pieChartCollateral" class="pie-chart-box">
+      <div id="pieCollateralLoader" class="spinner"></div>
+    </div>
   </div>
 </div>

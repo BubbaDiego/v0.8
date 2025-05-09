@@ -15,7 +15,7 @@ from datetime import datetime
 from uuid import uuid4
 from data.models import Position, Hedge
 from data.data_locker import DataLocker
-from core.core_imports import DB_PATH, get_locker, log
+from core.core_imports import DB_PATH, log
 
 
 class HedgeManager:

@@ -18,12 +18,12 @@ import sqlite3
 import asyncio
 from datetime import datetime, timedelta
 
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
 
 # Import configuration constants and modules
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
-from core.core_imports import CONFIG_PATH, DB_PATH, get_locker, retry_on_locked
+from core.core_imports import CONFIG_PATH, DB_PATH, retry_on_locked
 
 
 # ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ def _get_top_prices_for_assets(db_path, assets):
     """
     Retrieve the latest price for each asset.
     """
-    dl = get_locker()
+    dl = current_app.data_locker
     top_prices = []
     for asset in assets:
         row = dl.prices.get_latest_price(asset)
@@ -200,7 +200,7 @@ def prices_data_api():
       - Full price list (top prices)
     """
     try:
-        dl = get_locker()
+        dl = current_app.data_locker
         mini_prices = []
         for asset in ASSETS_LIST:
             row = dl.prices.get_latest_price(asset)

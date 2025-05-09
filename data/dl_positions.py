@@ -22,12 +22,8 @@ class DLPositionManager:
 
     def create_position(self, position: dict):
         try:
-            if "id" not in position:
-                position["id"] = str(uuid4())
-            if "last_updated" not in position:
-                position["last_updated"] = datetime.now().isoformat()
-
             cursor = self.db.get_cursor()
+
             cursor.execute("""
                 INSERT INTO positions (
                     id, asset_type, position_type, entry_price,
@@ -45,9 +41,12 @@ class DLPositionManager:
             """, position)
 
             self.db.commit()
-            log.success(f"Created position {position['id']} for {position['asset_type']}", source="DLPositionManager")
+
+            log.success(f"💾 Position INSERTED: {position['id']}", source="DLPositionManager")
+            log.debug(f"📂 DB path in use: {self.db.db_path}", source="DLPositionManager")
+
         except Exception as e:
-            log.error(f"Failed to create position: {e}", source="DLPositionManager")
+            log.error(f"❌ Failed to insert position {position.get('id')}: {e}", source="DLPositionManager")
 
     def get_all_positions(self) -> list:
         try:

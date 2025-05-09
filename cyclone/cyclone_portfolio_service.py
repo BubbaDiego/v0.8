@@ -10,8 +10,8 @@ from core.core_imports import DB_PATH, log
 
 
 class CyclonePortfolioService:
-    def __init__(self):
-        self.data_locker = DataLocker(str(DB_PATH))
+    def __init__(self, data_locker):
+        self.dl = data_locker
 
     async def create_portfolio_alerts(self):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

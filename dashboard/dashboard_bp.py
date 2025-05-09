@@ -6,24 +6,22 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, current_app
 from data.data_locker import DataLocker
-from positions.position_service import PositionService
-#from monitor.price_ledger import PriceLedger
-#from monitor.position_ledger import PositionLedger
-#from monitor.sonic_ledger import SonicLedger
-#from monitor.ledger_reader import get_ledger_age_seconds
+#from positions.position_sync_service import PositionSyncService
+from positions.position_core_service import PositionCoreService
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dashboard.dashboard_service import get_dashboard_context
 from utils.fuzzy_wuzzy import fuzzy_match_key
-
-
-
 from core.constants import THEME_CONFIG_PATH
+from core.logging import log
+from dashboard.dashboard_service import get_dashboard_context
+#from sonic_app import global_data_locker
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
+
 
 
 
@@ -37,23 +35,36 @@ DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
 
 
-# ---------------------------------
-# Database Viewer
-# ---------------------------------
 @dashboard_bp.route("/database_viewer")
 def database_viewer():
-    dl = get_locker()
-    datasets = dl.get_all_tables_as_dict()
-    return render_template('database_viewer.html', datasets=datasets)
+
+    try:
+        datasets = dl.get_all_tables_as_dict()
+
+        log.info(f"🧠 Tables returned from DB: {list(datasets.keys())}", source="DatabaseViewer")
+        if 'positions' in datasets:
+            log.success(f"✅ {len(datasets['positions'])} positions loaded into viewer", source="DatabaseViewer")
+        else:
+            log.warning(f"⚠️ 'positions' table missing in viewer datasets", source="DatabaseViewer")
+
+        return render_template("database_viewer.html", datasets=datasets)
+
+    except Exception as e:
+        log.error(f"❌ Error loading tables: {e}", source="DatabaseViewer")
+        return render_template("database_viewer.html", datasets={})
+
+
 
 # ---------------------------------
 # Theme Setup Page
 # ---------------------------------
 @dashboard_bp.route("/theme_setup")
 def theme_setup():
-    dl = get_locker()
+    from flask import current_app
+    dl = current_app.data_locker
     theme_data = dl.load_theme_data()
     return render_template('theme_setup.html', theme=theme_data)
+
 
 # ---------------------------------
 # Save Theme Settings
@@ -74,9 +85,10 @@ def save_theme():
 
 @dashboard_bp.route("/api/get_prices")
 def get_prices():
+    from flask import current_app
     try:
-        dl = get_locker()
-        prices = dl.get_price_dict()  # Make sure this returns a dict with BTC/ETH/SOL keys
+        dl = current_app.data_locker
+        prices = dl.get_price_dict()
         return jsonify({
             "BTC": prices.get("BTC"),
             "ETH": prices.get("ETH"),
@@ -84,6 +96,7 @@ def get_prices():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 # ---------------------------------
@@ -148,11 +161,12 @@ def apply_color(metric_name, value, limits):
         print(f"[apply_color ERROR] Metric: {metric_name}, Value: {value}, Error: {e}")
         return "red"
 
-@dashboard_bp.route("/dash", endpoint="dash_page")
+@dashboard_bp.route("/dash")
 def dash_page():
-    context = get_dashboard_context()
+    from dashboard.dashboard_service import get_dashboard_context
+    context = get_dashboard_context(current_app.data_locker)
+    dl = current_app.data_locker
     return render_template("dashboard.html", **context)
-     #return render_template("dashboard.html", **context)
 
 
 
@@ -166,7 +180,7 @@ def alert_config_page():
 # ---------------------------------
 @dashboard_bp.route("/api/graph_data")
 def api_graph_data():
-    dl = get_locker()
+    dl = current_app.data_locker
     portfolio_history = dl.portfolio.get_snapshots() or []
     timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
     values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
@@ -181,7 +195,10 @@ def api_graph_data():
 @dashboard_bp.route("/api/size_composition")
 def api_size_composition():
     try:
-        positions = PositionService.get_all_positions(DB_PATH) or []
+        core = PositionCoreService(current_app.data_locker)
+        positions = core.get_all_positions() or []
+
+        #positions = PositionCoreService.get_all_positions() or []
 
         long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
         short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
@@ -206,7 +223,8 @@ def api_size_composition():
 @dashboard_bp.route("/api/collateral_composition")
 def api_collateral_composition():
     try:
-        positions = PositionService.get_all_positions(DB_PATH) or []
+        core = PositionCoreService(current_app.data_locker)
+        positions = core.get_all_positions() or []
 
         long_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
         short_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
@@ -235,16 +253,6 @@ def api_ledger_ages():
         "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
         "last_cyclone_time": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
     })
-
-
-
-
-# ---------------------------------
-# API: Get Alert Limits (for title bar timers)
-# ---------------------------------
-import json
-from core.core_imports import DB_PATH, get_locker
-
 
 
 @dashboard_bp.route("/get_alert_limits")

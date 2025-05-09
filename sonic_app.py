@@ -14,9 +14,8 @@ import asyncio
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO
 
-from core.core_imports import log, configure_console_log, get_locker, DB_PATH, CONFIG_PATH, BASE_DIR, retry_on_locked, JsonManager
-#from utils.unified_config_manager import UnifiedConfigManager
-#from utils.unified_logger import UnifiedLogger
+from core.core_imports import log, configure_console_log, DB_PATH, CONFIG_PATH, BASE_DIR, retry_on_locked, JsonManager
+
 #from twilio_message_api import trigger_twilio_flow
 from positions.positions_bp import update_jupiter
 from alerts.alert_service_manager import AlertServiceManager
@@ -31,13 +30,22 @@ from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
 from wallets.wallets_bp import wallet_bp
 
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
+
 # --- Flask Setup ---
 app = Flask(__name__)
 app.debug = False
 app.secret_key = "i-like-lamp"
 socketio = SocketIO(app)
 
+
+global_data_locker = DataLocker(str(DB_PATH))  # SINGLE SOURCE OF TRUTH
+app.data_locker = global_data_locker
+
 log.banner("SONIC DASHBOARD STARTUP")
+
+
 
 # --- Register Blueprints ---
 log.info("Registering blueprints...", source="Startup")
@@ -54,6 +62,9 @@ app.register_blueprint(wallet_bp)
 app.json_manager = JsonManager(logger=log)
 configure_console_log()
 
+
+
+
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 
@@ -61,12 +72,15 @@ if "dashboard.index" in app.view_functions:
 @app.route("/")
 @retry_on_locked()
 def index():
+    dl = global_data_locker
+    log.info(f"📂 DB path in use: {dl.db.db_path}", source="DBPath")
+
     return redirect(url_for('dashboard.dash_page'))
 
 
 @app.route("/assets")
 def assets():
-    dl = get_locker()
+    dl = global_data_locker
     balances = dl.system.get_strategy_performance_data()
     brokers = dl.brokers.read_brokers()
     wallets = dl.wallets.get_wallets()
@@ -76,7 +90,7 @@ def assets():
 @app.route("/add_wallet", methods=["POST"])
 def add_wallet():
     try:
-        dl = get_locker()
+        dl = global_data_locker
         balance_value = float(request.form.get("balance", "0") or 0.0)
         wallet = {
             "name": request.form.get("name"),
@@ -97,7 +111,7 @@ def add_wallet():
 @app.route("/delete_wallet/<wallet_name>", methods=["POST"])
 def delete_wallet(wallet_name):
     try:
-        dl = get_locker()
+        dl = global_data_locker
         wallet = dl.wallets.get_wallet_by_name(wallet_name)
         if wallet:
             with dl.db.get_cursor() as cursor:
@@ -133,7 +147,7 @@ def api_update_row():
         pk_value = data.get('pk_value')
         row_data = data.get('row')
 
-        dl = get_locker()
+        dl = global_data_locker
 
         if table == 'wallets':
             dl.wallets.update_wallet(pk_value, row_data)
@@ -153,7 +167,7 @@ def api_delete_row():
         table = data.get('table')
         pk_value = data.get('pk_value')
 
-        dl = get_locker()
+        dl = global_data_locker
 
         if table == 'wallets':
             return jsonify({"error": "Wallet deletion is disabled"}), 400
@@ -168,7 +182,7 @@ def api_delete_row():
 
 @app.route("/system_config", methods=["GET"])
 def system_config_page():
-    dl = get_locker()
+    dl = global_data_locker
     db_conn = dl.db.connect()
     config_manager = UnifiedConfigManager(CONFIG_PATH, db_conn=db_conn)
     config = config_manager.load_config()
@@ -177,7 +191,7 @@ def system_config_page():
 
 @app.route("/update_system_config", methods=["POST"])
 def update_system_config():
-    dl = get_locker()
+    dl = global_data_locker
     db_conn = dl.db.connect()
     config_manager = UnifiedConfigManager(CONFIG_PATH, db_conn=db_conn)
     new_config = {

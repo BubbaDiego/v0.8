@@ -1,4 +1,7 @@
 # cyclone_position_service.py
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -6,7 +9,8 @@ import asyncio
 import os
 
 from data.data_locker import DataLocker
-from positions.position_service import PositionService
+from positions.position_core_service import PositionCoreService
+from positions.position_sync_service import PositionSyncService
 from monitor.monitor_utils import LedgerWriter
 from data.alert import AlertType, Condition
 from alerts.alert_utils import log_alert_summary
@@ -23,23 +27,19 @@ def validate_position_service_source():
 
 
 class CyclonePositionService:
-    def __init__(self):
-        self.dl = DataLocker(str(DB_PATH))
+    def __init__(self, data_locker):
+        self.dl = data_locker
 
-    async def update_positions_from_jupiter(self):
+    def update_positions_from_jupiter(self):
+        from positions.position_sync_service import PositionSyncService
+
         print("🛰️ [TRACE] CyclonePositionService.update_positions_from_jupiter() CALLED")
 
-        from positions.position_service import PositionService
-        import inspect
-
-        print("📂 [DEBUG] PositionService imported from:", inspect.getfile(PositionService))
-        print("🔍 Has method update_jupiter_positions:", hasattr(PositionService, "update_jupiter_positions"))
-
-        if hasattr(PositionService, "update_jupiter_positions"):
-            result = PositionService.update_jupiter_positions()
-            print("✅ CALL SUCCEEDED — Result:", result)
-        else:
-            print("❌ PositionService.update_jupiter_positions() not defined or broken.")
+        try:
+            sync_service = PositionSyncService(self.dl)
+            sync_service.update_jupiter_positions()
+        except Exception as e:
+            print(f"❌ ERROR while calling update_jupiter_positions: {e}")
 
     async def enrich_positions(self):
         log.info("✨ Starting Position Enrichment", source="CyclonePosition")

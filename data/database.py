@@ -20,7 +20,7 @@ class DatabaseManager:
         return self.connect().cursor()
 
     def commit(self):
-        self.db.commit()
+        self.connect().commit()
 
     def close(self):
         if self.conn:

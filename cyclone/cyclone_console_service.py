@@ -12,10 +12,10 @@ from cyclone.cyclone_hedge_service import CycloneHedgeService
 class CycloneConsoleService:
     def __init__(self, cyclone_instance):
         self.cyclone = cyclone_instance
-        self.position_service = CyclonePositionService()
-        self.portfolio_service = CyclonePortfolioService()
-        self.alert_service = CycloneAlertService()
-        self.hedge_service = CycloneHedgeService()
+        self.position_service = CyclonePositionService(cyclone_instance.data_locker)
+        self.portfolio_service = CyclonePortfolioService(cyclone_instance.data_locker)
+        self.alert_service = CycloneAlertService(cyclone_instance.data_locker)
+        self.hedge_service = CycloneHedgeService(cyclone_instance.data_locker)
 
     def run(self):
         while True:
@@ -164,10 +164,10 @@ class CycloneConsoleService:
             elif choice == "2":
                 print("Running Position Updates...")
                 # Replace this:
-              #  asyncio.run(self.cyclone.run_cycle(steps=["position"]))
+                asyncio.run(self.cyclone.run_cycle(steps=["position"]))
 
                 # With:
-                asyncio.run(self.cyclone.run_debug_position_update())
+                #asyncio.run(self.cyclone.run_debug_position_update())
                 print("Position Updates completed.")
             elif choice == "3":
                 print("Running Enrich Positions...")
@@ -427,8 +427,19 @@ class CycloneConsoleService:
         self.paginate_items(prices, self.view_price_details, title="Latest Prices")
 
     def view_positions_backend(self):
+        print("👁 [DEBUG] Viewer using DB path:", self.cyclone.data_locker.db.db_path)
+
         positions = self.cyclone.data_locker.positions.get_all_positions()
+
+        if not positions:
+            print("⚠️ No positions found in DB.")
+        else:
+            print(f"🧾 DEBUG: Pulled {len(positions)} positions from DB:")
+            for pos in positions:
+                print(f"  ➤ {pos.get('id')} — {pos.get('asset_type')} — {pos.get('wallet_name')}")
+
         self.paginate_items(positions, self.view_position_details, title="Open Positions")
+
 
     def view_alerts_backend(self):
         alerts = self.cyclone.data_locker.alerts.get_all_alerts()
@@ -440,5 +451,5 @@ if __name__ == "__main__":
 
     from core.core_imports import get_locker
     cyclone = Cyclone(poll_interval=60)
-    helper = CycloneConsoleHelper(cyclone)
+    helper = CycloneConsoleService(cyclone)
     helper.run()

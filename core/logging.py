@@ -12,7 +12,7 @@ def configure_console_log():
     """
     log.hijack_logger("werkzeug")
     log.silence_module("werkzeug")
-    log.silence_module("fuzzy_wuzzy")
+    #log.silence_module("fuzzy_wuzzy")
     log.silence_module("flask")
     log.silence_module("calc_services")
 

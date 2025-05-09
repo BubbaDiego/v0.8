@@ -6,7 +6,8 @@ from core.core_imports import DB_PATH, log
 
 
 class CycloneHedgeService:
-    def __init__(self):
+    def __init__(self, data_locker):
+        self.dl = data_locker
         self.data_locker = DataLocker(str(DB_PATH))
 
 

@@ -12,7 +12,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import uuid
 from data.data_locker import DataLocker
-from core.core_imports import get_locker, retry_on_locked
+from core.core_imports import retry_on_locked
 
 portfolio_bp = Blueprint("portfolio", __name__, url_prefix="/portfolio", template_folder="templates")
 

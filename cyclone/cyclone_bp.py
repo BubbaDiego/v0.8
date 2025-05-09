@@ -1,23 +1,32 @@
 import asyncio
-import logging
 import os
-import threading
 from flask import Blueprint, jsonify, render_template, current_app
 from cyclone.cyclone_engine import Cyclone
-from core.core_imports import BASE_DIR
+from core.core_imports import BASE_DIR, log
+from threading import Thread
+import inspect
 
-# --- Setup Blueprint ---
 cyclone_bp = Blueprint("cyclone", __name__, template_folder=".", url_prefix="/cyclone")
-logger = logging.getLogger("CycloneBlueprint")
-logger.setLevel(logging.INFO)
 
-# --- Helper functions ---
-
-def run_in_background(coro_func):
+# --- Smart Background Runner ---
+def run_in_background(task_func, name="UnnamedTask"):
     def wrapper():
-        asyncio.run(coro_func())
-    thread = threading.Thread(target=wrapper)
-    thread.start()
+        try:
+            log.info(f"🧵 Starting background task: {name}", source="AsyncRunner")
+
+            if inspect.iscoroutinefunction(task_func):
+                asyncio.run(task_func())
+            else:
+                result = task_func()
+                if inspect.iscoroutine(result):
+                    asyncio.run(result)
+
+            log.success(f"✅ Completed background task: {name}", source="AsyncRunner")
+
+        except Exception as e:
+            log.error(f"🔥 Task '{name}' crashed: {e}", source="AsyncRunner")
+
+    Thread(target=wrapper, name=name).start()
 
 # --- Dashboard View (Optional) ---
 @cyclone_bp.route("/dashboard", methods=["GET"])
@@ -25,68 +34,67 @@ def cyclone_dashboard():
     return render_template("cyclone.html")
 
 # --- API Endpoints ---
-
 @cyclone_bp.route("/run_market_updates", methods=["POST"])
 def run_market_updates():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_market_updates())
+        run_in_background(lambda: asyncio.run(Cyclone().run_market_updates()), name="MarketUpdate")
         return jsonify({"message": "Market Updates Started."}), 202
     except Exception as e:
-        logger.error(f"Market Updates Error: {e}")
+        log.error(f"Market Updates Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/run_position_updates", methods=["POST"])
 def run_position_updates():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone(poll_interval=60).position_runner.update_positions_from_jupiter()))
+        run_in_background(lambda: Cyclone().position_runner.update_positions_from_jupiter(), name="JupiterUpdate")
         return jsonify({"message": "Position Updates Started."}), 202
     except Exception as e:
-        logger.error(f"Position Updates Error: {e}")
+        log.error(f"Position Updates Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/run_dependent_updates", methods=["POST"])
 def run_dependent_updates():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_enrich_positions())
+        run_in_background(lambda: asyncio.run(Cyclone().run_enrich_positions()), name="DependentUpdate")
         return jsonify({"message": "Dependent Updates Started."}), 202
     except Exception as e:
-        logger.error(f"Dependent Updates Error: {e}")
+        log.error(f"Dependent Updates Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/run_alert_evaluations", methods=["POST"])
 def run_alert_evaluations():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_alert_updates())
+        run_in_background(lambda: asyncio.run(Cyclone().run_alert_updates()), name="AlertEval")
         return jsonify({"message": "Alert Evaluations Started."}), 202
     except Exception as e:
-        logger.error(f"Alert Evaluations Error: {e}")
+        log.error(f"Alert Evaluations Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/run_system_updates", methods=["POST"])
 def run_system_updates():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_system_updates())
+        run_in_background(lambda: asyncio.run(Cyclone().run_system_updates()), name="SystemUpdate")
         return jsonify({"message": "System Updates Started."}), 202
     except Exception as e:
-        logger.error(f"System Updates Error: {e}")
+        log.error(f"System Updates Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/run_full_cycle", methods=["POST"])
 def run_full_cycle():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_cycle())
+        run_in_background(lambda: asyncio.run(Cyclone().run_cycle()), name="FullCycle")
         return jsonify({"message": "Full Cycle Started."}), 202
     except Exception as e:
-        logger.error(f"Full Cycle Error: {e}")
+        log.error(f"Full Cycle Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/clear_all_data", methods=["POST"])
 def clear_all_data():
     try:
-        run_in_background(lambda: Cyclone(poll_interval=60).run_clear_all_data())
+        run_in_background(lambda: asyncio.run(Cyclone().run_clear_all_data()), name="ClearAllData")
         return jsonify({"message": "Clear All Data Started."}), 202
     except Exception as e:
-        logger.error(f"Clear All Data Error: {e}")
+        log.error(f"Clear All Data Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
 @cyclone_bp.route("/cyclone_logs", methods=["GET"])

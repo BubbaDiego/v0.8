@@ -3,7 +3,8 @@
 
 from flask import Blueprint, render_template, jsonify, current_app, request
 import json
-from positions.position_service import PositionService
+from positions.position_sync_service import PositionSyncService
+from positions.position_core_service import PositionCoreService
 from core.constants import THEME_CONFIG_PATH
 from utils.json_manager import JsonType
 from core.core_imports import DB_PATH, retry_on_locked

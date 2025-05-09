@@ -5,7 +5,8 @@ from core.core_imports import log
 
 
 class CycloneAlertService:
-    def __init__(self):
+    def __init__(self, data_locker):
+        self.dl = data_locker
         self.alert_service = AlertServiceManager.get_instance()
 
     async def enrich_all_alerts(self):

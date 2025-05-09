@@ -5,15 +5,11 @@ import asyncio
 import logging
 from datetime import datetime
 from uuid import uuid4
-
-from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
 from alerts.alert_service_manager import AlertServiceManager
-from core.logging import log  # 🔁 Updated logging import
+from core.logging import log
 from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from config.config_loader import load_config
-from data.data_locker import DataLocker
-
 
 from cyclone.cyclone_position_service import CyclonePositionService
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService
@@ -21,20 +17,38 @@ from cyclone.cyclone_alert_service import CycloneAlertService
 from cyclone.cyclone_hedge_service import CycloneHedgeService
 
 
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
+
+global_data_locker = DataLocker(str(DB_PATH))  # SINGLE SOURCE OF TRUTH
 
 
 def configure_cyclone_console_log():
     """
     🧠 Centralized Cyclone Console Log Config
-
-    Enables grouped filtering and sets initial silence/enable flags.
+    Enables all core modules for debugging.
     """
     log.silence_module("werkzeug")
     log.silence_module("fuzzy_wuzzy")
+
     log.assign_group("cyclone_core", [
-        "cyclone_engine", "Cyclone", "CycloneHedgeService",
-        "CyclonePortfolioService", "CycloneAlertService", "CyclonePositionService"
+        # Core engine & service modules
+        "cyclone_engine", "Cyclone",
+        "CycloneHedgeService", "CyclonePortfolioService",
+        "CycloneAlertService", "CyclonePositionService",
+
+        # Deep services
+        "PositionSyncService", "PositionCoreService", "PositionEnrichmentService",
+        "AlertEvaluator", "AlertController", "AlertServiceManager",
+
+        # Data & Utility modules
+        "DataLocker", "PriceMonitor", "DBCore", "Logger", "AlertUtils",
+        "CalcServices", "LockerFactory",
+
+        # Experimental or custom
+        "HedgeManager", "CycleRunner", "ConsoleHelper"
     ])
+
     log.enable_group("cyclone_core")
     log.init_status()
 
@@ -47,15 +61,17 @@ class Cyclone:
 
         log.info("Initializing Cyclone engine...", source="Cyclone")
 
-        self.data_locker = DataLocker(str(DB_PATH))
+        self.data_locker = global_data_locker
+
+       # self.data_locker = DataLocker(str(DB_PATH))
         self.price_monitor = PriceMonitor()
         self.alert_service = AlertServiceManager.get_instance()
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
-        self.portfolio_runner = CyclonePortfolioService()
-        self.position_runner = CyclonePositionService()
-        self.alert_runner = CycloneAlertService()
-        self.hedge_runner = CycloneHedgeService()
+        self.portfolio_runner = CyclonePortfolioService(self.data_locker)
+        self.position_runner = CyclonePositionService(self.data_locker)
+        self.alert_runner = CycloneAlertService(self.data_locker)
+        self.hedge_runner = CycloneHedgeService(self.data_locker)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
         log.success("Cyclone orchestrator initialized.", source="Cyclone")
@@ -67,6 +83,20 @@ class Cyclone:
             log.success("Prices updated successfully", source="Cyclone")
         except Exception as e:
             log.error(f"Market Updates failed: {e}", source="Cyclone")
+
+    async def run_composite_position_pipeline(self):
+        await asyncio.to_thread(self.position_runner.update_positions_from_jupiter)
+
+    def clear_prices_backend(self):
+        try:
+            cursor = self.data_locker.db.get_cursor()
+            cursor.execute("DELETE FROM prices")
+            self.data_locker.db.commit()
+            deleted = cursor.rowcount
+            cursor.close()
+            print(f"🧹 Prices cleared. {deleted} record(s) deleted.")
+        except Exception as e:
+            print(f"❌ Error clearing prices: {e}")
 
     def clear_wallets_backend(self):
         try:
@@ -164,11 +194,7 @@ class Cyclone:
             log.error(f"Clear All Data failed: {e}", source="Cyclone")
 
     def _clear_all_data_core(self):
-        """
-        ⚠️ Wipe all critical tables: alerts, prices, positions.
-        """
         tables = ["alerts", "prices", "positions"]
-
         for table in tables:
             try:
                 cursor = self.data_locker.db.get_cursor()
@@ -179,22 +205,16 @@ class Cyclone:
             except Exception as e:
                 log.error(f"❌ Failed to clear `{table}`: {e}", source="Cyclone")
 
-    async def _debugged_position_update(self):
-        print("🧠 [DEBUG] Entered Cyclone.run_cycle → position step")
-        await self.position_runner.update_positions_from_jupiter()
+    def run_debug_position_update(self):
+        print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
+        self.position_runner.update_positions_from_jupiter()
 
     async def run_cycle(self, steps=None):
-        """
-        Master run_cycle method to run modular steps across services.
-        """
         available_steps = {
             "clear_all_data": self.run_clear_all_data,
             "market": self.run_market_updates,
-            "position": self._debugged_position_update,
-            "position": self.position_runner.update_positions_from_jupiter,
+            "position": self.run_composite_position_pipeline,
             "cleanse_ids": self.alert_runner.clear_stale_alerts,
-          #  "link_hedges": self.hedge_runner.link_hedges,
-        #    "update_hedges": self.hedge_runner.update_hedges,
             "enrich positions": self.position_runner.enrich_positions,
             "enrich alerts": self.alert_runner.enrich_all_alerts,
             "create_market_alerts": self.run_create_market_alerts,
@@ -216,29 +236,24 @@ class Cyclone:
             log.info(f"🧩 Executing step: {step}", source="Cyclone")
             if step in available_steps:
                 try:
-                    await available_steps[step]()
+                    result = available_steps[step]
+                    if asyncio.iscoroutinefunction(result):
+                        await result()
+                    else:
+                        result()
                 except Exception as e:
                     log.error(f"❌ Step '{step}' failed: {e}", source="Cyclone")
             else:
                 log.warning(f"Unknown step: {step}", source="Cyclone")
 
-    async def run_debug_position_update(self):
-        print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
-        await self.position_runner.update_positions_from_jupiter()
-
     def run_delete_all_data(self):
-        """
-        ⚠️ Compatibility alias for legacy menu option.
-        Calls run_clear_all_data internally.
-        """
         log.warning("⚠️ Deletion requested via legacy method (run_delete_all_data)", source="Cyclone")
         asyncio.run(self.run_clear_all_data())
 
 
 if __name__ == "__main__":
-
     configure_cyclone_console_log()
-    log.banner("🌀 Cyclone CLI Console Activated 🌀")
+
     from cyclone.cyclone_console_service import CycloneConsoleService
     cyclone = Cyclone(poll_interval=60)
     helper = CycloneConsoleService(cyclone)

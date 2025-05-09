@@ -11,6 +11,9 @@ Description:
 #import logging
 import json
 import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytz
 from datetime import datetime, timedelta
 
@@ -20,8 +23,10 @@ from flask import (
 from data.data_locker import DataLocker
 #from config.config_manager import load_config, update_config
 #from utils.calc_services import CalcServices, get_profit_alert_class
-from positions.position_service import PositionService
 
+from core.logging import log as logger
+from positions.position_sync_service import PositionSyncService
+from positions.position_core_service import PositionCoreService
 
 
 
@@ -62,8 +67,8 @@ def _convert_iso_to_pst(iso_str):
 @positions_bp.route("/", methods=["GET"])
 def list_positions():
     try:
-        positions = PositionService.get_all_positions(DB_PATH)
-        dl = get_locker()
+        dl = current_app.data_locker
+        positions = PositionService(dl).get_all_positions()
 
         # ✅ config setup for thresholds
         config_data = load_config(CONFIG_PATH)
