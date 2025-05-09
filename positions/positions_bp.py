@@ -337,139 +337,18 @@ def update_prices_wrapper(source="undefined"):
 
 @positions_bp.route("/update_jupiter", methods=["GET", "POST"])
 def update_jupiter():
-    source = request.args.get("source", "user")
-    logger.debug(f"Update Jupiter called with source: {source}")
-    print(f"[DEBUG] Update Jupiter route triggered with source: {source}")
-
-    hedges = []  # Initialize hedges so that it is defined later
-
-    # Step 1: Delete existing Jupiter positions.
     try:
-        logger.debug("Step 1: Deleting existing Jupiter positions...")
-        PositionService.delete_all_jupiter_positions(DB_PATH)
-        logger.debug("Step 1 complete: Jupiter positions deleted.")
-        print("[DEBUG] Deleted Jupiter positions.")
+        dl = current_app.data_locker
+        sync_service = PositionSyncService(dl)
+        result = sync_service.run_full_jupiter_sync(source="user")
+
+        if "error" in result:
+            return jsonify(result), 500
+        return jsonify(result), 200
+
     except Exception as e:
-        logger.error(f"Error deleting Jupiter positions: {e}", exc_info=True)
-        print(f"[ERROR] Error deleting Jupiter positions: {e}")
+        logger.error(f"💥 update_jupiter route failed: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
-    # Step 2: Update Jupiter positions.
-    try:
-        logger.debug("Step 2: Updating Jupiter positions via PositionService...")
-        update_result = PositionService.update_jupiter_positions(DB_PATH)
-        logger.debug(f"Step 2 complete: Update result: {update_result}")
-        print(f"[DEBUG] Jupiter positions update result: {update_result}")
-        if "error" in update_result:
-            logger.error("Error during Jupiter positions update: " + str(update_result))
-            print("[ERROR] Error during Jupiter positions update:", update_result)
-            return jsonify(update_result), 500
-
-        # Updated logger call: pass operation_type as positional argument and source as keyword.
-       # u_logger.log_operation("Jupiter Updated", "Jupiter positions updated successfully.", source=source)
-
-    except Exception as e:
-        logger.error(f"Exception during Jupiter positions update: {e}", exc_info=True)
-        print(f"[ERROR] Exception during Jupiter positions update: {e}")
-        return jsonify({"error": str(e)}), 500
-
-    # Step 2.5: Update hedges using HedgeManager.
-    try:
-        logger.debug("Step 2.5: Updating hedges using HedgeManager...")
-        positions = PositionService.get_all_positions(DB_PATH)
-        logger.debug(f"Fetched {len(positions)} positions for hedge update.")
-        hedge_manager = HedgeManager(positions)
-        hedges = hedge_manager.get_hedges()
-        logger.debug(f"HedgeManager created {len(hedges)} hedges.")
-        for hedge in hedges:
-            logger.debug(f"Hedge ID {hedge.id}: total_long_size={hedge.total_long_size}, total_short_size={hedge.total_short_size}, total_heat_index={hedge.total_heat_index}")
-        print(f"[DEBUG] HedgeManager found {len(hedges)} hedges.")
-        u_logger.log("Hedge Updated", f"Hedge update complete; {len(hedges)} hedges created.", source=source)
-    except Exception as e:
-        logger.error(f"Exception during hedge manager update: {e}", exc_info=True)
-        print(f"[ERROR] Exception during hedge manager update: {e}")
-        # Continue even if hedge update fails.
-
-    # Step 5: Update last update timestamps.
-    try:
-        logger.debug("Step 5: Updating last update timestamps...")
-        now = datetime.now()
-        logger.debug(f"Current timestamp: {now.isoformat()}")
-        dl = get_locker()
-        dl.set_last_update_times(
-            positions_dt=now,
-            positions_source=source,
-            prices_dt=now,
-            prices_source=source
-        )
-        logger.debug("Last update timestamps set successfully.")
-        print("[DEBUG] Last update timestamps set.")
-    except Exception as e:
-        logger.error(f"Exception setting last update timestamps: {e}", exc_info=True)
-        print(f"[ERROR] Exception setting last update timestamps: {e}")
-
-    # Step 6: Record positions snapshot.
-    try:
-        logger.debug("Step 6: Recording positions snapshot...")
-        PositionService.record_positions_snapshot(DB_PATH)
-        logger.debug("Positions snapshot recorded successfully.")
-        print("[DEBUG] Positions snapshot recorded.")
-    except Exception as snap_err:
-        logger.error(f"Error recording positions snapshot: {snap_err}", exc_info=True)
-        print(f"[ERROR] Error recording positions snapshot: {snap_err}")
-
-    # Step 7: Emit SocketIO event for data update.
-    try:
-        logger.debug("Step 7: Emitting SocketIO event for data update...")
-        socketio_inst = get_socketio()
-        if socketio_inst:
-            socketio_inst.emit('data_updated', {
-                'message': f"Jupiter positions + Prices updated successfully by {source}! Hedge update: {len(hedges)} hedges found.",
-                'last_update_time_positions': now.isoformat(),
-                'last_update_time_prices': now.isoformat()
-            })
-            logger.debug("SocketIO event emitted successfully.")
-            print("[DEBUG] SocketIO event emitted.")
-        else:
-            logger.warning("SocketIO instance not found; skipping event emission.")
-            print("[WARNING] SocketIO instance not found; skipping event emission.")
-    except Exception as e:
-        logger.error(f"Exception emitting SocketIO event: {e}", exc_info=True)
-        print(f"[ERROR] Exception emitting SocketIO event: {e}")
-
-    # Step 8: Log updated totals.
-    try:
-        logger.debug("Step 8: Logging updated totals...")
-     #   updated_totals = dl.get_balance_vars()
-       # pst_timestamp = _convert_iso_to_pst(now.isoformat())
-       # print(f"[DEBUG] Jupiter Update Complete: Totals = {updated_totals} at {pst_timestamp}")
-      #  logger.debug(f"Jupiter Update Complete: Totals = {updated_totals} at {pst_timestamp}")
-    except Exception as e:
-        logger.error(f"Exception logging updated totals: {e}", exc_info=True)
-        print(f"[ERROR] Exception logging updated totals: {e}")
-
-    # Step 9: Log final operation.
-    try:
-        logger.debug("Step 9: Logging operation with OperationsLogger...")
-        #u_logger.log_operation("Jupiter Update Complete", f"Totals updated; {len(hedges)} hedges found.",
-         #                      source="system")
-
-        logger.debug("Operation logged successfully.")
-     #   print("[DEBUG] Operation logged successfully.")
-    except Exception as e:
-        logger.error("Error logging operation: %s", e, exc_info=True)
-   #     print(f"[ERROR] Error logging operation: {e}")
-
-    response_data = {
-        "message": f"Jupiter positions + Prices updated successfully by {source}! Hedge update: {len(hedges)} hedges found.",
-        "source": source,
-        "last_update_time_positions": now.isoformat(),
-        "last_update_time_prices": now.isoformat()
-    }
-    logger.debug("update_jupiter route completed successfully.")
-    #print("[DEBUG] update_jupiter route completed successfully.")
-    return jsonify(response_data), 200
-
 
 
 @positions_bp.route("/update_alert_config", methods=["POST"])

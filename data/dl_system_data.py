@@ -1,4 +1,6 @@
-from core.core_imports import log
+
+
+
 # dl_system_data.py
 """
 Author: BubbaDiego
@@ -11,6 +13,12 @@ Dependencies:
     - DatabaseManager from database.py
     - ConsoleLogger from console_logger.py
 """
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from core.core_imports import log
+from data.models import SystemVariables
 
 
 class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
@@ -39,23 +47,23 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
         except Exception as e:
             log.error(f"Failed to update theme mode: {e}", source="DLSystemDataManager")
 
-    def get_last_update_times(self) -> dict:
-        try:
-            cursor = self.db.get_cursor()
-            cursor.execute("""
-                SELECT last_update_time_positions, last_update_positions_source,
-                       last_update_time_prices, last_update_prices_source,
-                       last_update_time_jupiter
-                FROM system_vars WHERE id = 1
-            """)
-            row = cursor.fetchone()
-            if row:
-                log.debug("System update times fetched", source="DLSystemDataManager")
-                return dict(row)
-            return {}
-        except Exception as e:
-            log.error(f"Failed to fetch system update times: {e}", source="DLSystemDataManager")
-            return {}
+    def get_last_update_times(self) -> SystemVariables:
+        cursor = self.db.get_cursor()
+        cursor.execute("""
+            SELECT last_update_time_positions, last_update_positions_source,
+                   last_update_time_prices, last_update_prices_source,
+                   last_update_time_jupiter, theme_mode,
+                   strategy_start_value, strategy_description
+            FROM system_vars
+            WHERE id = 1
+            LIMIT 1
+        """)
+        row = cursor.fetchone()
+        cursor.close()
+        if row:
+            return SystemVariables(**dict(row))
+        else:
+            return SystemVariables()
 
     def set_last_update_times(self, updates: dict):
         try:

@@ -48,6 +48,8 @@ class NotificationType(str, Enum):
     SMS = "SMS"
     ACTION = "Action"
 
+
+
 class Price:
     """
     Represents pricing details for a given asset.
@@ -337,4 +339,49 @@ class Broker:
             f"image_path={self.image_path!r}, "
             f"web_address={self.web_address!r}, "
             f"total_holding={self.total_holding})"
+        )
+
+class SystemVariables:
+    def __init__(
+        self,
+        last_update_time_positions: Optional[str] = None,
+        last_update_positions_source: Optional[str] = None,
+        last_update_time_prices: Optional[str] = None,
+        last_update_prices_source: Optional[str] = None,
+        last_update_time_jupiter: Optional[str] = None,
+        theme_mode: str = "light",
+        strategy_start_value: float = 0.0,
+        strategy_description: str = ""
+    ):
+        self.last_update_time_positions = last_update_time_positions
+        self.last_update_positions_source = last_update_positions_source
+        self.last_update_time_prices = last_update_time_prices
+        self.last_update_prices_source = last_update_prices_source
+        self.last_update_time_jupiter = last_update_time_jupiter
+        self.theme_mode = theme_mode
+        self.strategy_start_value = strategy_start_value
+        self.strategy_description = strategy_description
+
+    def to_dict(self) -> dict:
+        return {
+            "last_update_time_positions": self.last_update_time_positions,
+            "last_update_positions_source": self.last_update_positions_source,
+            "last_update_time_prices": self.last_update_time_prices,
+            "last_update_prices_source": self.last_update_prices_source,
+            "last_update_time_jupiter": self.last_update_time_jupiter,
+            "theme_mode": self.theme_mode,
+            "strategy_start_value": self.strategy_start_value,
+            "strategy_description": self.strategy_description
+        }
+
+    def to_json(self) -> str:
+        import json
+        return json.dumps(self.to_dict(), default=str, indent=2)
+
+    def __repr__(self):
+        return (
+            f"SystemVariables(positions={self.last_update_time_positions}, "
+            f"prices={self.last_update_time_prices}, jupiter={self.last_update_time_jupiter}, "
+            f"theme={self.theme_mode}, strat_val={self.strategy_start_value}, "
+            f"desc={self.strategy_description!r})"
         )

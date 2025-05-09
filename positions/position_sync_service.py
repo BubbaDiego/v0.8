@@ -7,6 +7,9 @@ from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
 from core.constants import DB_PATH
+from utils.calc_services import CalcServices
+
+#from positions.hedge
 
 
 class PositionSyncService:
@@ -19,6 +22,47 @@ class PositionSyncService:
         "So11111111111111111111111111111111111111112": "SOL"
     }
 
+    def run_full_jupiter_sync(self, source="user") -> dict:
+        from positions.hedge_manager import HedgeManager  # if needed
+
+        try:
+            deleted = self.dl.positions.delete_all_positions()
+
+            result = self.update_jupiter_positions()
+            if "error" in result:
+                return result
+
+            log.success(f"✅ Jupiter positions imported: {result['imported']}", source="PositionSyncService")
+
+            # Hedge generation (optional)
+            positions = self.dl.positions.get_all_positions()
+            hedge_manager = HedgeManager(positions)
+            hedges = hedge_manager.get_hedges()
+            log.success(f"🌐 HedgeManager created {len(hedges)} hedges", source="PositionSyncService")
+
+            # Timestamp updates
+            now = datetime.now()
+            self.dl.system.set_last_update_times({
+                "last_update_time_positions": now.isoformat(),
+                "last_update_positions_source": source,
+                "last_update_time_prices": now.isoformat(),
+                "last_update_prices_source": source
+            })
+
+            self.dl.portfolio.record_snapshot(
+                CalcServices().calculate_totals(positions)
+            )
+
+            return {
+                "message": f"Sync complete: {result['imported']} positions, {len(hedges)} hedges",
+                "imported": result["imported"],
+                "hedges": len(hedges),
+                "timestamp": now.isoformat()
+            }
+
+        except Exception as e:
+            log.error(f"❌ run_full_jupiter_sync failed: {e}", source="PositionSyncService")
+            return {"error": str(e)}
 
     def update_jupiter_positions(self):
         log.info("🔄 Updating positions from Jupiter...", source="PositionSyncService")
