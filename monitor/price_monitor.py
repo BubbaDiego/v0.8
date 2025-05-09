@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import os
 import asyncio
 import logging
@@ -76,7 +79,13 @@ class PriceMonitor(BaseMonitor):
                 log.warning(f"⚠️ No price returned for {symbol}", source="PriceMonitor")
 
         now = datetime.now(timezone.utc)
-        self.data_locker.set_last_update_times(prices_dt=now, prices_source="PriceMonitor")
+        self.data_locker.set_last_update_times({
+            "last_update_time_prices": now.isoformat(),
+            "last_update_prices_source": "PriceMonitor",
+            "last_update_time_positions": None,
+            "last_update_positions_source": None,
+            "last_update_time_jupiter": None
+        })
 
         ledger_entry = {
             "timestamp": now.isoformat(),

@@ -73,3 +73,10 @@ class DLAlertManager:
             log.error(f"Failed to retrieve all alerts: {e}", source="DLAlertManager")
             return []
 
+    def clear_all_alerts(self) -> None:
+        cursor = self.db.get_cursor()
+        cursor.execute("DELETE FROM alerts")
+        self.db.commit()
+        log.success("🧹 All alerts deleted", source="DLAlertManager")
+
+

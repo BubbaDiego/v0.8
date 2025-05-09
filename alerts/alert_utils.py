@@ -4,8 +4,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from threading import Condition
 from data.alert import AlertType
 from data.alert import NotificationType
-
 from data.alert import Condition
+#from alerts.alert_utils import normalize_alert_fields
+
 
 
 

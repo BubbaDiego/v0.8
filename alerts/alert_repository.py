@@ -99,6 +99,19 @@ class AlertRepository:
             log.error(f"❌ Unexpected error creating alert: {ex}", source="AlertRepository")
             raise
 
+    def get_alerts(self):
+        try:
+            rows = self.db.query("SELECT * FROM alerts")
+            alerts = [dict(row) for row in rows]
+            log.success(f"📦 Retrieved {len(alerts)} alerts from DB", source="AlertRepository")
+            return alerts
+        except Exception as e:
+            log.error("❌ Failed to retrieve alerts", source="AlertRepository", payload={"error": str(e)})
+            return []
+
+    def get_all_alerts(self):
+        return self.get_alerts()
+
     def get_active_alerts(self) -> list[Alert]:
         alerts_raw = self.data_locker.get_alerts()
 

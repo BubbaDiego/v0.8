@@ -1,12 +1,15 @@
 # cyclone/cyclone_portfolio_service.py
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from datetime import datetime
 from uuid import uuid4
-
 from data.data_locker import DataLocker
 from data.alert import AlertType, Condition
 from alerts.alert_utils import log_alert_summary
-from core.core_imports import DB_PATH, log
+from core.core_imports import DB_PATH
+from core.logging import log
 
 
 class CyclonePortfolioService:
@@ -51,13 +54,19 @@ class CyclonePortfolioService:
                     "description": metric_desc,
                     "position_reference_id": None,
                     "evaluated_value": 0.0,
-                    "position_type": None
+                    "position_type": "N/A"  # 🔥 add this to prevent DB crash if column is NOT NULL
                 }
 
-                self.dl.create_alert(alert)
-                log_alert_summary(alert)
-                created += 1
+                success = self.dl.create_alert(alert)
+                if success:
+                    log_alert_summary(alert)
+                    created += 1
+                else:
+                    log.error(f"❌ Failed to persist alert for {metric_desc}", source="CyclonePortfolio", payload=alert)
+
             except Exception as e:
-                log.error(f"Failed to create portfolio alert for {metric_desc}: {e}", source="CyclonePortfolio")
+                log.error(f"💣 Exception creating portfolio alert for {metric_desc}: {e}", source="CyclonePortfolio",
+                          payload=alert)
 
         log.success(f"✅ Created {created} portfolio alerts.", source="CyclonePortfolio")
+

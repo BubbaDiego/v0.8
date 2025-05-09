@@ -27,25 +27,32 @@ class JsonManager:
 
     def load(self, file_path: str, json_type: JsonType = None):
         """Load and return the JSON data from the specified file path."""
+        path_map = {
+            JsonType.ALERT_LIMITS: ALERT_LIMITS_PATH,
+            JsonType.THEME_CONFIG: THEME_CONFIG_PATH,
+            JsonType.SONIC_SAUCE: SONIC_SAUCE_PATH,
+            JsonType.SONIC_CONFIG: "config/sonic_config.json",
+            JsonType.COMM_CONFIG: "config/comm_config.json"
+        }
+
+        # ✅ Resolve mapped path if JsonType is provided
         if json_type:
-            path_map = {
-                JsonType.ALERT_LIMITS: ALERT_LIMITS_PATH,
-                JsonType.THEME_CONFIG: THEME_CONFIG_PATH,
-                JsonType.SONIC_SAUCE: SONIC_SAUCE_PATH,
-            }
-            file_path = str(path_map.get(json_type, file_path))
+            if json_type not in path_map:
+                raise ValueError(f"🚫 Unmapped JsonType: {json_type}")
+            file_path = str(path_map[json_type])
 
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
-            # 👁️ Context info
             type_info = json_type.name if json_type else "unspecified"
+
+            # Trim large payloads for logs
             json_str = json.dumps(data)
             if len(json_str) > 200:
                 json_str = json_str[:200] + "..."
 
-            # ✅ Verification
+            # ✅ Optional validation
             verification_passed = True
             verification_message = "No verification rules applied."
 
@@ -57,6 +64,7 @@ class JsonManager:
                     verification_message = f"Missing keys: {missing_keys}"
                 else:
                     verification_message = f"All required keys present: {list(data.keys())}"
+
             elif json_type == JsonType.THEME_CONFIG:
                 if not isinstance(data, dict):
                     verification_passed = False
@@ -64,7 +72,7 @@ class JsonManager:
                 else:
                     verification_message = f"Theme config keys: {list(data.keys())}"
 
-            # 🧠 Logging
+            # 🔍 Log verification results
             if verification_passed:
                 self.logger.success("✅ JSON verification passed", source="JsonManager", payload={
                     "file": file_path,
@@ -87,6 +95,7 @@ class JsonManager:
                 "type": json_type.name if json_type else "unknown"
             })
             raise
+
 
     def save(self, file_path: str, data, json_type: JsonType = None):
         """Save the JSON data to the specified file path and validate the result."""

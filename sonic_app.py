@@ -14,7 +14,7 @@ import asyncio
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, current_app
 from flask_socketio import SocketIO
 
-from core.core_imports import log, configure_console_log, DB_PATH, CONFIG_PATH, BASE_DIR, retry_on_locked, JsonManager
+from core.core_imports import log, configure_console_log, DB_PATH, CONFIG_PATH, BASE_DIR, retry_on_locked #, JsonManager
 
 #from twilio_message_api import trigger_twilio_flow
 from positions.positions_bp import update_jupiter
@@ -59,7 +59,7 @@ app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
 app.register_blueprint(wallet_bp)
 
-app.json_manager = JsonManager(logger=log)
+#app.json_manager = JsonManager(logger=log)
 configure_console_log()
 
 

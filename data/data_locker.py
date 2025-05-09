@@ -54,6 +54,9 @@ class DataLocker:
     def get_latest_price(self, asset_type: str) -> dict:
         return self.prices.get_latest_price(asset_type)
 
+    def set_last_update_times(self, updates: dict):
+        self.system.set_last_update_times(updates)
+
     def insert_or_update_price(self, asset_type, price, source="PriceMonitor"):
         from uuid import uuid4
         from datetime import datetime

@@ -1,16 +1,18 @@
 
 import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from utils.fuzzy_wuzzy import fuzzy_match_enum
 from data.alert import AlertType
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utils.json_manager import JsonManager  # ensure this is at the top
 import asyncio
 import re
 from dashboard.dashboard_service import get_dashboard_context
 from utils.calc_services import CalcServices
+from alerts.alert_utils import normalize_alert_fields
 from data.alert import AlertType
+from core.logging import log
 
 
 
@@ -262,7 +264,11 @@ class AlertEnrichmentService:
 
         log.info(f"🚀 Starting enrichment for {len(alerts)} alerts", source="AlertEnrichment")
 
+        # 🧠 Normalize all alerts before enriching
+        alerts = [normalize_alert_fields(alert) for alert in alerts]
+
         enriched_alerts = await asyncio.gather(*(self.enrich(alert) for alert in alerts))
 
         log.success(f"✅ Enriched {len(enriched_alerts)} alerts", source="AlertEnrichment")
         return enriched_alerts
+

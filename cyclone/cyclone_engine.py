@@ -16,12 +16,12 @@ from cyclone.cyclone_portfolio_service import CyclonePortfolioService
 from cyclone.cyclone_alert_service import CycloneAlertService
 from cyclone.cyclone_hedge_service import CycloneHedgeService
 
-
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
 
-global_data_locker = DataLocker(str(DB_PATH))  # SINGLE SOURCE OF TRUTH
+global_data_locker = DataLocker(str(DB_PATH))  # There can be only one
 
+logging.basicConfig(level=logging.DEBUG)
 
 def configure_cyclone_console_log():
     """
@@ -30,6 +30,12 @@ def configure_cyclone_console_log():
     """
     log.silence_module("werkzeug")
     log.silence_module("fuzzy_wuzzy")
+
+    # Hijack asyncio logger early
+    log.hijack_logger("asyncio")
+
+    # Optionally silence it altogether
+    log.silence_module("asyncio")
 
     log.assign_group("cyclone_core", [
         # Core engine & service modules
@@ -65,7 +71,7 @@ class Cyclone:
 
        # self.data_locker = DataLocker(str(DB_PATH))
         self.price_monitor = PriceMonitor()
-        self.alert_service = AlertServiceManager.get_instance()
+        self.alert_manager = AlertServiceManager.get_instance()
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
         self.portfolio_runner = CyclonePortfolioService(self.data_locker)
@@ -74,15 +80,14 @@ class Cyclone:
         self.hedge_runner = CycloneHedgeService(self.data_locker)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
-        log.success("Cyclone orchestrator initialized.", source="Cyclone")
 
     async def run_market_updates(self):
         log.info("Starting Market Updates", source="Cyclone")
         try:
             await self.price_monitor.update_prices(source="Market Updates")
-            log.success("Prices updated successfully", source="Cyclone")
+            log.success("📈 Prices updated successfully ✅", source="Cyclone")
         except Exception as e:
-            log.error(f"Market Updates failed: {e}", source="Cyclone")
+            log.error(f"📉Market Updates failed 💥💥💥💥💥💥: {e}", source="Cyclone")
 
     async def run_composite_position_pipeline(self):
         await asyncio.to_thread(self.position_runner.update_positions_from_jupiter)
@@ -212,43 +217,75 @@ class Cyclone:
     async def run_cycle(self, steps=None):
         available_steps = {
             "clear_all_data": self.run_clear_all_data,
-            "market": self.run_market_updates,
-            "position": self.run_composite_position_pipeline,
-            "cleanse_ids": self.alert_runner.clear_stale_alerts,
-            "enrich positions": self.position_runner.enrich_positions,
-            "enrich alerts": self.alert_runner.enrich_all_alerts,
-            "create_market_alerts": self.run_create_market_alerts,
-            "create_portfolio_alerts": self.portfolio_runner.create_portfolio_alerts,
-            "create_position_alerts": self.position_runner.create_position_alerts,
-            "update_evaluated_value": self.alert_runner.update_evaluated_values,
-            "alert": self.alert_runner.run_alert_updates
+            "market_updates": self.run_market_updates,
+            "create_portfolio_alerts": self.run_create_portfolio_alerts,
+            "create_position_alerts": self.run_create_position_alerts,
+            "create_global_alerts": self.run_create_global_alerts,
+            "evaluate_alerts": self.run_alert_evaluation,
+            "cleanse_ids": self.run_cleanse_ids,
+            "link_hedges": self.run_link_hedges,
+            "enrich_positions": self.run_enrich_positions,
+            "enrich_alerts": self.run_alert_enrichment,
+            "update_evaluated_value": self.run_update_evaluated_value,
         }
 
-        default_order = [
-            "clear_all_data", "market", "position", "cleanse_ids",
-            "enrich positions", "enrich alerts", "create_market_alerts",
-            "create_position_alerts", "create_portfolio_alerts",
-            "update_evaluated_value", "alert", "link_hedges", "update_hedges"
-        ]
+        steps = steps or list(available_steps.keys())
 
-        run_list = steps or default_order
-        for step in run_list:
-            log.info(f"🧩 Executing step: {step}", source="Cyclone")
-            if step in available_steps:
-                try:
-                    result = available_steps[step]
-                    if asyncio.iscoroutinefunction(result):
-                        await result()
-                    else:
-                        result()
-                except Exception as e:
-                    log.error(f"❌ Step '{step}' failed: {e}", source="Cyclone")
-            else:
-                log.warning(f"Unknown step: {step}", source="Cyclone")
+        for step in steps:
+            if step not in available_steps:
+                log.warning(f"⚠️ Unknown step: '{step}'", source="Cyclone")
+                continue
+            log.info(f"▶️ Running step: {step}", source="Cyclone")
+            await available_steps[step]()
 
     def run_delete_all_data(self):
         log.warning("⚠️ Deletion requested via legacy method (run_delete_all_data)", source="Cyclone")
         asyncio.run(self.run_clear_all_data())
+
+    async def run_create_position_alerts(self):
+        await self.position_runner.create_position_alerts()
+
+    async def run_create_portfolio_alerts(self):
+        await self.portfolio_runner.create_portfolio_alerts()
+
+    async def run_link_hedges(self):
+        await self.hedge_runner.link_hedges()
+
+    async def run_update_hedges(self):
+        await self.hedge_runner.update_hedges()
+
+    async def run_alert_evaluation(self):
+        await self.alert_runner.run_alert_evaluation()
+
+    async def run_create_position_alerts(self):
+        await self.alert_runner.create_position_alerts()
+
+    async def run_create_portfolio_alerts(self):
+        await self.alert_runner.create_portfolio_alerts()
+
+    async def run_create_global_alerts(self):
+        await self.alert_runner.create_global_alerts()
+
+    def clear_alerts_backend(self):
+        self.data_locker.alerts.clear_all_alerts()
+        log.success("🧹 All alerts cleared from backend", source="Cyclone")
+
+    async def run_cleanse_ids(self):
+        log.info("🧹 Running cleanse_ids: clearing stale alerts", source="Cyclone")
+        self.alert_manager.clear_stale_alerts()
+        log.success("✅ Alert IDs cleansed", source="Cyclone")
+
+    async def run_enrich_positions(self):
+        await self.position_runner.enrich_positions()
+        log.success("✅ Position enrichment complete", source="Cyclone")
+
+    async def run_alert_enrichment(self):
+        await self.alert_runner.enrich_all_alerts()
+        log.success("✅ Alert enrichment complete", source="Cyclone")
+
+    async def run_update_evaluated_value(self):
+        await self.alert_runner.update_evaluated_values()
+        log.success("✅ Evaluated alert values updated", source="Cyclone")
 
 
 if __name__ == "__main__":

@@ -931,3 +931,14 @@
 {"timestamp": "2025-05-06T20:11:11.045707+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
 {"timestamp": "2025-05-06T20:23:40.927482+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
 {"timestamp": "2025-05-06T20:23:44.370939+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T12:24:42.449407+00:00", "component": "price_monitor", "operation": "heartbeat", "status": "Error", "metadata": {"error": "DataLocker.set_last_update_times() missing 1 required positional argument: 'prices_source'"}}
+{"timestamp": "2025-05-09T13:12:07.644777+00:00", "component": "price_monitor", "operation": "heartbeat", "status": "Error", "metadata": {"error": "DataLocker.set_last_update_times() missing 1 required positional argument: 'prices_source'"}}
+{"timestamp": "2025-05-09T13:20:01.367810+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:21:28.350799+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:21:28.352808+00:00", "component": "price_monitor", "operation": "heartbeat", "status": "Success", "metadata": {"loop_counter": 3}}
+{"timestamp": "2025-05-09T13:35:07.934281+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:35:55.598054+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:36:19.724527+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:38:54.948543+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T13:49:59.034531+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}
+{"timestamp": "2025-05-09T14:17:45.032879+00:00", "component": "price_monitor", "operation": "price_update", "status": "Success", "metadata": {"fetched_count": 3}}

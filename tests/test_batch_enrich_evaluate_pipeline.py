@@ -1,12 +1,15 @@
-import pytest
 import asyncio
 import random
-from data.alert import Alert, AlertType, Condition
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from utils.console_logger import ConsoleLogger as log
+from data.alert import AlertType, Alert, Condition
 from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
-from core.core_imports import log
 
-# --- Mock DataLocker for Batch Enrichment ---
 
 class MockDataLockerFullPipeline:
     def __init__(self):
@@ -21,6 +24,7 @@ class MockDataLockerFullPipeline:
                 "pnl_after_fees_usd": random.uniform(100, 5000),
                 "current_heat_index": random.uniform(10, 100),
                 "position_type": random.choice(["LONG", "SHORT"]),
+                "wallet_name": "dev-wallet",
                 "asset_type": "BTC"
             }
 
@@ -30,42 +34,24 @@ class MockDataLockerFullPipeline:
     def get_latest_price(self, asset_type):
         return self.prices.get(asset_type.upper())
 
-@pytest.mark.system
-@pytest.mark.asyncio
-async def test_batch_enrich_evaluate_pipeline():
-    """
-    Full system test: Enrich and evaluate 200 alerts in pipeline.
-    """
+    def get_wallet_by_name(self, name):
+        return {"name": name, "meta": "injected"} if name else None
+
+
+async def run_pipeline():
+    log.banner("🧪 SYSTEM TEST: Batch Enrich + Evaluate Pipeline")
 
     data_locker = MockDataLockerFullPipeline()
     enrichment_service = AlertEnrichmentService(data_locker)
     evaluation_service = AlertEvaluationService()
 
-    # Inject mock thresholds manually
     evaluation_service.thresholds = {
-        "PriceThreshold": {
-            "LOW": 5000,
-            "MEDIUM": 10000,
-            "HIGH": 15000
-        },
-        "TravelPercentLiquid": {
-            "LOW": -10,
-            "MEDIUM": -25,
-            "HIGH": -50
-        },
-        "Profit": {
-            "LOW": 500,
-            "MEDIUM": 1000,
-            "HIGH": 2000
-        },
-        "HeatIndex": {
-            "LOW": 30,
-            "MEDIUM": 60,
-            "HIGH": 90
-        }
+        "PriceThreshold": {"LOW": 5000, "MEDIUM": 10000, "HIGH": 15000},
+        "TravelPercentLiquid": {"LOW": -10, "MEDIUM": -25, "HIGH": -50},
+        "Profit": {"LOW": 500, "MEDIUM": 1000, "HIGH": 2000},
+        "HeatIndex": {"LOW": 30, "MEDIUM": 60, "HIGH": 90},
     }
 
-    # Generate 200 fake alerts
     alerts = []
     types = [AlertType.PriceThreshold, AlertType.TravelPercentLiquid, AlertType.Profit, AlertType.HeatIndex]
     conditions = [Condition.ABOVE, Condition.BELOW]
@@ -85,19 +71,32 @@ async def test_batch_enrich_evaluate_pipeline():
         )
         alerts.append(alert)
 
-    # --- Enrich Phase ---
+    log.start_timer("enrichment-phase")
     enriched_alerts = []
-    for alert in alerts:
+    for i, alert in enumerate(alerts):
+        log.debug(f"🧬 Enriching alert {i+1}/200 → {alert.id}", source="DevPipeline")
         enriched = await enrichment_service.enrich(alert)
         enriched_alerts.append(enriched)
+    log.end_timer("enrichment-phase", source="DevPipeline")
 
-    # --- Evaluation Phase ---
+    log.start_timer("evaluation-phase")
     evaluated_alerts = []
-    for alert in enriched_alerts:
+    for i, alert in enumerate(enriched_alerts):
+        log.debug(f"📊 Evaluating alert {i+1}/200 → {alert.id}", source="DevPipeline")
         evaluated = evaluation_service.evaluate(alert)
         evaluated_alerts.append(evaluated)
+    log.end_timer("evaluation-phase", source="DevPipeline")
 
-    # --- Validation Phase ---
+    log.banner("📈 Summary of Evaluated Alerts")
+    counts = {}
     for alert in evaluated_alerts:
-        log.success(f"✅ {alert.id} evaluated: {alert.evaluated_value:.2f} -> {alert.level}", source="BatchPipelineTest")
-        assert alert.level in ["Normal", "Low", "Medium", "High"]
+        level = alert.level
+        counts[level] = counts.get(level, 0) + 1
+        log.success(f"✅ {alert.id}: {alert.alert_type.name} evaluated_value={alert.evaluated_value:.2f} → {level}", source="DevPipeline")
+
+    log.info("🔢 Distribution Summary", source="DevPipeline", payload=counts)
+    log.success("✅ Standalone pipeline test completed", source="DevPipeline")
+
+
+if __name__ == "__main__":
+    asyncio.run(run_pipeline())

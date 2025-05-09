@@ -129,8 +129,8 @@ class CyclonePositionService:
 
     async def clear_positions_backend(self):
         try:
-            await asyncio.to_thread(PositionService.clear_positions)
-            log.warning("🧹 All positions cleared.", source="CyclonePosition")
+            await asyncio.to_thread(self.dl.positions.clear_positions)
+            log.success("🧹 All positions cleared.", source="CyclonePosition")
         except Exception as e:
             log.error(f"❌ Failed to clear positions: {e}", source="CyclonePosition")
 

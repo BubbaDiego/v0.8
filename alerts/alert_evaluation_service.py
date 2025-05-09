@@ -7,10 +7,9 @@ from config.config_loader import load_config
 from data.alert import AlertType
 from core.constants import ALERT_LIMITS_PATH
 
-
 from utils.fuzzy_wuzzy import fuzzy_match_enum
+from utils.json_manager import JsonManager, JsonType
 from core.logging import log
-
 
 log.debug_module()
 
@@ -20,7 +19,7 @@ class AlertEvaluationService:
         if thresholds:
             self.thresholds = thresholds
         else:
-            self.thresholds = load_config(config_path).get("alert_limits", {})  # fixed key
+            self.thresholds = load_config(config_path).get("alert_limits", {})
 
     def evaluate(self, alert):
         try:
@@ -37,7 +36,8 @@ class AlertEvaluationService:
             if alert_class == "position":
                 return self._evaluate_position(alert)
 
-            return self._evaluate_standard(alert)
+            log.warning(f"⚠️ Unknown alert class '{alert_class}', using fallback _evaluate for {alert.id}", source="AlertEvaluation")
+            return self._evaluate(alert)
 
         except Exception as e:
             log.error(f"❌ Evaluation error for alert {alert.id}: {e}", source="AlertEvaluation")
@@ -78,23 +78,19 @@ class AlertEvaluationService:
 
     def _evaluate_portfolio(self, alert):
         try:
-
             config = load_config(ALERT_LIMITS_PATH)
             alert_limits = config.get("alert_limits", config)
             total_limits = alert_limits.get("total_portfolio_limits", {})
 
-            # 🔍 Get the metric being evaluated
             metric = (alert.description or "").strip().lower()
             raw_key = f"{metric}_limits"
 
-            # 🔁 Alias map for fallback matching
             aliases = {
                 "total_heat_limits": ["avg_heat_index_limits", "heat_index_limits", "heat_limits"],
                 "value_to_collateral_ratio_limits": ["vcr_limits", "valuecollateral_limits", "ratio_limits"],
                 "avg_travel_percent_limits": ["travel_percent_limits", "travel_limits"]
             }
 
-            # 🔎 Resolve key using fuzzy + aliases
             json_mgr = JsonManager()
             resolved_key = json_mgr.resolve_key_fuzzy(raw_key, total_limits, aliases=aliases)
             thresholds = total_limits.get(resolved_key)
@@ -115,7 +111,6 @@ class AlertEvaluationService:
                 log.warning(f"⚠️ Missing evaluated_value for alert {alert.id}", source="AlertEvaluation")
                 return alert
 
-            # 🧠 Evaluate thresholds
             low = thresholds.get("low")
             medium = thresholds.get("medium")
             high = thresholds.get("high")
@@ -150,7 +145,7 @@ class AlertEvaluationService:
 
             if not enum_type:
                 log.warning(f"⚠️ Unable to fuzzy match alert type: {raw_type}", source="AlertEvaluation")
-                return self._simple_trigger_evaluation(alert)
+                return self._evaluate(alert)
 
             alert_type_str = enum_type.name.lower()
 
@@ -163,14 +158,13 @@ class AlertEvaluationService:
             alert_type_key = type_key_map.get(alert_type_str)
             if not alert_type_key:
                 log.warning(f"⚠️ No config key mapping for alert type: {alert_type_str}", source="AlertEvaluation")
-                return self._simple_trigger_evaluation(alert)
+                return self._evaluate(alert)
 
             thresholds = self.thresholds.get(alert_type_key)
             if not thresholds or not thresholds.get("enabled", False):
                 log.warning(f"⚠️ Thresholds not found or disabled for key: {alert_type_key}", source="AlertEvaluation")
-                return self._simple_trigger_evaluation(alert)
+                return self._evaluate(alert)
 
-            # 🐻 Confirm loaded thresholds
             log.debug(
                 f"🐻 Thresholds for {alert_type_key}: low={thresholds.get('low')} | "
                 f"medium={thresholds.get('medium')} | high={thresholds.get('high')}",
@@ -181,19 +175,15 @@ class AlertEvaluationService:
 
         except Exception as e:
             log.error(f"❌ Evaluation error for alert {alert.id}: {e}", source="AlertEvaluation")
-            return self._simple_trigger_evaluation(alert)
+            return self._evaluate(alert)
 
-
-    def _simple_trigger_evaluation(self, alert):
-        """
-        Fallback simple evaluation based only on alert.trigger_value.
-        """
+    def _evaluate(self, alert):
         try:
             evaluated = alert.evaluated_value
             trigger = alert.trigger_value
             condition = alert.condition
 
-            log.debug(f"📈 Simple Eval: Value={evaluated}, Trigger={trigger}, Condition={condition}", source="AlertEvaluation")
+            log.debug(f"📈 Raw Evaluation: Value={evaluated}, Trigger={trigger}, Condition={condition}", source="AlertEvaluation")
 
             if condition == Condition.ABOVE and evaluated >= trigger:
                 alert.level = AlertLevel.HIGH
@@ -202,9 +192,9 @@ class AlertEvaluationService:
             else:
                 alert.level = AlertLevel.NORMAL
 
-            log.info(f"ℹ️ Simple evaluation used for alert {alert.id}. Result level: {alert.level}", source="AlertEvaluation")
+            log.info(f"ℹ️ Default fallback evaluation for alert {alert.id}. Level: {alert.level}", source="AlertEvaluation")
             return alert
         except Exception as e:
-            log.error(f"❌ Simple evaluation error for alert {alert.id}: {e}", source="AlertEvaluation")
+            log.error(f"❌ Evaluation fallback error for alert {alert.id}: {e}", source="AlertEvaluation")
             alert.level = AlertLevel.NORMAL
             return alert

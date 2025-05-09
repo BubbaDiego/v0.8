@@ -2,12 +2,13 @@ from core.logging import log
 from positions.position_core_service import PositionCoreService
 from data.data_locker import DataLocker
 from positions.position_sync_service import PositionSyncService
-from utils.json_manager import JsonType
+from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from utils.fuzzy_wuzzy import fuzzy_match_key
-from core.core_imports import ALERT_LIMITS_PATH, DB_PATH, JsonManager
+from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
+
 
 global_data_locker = DataLocker(str(DB_PATH))
 
@@ -100,7 +101,8 @@ def get_dashboard_context(data_locker):
     }
 
     jm = JsonManager()
-    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
+    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)  # ✅
+
     portfolio_limits = alert_limits.get("alert_limits", {}).get("total_portfolio_limits", {})
 
     ledger_info = {
