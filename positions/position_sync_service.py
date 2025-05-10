@@ -1,9 +1,9 @@
-from datetime import datetime
-import requests
 
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from datetime import datetime
+import requests
 from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService

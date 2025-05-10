@@ -250,10 +250,10 @@ class Cyclone:
         await self.alert_core.run_alert_evaluation()
 
     async def run_create_position_alerts(self):
-        await self.alert_core.create_position_alerts()
+        self.alert_core.create_position_alerts()
 
     async def run_create_portfolio_alerts(self):
-        await self.alert_core.create_portfolio_alerts()
+        self.alert_core.create_portfolio_alerts()
 
     async def run_create_global_alerts(self):
         #await self.alert_core.create_global_alerts()
@@ -288,5 +288,5 @@ if __name__ == "__main__":
 
 #    from cyclone.cyclone_console_service import CycloneConsoleService
     cyclone = Cyclone(poll_interval=60)
-    helper = CycloneConsoleService(cyclone)
+ #   helper = CycloneConsoleService(cyclone)
     helper.run()
