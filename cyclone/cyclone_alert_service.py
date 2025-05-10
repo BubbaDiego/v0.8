@@ -27,15 +27,24 @@ class CycloneAlertService:
         self.evaluation_service = AlertEvaluationService()
 
     async def create_position_alerts(self):
-        """Generate alerts per open position"""
-       # from positions.position_service import PositionService
-        logger.info("🔔 Creating position alerts", source="CycloneAlertService")
+        """Generate alerts per open position — DIAGNOSTIC MODE"""
+        logger.banner("📊 Creating Position Alerts")
+
         try:
             positions = self.data_locker.positions.get_all_positions()
+            logger.debug(f"🧪 Fetched {len(positions)} positions", source="AlertDebug")
+
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             created = 0
 
             for pos in positions:
+                logger.debug(f"🔍 Inspecting position: {pos.get('id')} | {pos}", source="AlertDebug")
+
+                if not pos.get("asset_type") or not pos.get("position_type"):
+                    logger.warning(f"⚠️ Skipping position — missing asset_type or position_type: {pos.get('id')}",
+                                   source="AlertDebug")
+                    continue
+
                 base = {
                     "asset": pos["asset_type"],
                     "asset_type": pos["asset_type"],
@@ -49,10 +58,10 @@ class CycloneAlertService:
                     "counter": 0,
                     "notes": "Auto-created by Cyclone",
                     "description": f"Alert for {pos['asset_type']}",
-                    "liquidation_distance": 0.0,
-                    "travel_percent": 0.0,
-                    "liquidation_price": 0.0,
-                    "evaluated_value": 0.0,
+                    "liquidation_distance": pos.get("liquidation_distance", 0.0),
+                    "travel_percent": pos.get("travel_percent", 0.0),
+                    "liquidation_price": pos.get("liquidation_price", 0.0),
+                    "evaluated_value": pos.get("value", 0.0),
                     "created_at": now
                 }
 
@@ -76,13 +85,22 @@ class CycloneAlertService:
                 ]
 
                 for alert in alerts:
-                    self.data_locker.alerts.create_alert(alert)
-                    log_alert_summary(alert)
-                    created += 1
+                    try:
+                        self.data_locker.alerts.create_alert(alert)
+                        log_alert_summary(alert)
+                        logger.success(f"✅ Alert created: {alert['alert_type']} for pos {pos['id']}",
+                                       source="AlertDebug")
+                        created += 1
+                    except Exception as e:
+                        logger.error(f"❌ Failed to create alert for {pos['id']}: {e}", source="AlertDebug")
 
-            logger.success(f"✅ Created {created} position alerts", source="CycloneAlertService")
+            logger.success(f"📊 Position Alert Summary", source="AlertDebug", payload={
+                "alerts_created": created,
+                "positions": len(positions)
+            })
+
         except Exception as e:
-            logger.error(f"❌ Failed to create position alerts: {e}", source="CycloneAlertService")
+            logger.error(f"💥 Failed to create position alerts: {e}", source="AlertDebug")
 
     async def create_portfolio_alerts(self):
         """Generate portfolio-level alerts"""

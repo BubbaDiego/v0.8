@@ -4,7 +4,13 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from alerts.alert_utils import normalize_alert_type, normalize_condition, normalize_notification_type
-from core.core_imports import log
+from data.alert import AlertType, Condition
+from alerts.alert_utils import log_alert_summary
+
+
+from uuid import uuid4
+from core.logging import log
+from datetime import datetime
 from data.alert import Alert, AlertLevel
 import sqlite3
 
@@ -162,5 +168,148 @@ class AlertStore:
         log.info(f"✅ Loaded {len(active_alerts)} active alerts", source="AlertStore")
         return active_alerts
 
+
+    def create_position_alerts(self):
+        log.banner("📊 AlertStore: Creating Position Alerts")
+        created = 0
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        positions = self.data_locker.positions.get_all_positions()
+
+        for pos in positions:
+            try:
+                base = {
+                    "asset": pos["asset_type"],
+                    "asset_type": pos["asset_type"],
+                    "position_reference_id": pos["id"],
+                    "position_type": pos.get("position_type", "long"),
+                    "notification_type": "SMS",
+                    "level": "Normal",
+                    "last_triggered": None,
+                    "status": "Active",
+                    "frequency": 1,
+                    "counter": 0,
+                    "notes": "Auto-created by Cyclone",
+                    "description": f"Alert for {pos['asset_type']}",
+                    "liquidation_distance": pos.get("liquidation_distance", 0.0),
+                    "travel_percent": pos.get("travel_percent", 0.0),
+                    "liquidation_price": pos.get("liquidation_price", 0.0),
+                    "evaluated_value": pos.get("value", 0.0),
+                    "created_at": now
+                }
+
+                alerts = [
+                    {
+                        **base,
+                        "id": str(uuid4()),
+                        "alert_type": AlertType.HeatIndex.value,
+                        "alert_class": "Position",
+                        "trigger_value": 50,
+                        "condition": Condition.ABOVE.value
+                    },
+                    {
+                        **base,
+                        "id": str(uuid4()),
+                        "alert_type": AlertType.Profit.value,
+                        "alert_class": "Position",
+                        "trigger_value": 1000,
+                        "condition": Condition.ABOVE.value
+                    }
+                ]
+
+                for alert in alerts:
+                    self.create_alert(alert)
+                    log_alert_summary(alert)
+                    created += 1
+
+            except Exception as e:
+                log.error(f"❌ Skipped alert for position {pos.get('id')}: {e}", source="AlertStore")
+
+        log.success(f"✅ Position alert creation complete: {created} alerts", source="AlertStore")
+
+
+    def create_portfolio_alerts(self):
+        log.banner("📦 AlertStore: Creating Portfolio Alerts")
+        created = 0
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        metrics = [
+            (AlertType.TotalValue, "total_value", 50000),
+            (AlertType.TotalSize, "total_size", 1.0),
+            (AlertType.AvgLeverage, "avg_leverage", 2.0),
+            (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0),
+            (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2),
+            (AlertType.TotalHeat, "total_heat", 25.0),
+        ]
+
+        for alert_type, metric_desc, trigger_value in metrics:
+            try:
+                alert = {
+                    "id": str(uuid4()),
+                    "created_at": now,
+                    "alert_type": alert_type.value,
+                    "alert_class": "Portfolio",
+                    "asset": "PORTFOLIO",
+                    "asset_type": "ALL",
+                    "trigger_value": trigger_value,
+                    "condition": Condition.ABOVE.value,
+                    "notification_type": "SMS",
+                    "level": "Normal",
+                    "last_triggered": None,
+                    "status": "Active",
+                    "frequency": 1,
+                    "counter": 0,
+                    "liquidation_distance": 0.0,
+                    "travel_percent": 0.0,
+                    "liquidation_price": 0.0,
+                    "notes": "Auto-generated portfolio alert",
+                    "description": metric_desc,
+                    "position_reference_id": None,
+                    "evaluated_value": 0.0,
+                    "position_type": "N/A"
+                }
+
+                self.create_alert(alert)
+                log_alert_summary(alert)
+                created += 1
+
+            except Exception as e:
+                log.error(f"💥 Failed to create alert for {metric_desc}: {e}", source="AlertStore")
+
+        log.success(f"✅ Portfolio alert creation complete: {created} alerts", source="AlertStore")
+
+
+    def create_global_alerts(self):
+        log.banner("🌐 AlertStore: Creating Global Market Alerts")
+        try:
+            alert = {
+                "id": str(uuid4()),
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "alert_type": AlertType.PriceThreshold.value,
+                "alert_class": "Market",
+                "asset": "BTC",
+                "asset_type": "Crypto",
+                "trigger_value": 65000,
+                "condition": Condition.ABOVE.value,
+                "notification_type": "SMS",
+                "level": "Normal",
+                "last_triggered": None,
+                "status": "Active",
+                "frequency": 1,
+                "counter": 0,
+                "liquidation_distance": 0.0,
+                "travel_percent": 0.0,
+                "liquidation_price": 0.0,
+                "notes": "BTC price alert",
+                "description": "BTC threshold",
+                "position_reference_id": None,
+                "evaluated_value": 0.0,
+                "position_type": "N/A"
+            }
+
+            self.create_alert(alert)
+            log.success("✅ Global BTC price alert created", source="AlertStore")
+
+        except Exception as e:
+            log.error(f"💥 Failed to create global alert: {e}", source="AlertStore")
 
 

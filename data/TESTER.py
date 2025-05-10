@@ -1,124 +1,43 @@
-import sqlite3
+import sys
 import os
-import json
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils.calc_services import calculate_travel_percent
 
-# === CONFIG ===
-DB_PATH = "mother_brain.db"  # 🧠 Change this to your actual path
+def run_travel_percent_tests():
+    print("\n🚀 Travel Percent Test Suite\n")
 
-def drop_all(conn):
-    cursor = conn.cursor()
-    tables = ["alerts", "positions", "wallets"]
-    for table in tables:
-        try:
-            cursor.execute(f"DROP TABLE IF EXISTS {table}")
-            print(f"🧹 Dropped: {table}")
-        except Exception as e:
-            print(f"⚠️ Failed to drop {table}: {e}")
-    conn.commit()
+    test_cases = [
+        # 💥 LONG - liquidation zone
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 75,  "expected": -50.0},
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 50,  "expected": -100.0},
 
-def backup_wallets(conn, backup_path="wallet_backup.json"):
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM wallets")
-        rows = cursor.fetchall()
-        data = [dict(row) for row in rows]
-        with open(backup_path, "w") as f:
-            json.dump(data, f, indent=2)
-        print(f"💾 Wallets backed up → {backup_path}")
-    except Exception as e:
-        print(f"❌ Failed to backup wallets: {e}")
+        # 🚀 LONG - profit range
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 125, "expected": 50.0},
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 150, "expected": 100.0},
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 200, "expected": 200.0},
+        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 500, "expected": 800.0},
 
-def restore_wallets(conn, backup_path="wallet_backup.json"):
-    try:
-        if not os.path.exists(backup_path):
-            print("🚫 Wallet backup not found. Skipping restore.")
-            return
-        with open(backup_path) as f:
-            wallets = json.load(f)
+        # 💥 SHORT - liquidation zone
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 125, "expected": -50.0},
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 150, "expected": -100.0},
 
-        cursor = conn.cursor()
-        for wallet in wallets:
-            keys = ", ".join(wallet.keys())
-            placeholders = ", ".join("?" for _ in wallet)
-            values = tuple(wallet.values())
-            cursor.execute(f"INSERT INTO wallets ({keys}) VALUES ({placeholders})", values)
-        conn.commit()
-        print(f"✅ Wallets restored from {backup_path}")
-    except Exception as e:
-        print(f"❌ Wallet restore failed: {e}")
+        # 🚀 SHORT - profit range
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 75,  "expected": 50.0},
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 50,  "expected": 100.0},
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 25,  "expected": 150.0},
+        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 0,   "expected": 200.0},
+    ]
 
-def create_schema(conn):
-    cursor = conn.cursor()
+    for i, case in enumerate(test_cases, 1):
+        actual = calculate_travel_percent(
+            entry_price=case["ep"],
+            current_price=case["cp"],
+            liquidation_price=case["lp"],
+            position_type=case["pos"]
+        )
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS alerts (
-        id TEXT PRIMARY KEY,
-        created_at TEXT,
-        alert_type TEXT,
-        alert_class TEXT,
-        asset TEXT,
-        asset_type TEXT,
-        trigger_value REAL,
-        condition TEXT,
-        notification_type TEXT,
-        level TEXT,
-        last_triggered TEXT,
-        status TEXT,
-        frequency INTEGER,
-        counter INTEGER,
-        liquidation_distance REAL,
-        travel_percent REAL,
-        liquidation_price REAL,
-        notes TEXT,
-        description TEXT,
-        position_reference_id TEXT,
-        evaluated_value REAL,
-        position_type TEXT
-    )""")
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS positions (
-        id TEXT PRIMARY KEY,
-        asset_type TEXT,
-        entry_price REAL,
-        liquidation_price REAL,
-        position_type TEXT,
-        wallet_name TEXT,
-        current_heat_index REAL,
-        pnl_after_fees_usd REAL,
-        travel_percent REAL,
-        liquidation_distance REAL
-    )""")
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS wallets (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        address TEXT,
-        network TEXT,
-        label TEXT,
-        type TEXT
-    )""")
-
-    conn.commit()
-    print("✅ Perfect schema recreated (alerts, positions, wallets)")
-
-def main():
-    if not os.path.exists(DB_PATH):
-        print(f"❌ Database not found: {DB_PATH}")
-        return
-
-    print(f"🚀 Connecting to DB: {DB_PATH}")
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    backup_wallets(conn)
-    drop_all(conn)
-    create_schema(conn)
-    restore_wallets(conn)
-
-    conn.close()
-    print("🎉 DB reset complete.")
+        status = "✅ PASS" if round(actual, 2) == case["expected"] else "❌ FAIL"
+        print(f"{status} | Test {i}: {case['pos']} | EP={case['ep']} CP={case['cp']} LP={case['lp']} → TP={actual:.2f}% (expected {case['expected']}%)")
 
 if __name__ == "__main__":
-    main()
+    run_travel_percent_tests()

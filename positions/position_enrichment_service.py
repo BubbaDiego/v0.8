@@ -5,11 +5,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from utils.calc_services import CalcServices
 from core.logging import log
 from core.constants import DB_PATH
-#from core.locker_factory import get_locker
 from data.data_locker import DataLocker
 from utils.fuzzy_wuzzy import fuzzy_match_key
-
-#dl = DataLocker(str(DB_PATH))
 
 class PositionEnrichmentService:
     def __init__(self, data_locker=None):

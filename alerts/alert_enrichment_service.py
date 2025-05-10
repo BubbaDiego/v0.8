@@ -9,6 +9,7 @@ from utils.json_manager import JsonManager  # ensure this is at the top
 import asyncio
 import re
 from dashboard.dashboard_service import get_dashboard_context
+from utils.travel_percent_logger import log_travel_percent_comparison
 from utils.calc_services import CalcServices
 from alerts.alert_utils import normalize_alert_fields
 from data.alert import AlertType
@@ -146,6 +147,8 @@ class AlertEnrichmentService:
             return alert
 
     async def _enrich_travel_percent(self, alert):
+        from utils.travel_percent_logger import log_travel_percent_comparison
+
         try:
             position = self.data_locker.get_position_by_reference_id(alert.position_reference_id)
             if not position:
@@ -180,6 +183,19 @@ class AlertEnrichmentService:
                 liquidation_price=liquidation_price
             )
 
+            # Jupiter-provided travel_percent (simulated from position data)
+            jupiter_value = 43.5#position.get("travel_percent")
+
+            log.info(f"🛰 Logging drift | Jupiter={jupiter_value}", source="TravelLogger")
+
+            if jupiter_value is not None:
+                log_travel_percent_comparison(
+                    alert_id=alert.id,
+                    jupiter_value=jupiter_value,
+                    calculated_value=travel_percent,
+                    format="csv"
+                )
+
             if travel_percent is None:
                 travel_percent = 0.0
                 alert.notes = (alert.notes or "") + " 🔸 TravelPercent calc returned None → defaulted.\n"
@@ -193,8 +209,6 @@ class AlertEnrichmentService:
             # ✅ Inject wallet
             wallet_name = position.get("wallet_name")
             wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
-            alert.wallet = wallet
-
             return alert
 
         except Exception as e:
@@ -224,8 +238,6 @@ class AlertEnrichmentService:
         # ✅ Inject wallet metadata
         wallet_name = position.get("wallet_name")
         wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
-        alert.wallet = wallet
-
         log.success(f"✅ Enriched Profit Alert {alert.id} → {pnl}", source="AlertEnrichment")
         return alert
 
@@ -248,8 +260,6 @@ class AlertEnrichmentService:
         # ✅ Inject wallet
         wallet_name = position.get("wallet_name")
         wallet = self.data_locker.get_wallet_by_name(wallet_name) if wallet_name else None
-        alert.wallet = wallet
-
         alert.evaluated_value = heat
         return alert
 
