@@ -16,13 +16,13 @@ class ConsoleLogger:
     trace_modules = set()
 
     COLORS = {
-        "info": "\033[94m",
-        "success": "\033[92m",
-        "warning": "\033[93m",
-        "error": "\033[91m",
-        "confidence": "\033[96m",
-        "debug": "\033[38;5;208m",
-        "endc": "\033[0m",
+        "info": "\033[94m",  # 🔵 Light blue
+        "success": "\033[92m",  # 🟢 Green
+        "warning": "\033[93m",  # 🟡 Yellow
+        "error": "\033[91m",  # 🔴 Red
+        "confidence": "\033[96m",  # 🧊 Cyan
+        "debug": "\033[38;5;208m",  # 🧡 Orange-ish
+        "endc": "\033[0m",  # ⛔ Resets style
     }
 
     ICONS = {
@@ -92,7 +92,7 @@ class ConsoleLogger:
             return
 
         if cls.debug_trace_enabled and (
-            not cls.trace_modules or effective_source in cls.trace_modules
+                not cls.trace_modules or effective_source in cls.trace_modules
         ):
             print(f"[🧠 LOGGING DEBUG] caller='{caller_module}' source='{source}' → effective='{effective_source}'")
             print(f"                └─ FINAL DECISION: ✅ allowed")
@@ -106,13 +106,17 @@ class ConsoleLogger:
         inline_payload = ""
         if payload:
             try:
+                # Simple types: keep inline
                 if all(isinstance(v, (str, int, float, bool, type(None))) for v in payload.values()):
                     inline_payload = " → " + ", ".join(f"{k}: {v}" for k, v in payload.items())
                 else:
-                    pretty = json.dumps(payload, indent=2)
-                    inline_payload = "\n" + "\n".join("    " + line for line in pretty.splitlines())
-            except Exception:
-                inline_payload = " [payload formatting error]"
+                    try:
+                        pretty = json.dumps(payload, indent=2, default=str)  # <== safe fallback
+                        inline_payload = "\n" + "\n".join("    " + line for line in pretty.splitlines())
+                    except Exception as je:
+                        inline_payload = f" [payload JSON serialization failed: {je}]"
+            except Exception as e:
+                inline_payload = f" [payload processing error: {e}]"
 
         print(f"{color}{label}{inline_payload}{endc}")
 
@@ -240,3 +244,32 @@ class ConsoleLogger:
             print(f"\n🌐 Sonic Dashboard: {hyperlink}\n")
         except Exception:
             print(f"\n🌐 Sonic Dashboard: {url}\n")
+
+    @classmethod
+    def route(cls, message: str, source: str = None, payload: dict = None):
+        """
+        Specialized log method for route tracing.
+        Uses cyan color and avoids all info-level mute blocks.
+        """
+        caller_module = cls._get_caller_module()
+        effective_source = source or caller_module
+
+        # Hardcoded bright cyan to bypass 'info' color mapping
+        CYAN = "\033[96m"
+        ENDC = "\033[0m"
+        ICON = "🌐"
+        timestamp = cls._timestamp()
+        label = f"{ICON} {message} :: [{effective_source}] @ {timestamp}"
+
+        inline_payload = ""
+        if payload:
+            try:
+                if all(isinstance(v, (str, int, float, bool, type(None))) for v in payload.values()):
+                    inline_payload = " → " + ", ".join(f"{k}: {v}" for k, v in payload.items())
+                else:
+                    pretty = json.dumps(payload, indent=2, default=str)
+                    inline_payload = "\n" + "\n".join("    " + line for line in pretty.splitlines())
+            except Exception as e:
+                inline_payload = f" [payload error: {e}]"
+
+        print(f"{CYAN}{label}{inline_payload}{ENDC}")

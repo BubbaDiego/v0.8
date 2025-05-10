@@ -32,6 +32,7 @@ from wallets.wallets_bp import wallet_bp
 
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
+from utils.route_decorators import route_log_alert
 
 # --- Flask Setup ---
 app = Flask(__name__)
@@ -44,6 +45,10 @@ global_data_locker = DataLocker(str(DB_PATH))  # SINGLE SOURCE OF TRUTH
 app.data_locker = global_data_locker
 
 log.banner("SONIC DASHBOARD STARTUP")
+
+log.enable_all()
+log.set_trace_modules(["positions_bp", "PositionCore", "Logger"])
+log.init_status()
 
 
 
@@ -62,6 +67,7 @@ app.register_blueprint(wallet_bp)
 #app.json_manager = JsonManager(logger=log)
 configure_console_log()
 
+print("\033[96m[TEST] CYAN LOG WORKS ✅\033[0m")
 
 
 
@@ -181,6 +187,7 @@ def api_delete_row():
 
 
 @app.route("/system_config", methods=["GET"])
+@route_log_alert
 def system_config_page():
     dl = global_data_locker
     db_conn = dl.db.connect()
@@ -190,6 +197,7 @@ def system_config_page():
 
 
 @app.route("/update_system_config", methods=["POST"])
+@route_log_alert
 def update_system_config():
     dl = global_data_locker
     db_conn = dl.db.connect()

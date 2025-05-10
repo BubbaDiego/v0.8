@@ -1,57 +1,25 @@
-
-#!/usr/bin/env python
-"""
-Module: positions_bp.py
-Description:
-    A production‐ready Flask blueprint for all positions-related endpoints.
-    This module handles rendering, API responses, and orchestrates business logic via PositionService.
-    It also manages alert configuration, theme updates, and integrates with SocketIO and external services.
-"""
-
-#import logging
 import json
 import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import os
+print("[DEBUG TEMPLATE PATH]", os.listdir("templates/positions"))
 
 import pytz
 from datetime import datetime, timedelta
-
 from flask import (
-    Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
+    Blueprint, request, jsonify, render_template,
+    redirect, url_for, flash, current_app
 )
-from data.data_locker import DataLocker
-#from config.config_manager import load_config, update_config
-#from utils.calc_services import CalcServices, get_profit_alert_class
-
 from core.logging import log as logger
-from positions.position_sync_service import PositionSyncService
-from positions.position_core_service import PositionCoreService
+from positions.position_core import PositionCore
+from utils.calc_services import CalcServices
+from utils.route_decorators import route_log_alert
 
-
-
-import asyncio  # Ensure asyncio is imported
-
-# These helper functions and objects must be defined and imported appropriately.
-# For example, update_prices and manual_check_alerts might come from other modules.
-#from utils.unified_logger import UnifiedLogger
-
-# Assume that socketio is initialized in your main app and imported here.
-#from your_app import socketio  # Replace with the actual import if different
-
-
-#SONIC_SAUCE_PATH = os.path.join(os.path.dirname(CONFIG_PATH), "sonic_sauce.json")
-
-positions_bp = Blueprint("positions", __name__, url_prefix='/alerts', template_folder='.')
-
-alerts_bp = Blueprint('alerts_bp', __name__, url_prefix='/alerts', template_folder='.')
+positions_bp = Blueprint("positions", __name__, template_folder="positions")
 
 
 def _convert_iso_to_pst(iso_str):
-    """Converts an ISO timestamp string to a formatted PST time string."""
     if not iso_str or iso_str == "N/A":
         return "N/A"
-    # If the string does not contain a 'T', assume it's already formatted to PST.
     if "T" not in iso_str:
         return iso_str
     pst = pytz.timezone("US/Pacific")
@@ -65,376 +33,152 @@ def _convert_iso_to_pst(iso_str):
 
 
 @positions_bp.route("/", methods=["GET"])
+@route_log_alert
 def list_positions():
     try:
-        dl = current_app.data_locker
-        positions = PositionService(dl).get_all_positions()
+        core = PositionCore(current_app.data_locker)
+        positions = core.get_all_positions()
 
-        # ✅ config setup for thresholds
-        config_data = load_config(CONFIG_PATH)
+        config_data = current_app.config_manager.load_config()
         alert_dict = config_data.get("alert_ranges", {})
 
-        def get_alert_class_local(value, low, med, high):
-            try:
-                low = float(low) if low not in (None, "") else float('-inf')
-            except:
-                low = float('-inf')
-            try:
-                med = float(med) if med not in (None, "") else float('inf')
-            except:
-                med = float('inf')
-            try:
-                high = float(high) if high not in (None, "") else float('inf')
-            except:
-                high = float('inf')
-            if value >= high:
-                return "alert-high"
-            elif value >= med:
-                return "alert-medium"
-            elif value >= low:
-                return "alert-low"
-            else:
-                return ""
+        def get_alert_class(value, low, med, high):
+            try: low = float(low) if low not in (None, "") else float('-inf')
+            except: low = float('-inf')
+            try: med = float(med) if med not in (None, "") else float('inf')
+            except: med = float('inf')
+            try: high = float(high) if high not in (None, "") else float('inf')
+            except: high = float('inf')
+            if value >= high: return "alert-high"
+            elif value >= med: return "alert-medium"
+            elif value >= low: return "alert-low"
+            return ""
 
-        # ✅ Apply alert coloring
         liqd_cfg = alert_dict.get("liquidation_distance_ranges", {})
-        liqd_low = liqd_cfg.get("low", 0.0)
-        liqd_med = liqd_cfg.get("medium", 0.0)
-        liqd_high = liqd_cfg.get("high", None)
-
         hi_cfg = alert_dict.get("heat_index_ranges", {})
-        hi_low = hi_cfg.get("low", 0.0)
-        hi_med = hi_cfg.get("medium", 0.0)
-        hi_high = hi_cfg.get("high", None)
-
         for pos in positions:
             liqd = float(pos.get("liquidation_distance") or 0.0)
-            heat_val = float(pos.get("heat_index") or 0.0)
-            pos["liqdist_alert_class"] = get_alert_class_local(liqd, liqd_low, liqd_med, liqd_high)
-            pos["heat_alert_class"] = get_alert_class_local(heat_val, hi_low, hi_med, hi_high)
+            heat = float(pos.get("heat_index") or 0.0)
+            pos["liqdist_alert_class"] = get_alert_class(liqd, liqd_cfg.get("low"), liqd_cfg.get("medium"), liqd_cfg.get("high"))
+            pos["heat_alert_class"] = get_alert_class(heat, hi_cfg.get("low"), hi_cfg.get("medium"), hi_cfg.get("high"))
 
-        totals_dict = CalcServices().calculate_totals(positions)
-        times_dict = dl.get_last_update_times() or {}
-        pos_time_iso = times_dict.get("last_update_time_positions", "N/A")
-        pos_time_formatted = _convert_iso_to_pst(pos_time_iso)
+        totals = CalcServices().calculate_totals(positions)
+        times = current_app.data_locker.get_last_update_times() or {}
+        pos_time = _convert_iso_to_pst(times.get("last_update_time_positions", "N/A"))
 
         return render_template("positions.html",
                                positions=positions,
-                               totals=totals_dict,
-                               portfolio_value=totals_dict.get("total_value", 0),
-                               last_update_positions=pos_time_formatted,
-                               last_update_positions_source=times_dict.get("last_update_positions_source", "N/A"))
+                               totals=totals,
+                               portfolio_value=totals.get("total_value", 0),
+                               last_update_positions=pos_time,
+                               last_update_positions_source=times.get("last_update_positions_source", "N/A"))
 
     except Exception as e:
-        logger.error(f"Error in listing positions: {e}", exc_info=True)
+        logger.error(f"Error in listing positions: {e}")
         return jsonify({"error": str(e)}), 500
-
-def position_trends():
-    """
-    Renders historical trends for positions totals using data from the positions_totals_history table.
-    The timeframe is determined by the 'hours' query parameter (default 24 hours).
-    """
-    try:
-        # Use "hours" from query parameters instead of "timeframe"
-        hours = request.args.get("hours", default=24, type=int)
-        threshold = datetime.now() - timedelta(hours=hours)
-        logger.debug(f"Querying snapshots from {threshold.isoformat()} onward (last {hours} hours).")
-        dl = get_locker()
-        dl._init_sqlite_if_needed()  # Ensure connection is ready.
-        cursor = dl.db.get_cursor()
-        cursor.execute("""
-            SELECT *
-              FROM positions_totals_history
-             WHERE snapshot_time >= ?
-             ORDER BY snapshot_time ASC
-        """, (threshold.isoformat(),))
-        rows = cursor.fetchall()
-        cursor.close()
-        logger.debug(f"Found {len(rows)} snapshot rows in the selected timeframe.")
-
-        # Build chart_data with consistent key names for the front-end.
-        chart_data = {
-            "collateral": [],
-            "value": [],
-            "size": [],
-            "avg_leverage": [],
-            "avg_travel_percent": [],
-            "avg_heat": []
-        }
-
-        if not rows:
-            # Fallback: if no snapshot rows exist, use current totals to produce a data point.
-            calc_services = CalcServices()
-            positions = dl.get_positions()
-            totals = calc_services.calculate_totals(positions)
-            current_timestamp = int(datetime.now().timestamp() * 1000)
-            chart_data = {
-                "collateral": [[current_timestamp, totals.get("total_collateral", 0)]],
-                "value": [[current_timestamp, totals.get("total_value", 0)]],
-                "size": [[current_timestamp, totals.get("total_size", 0)]],
-                "avg_leverage": [[current_timestamp, totals.get("avg_leverage", 0)]],
-                "avg_travel_percent": [[current_timestamp, totals.get("avg_travel_percent", 0)]],
-                "avg_heat": [[current_timestamp, totals.get("avg_heat_index", 0)]]
-            }
-            logger.debug("No snapshots found; using fallback current totals.")
-        else:
-            for row in rows:
-                # Since rows are sqlite3.Row objects, use bracket notation.
-                snapshot_time = datetime.fromisoformat(row["snapshot_time"])
-                epoch_ms = int(snapshot_time.timestamp() * 1000)
-                chart_data["collateral"].append([epoch_ms, float(row["total_collateral"] or 0)])
-                chart_data["value"].append([epoch_ms, float(row["total_value"] or 0)])
-                chart_data["size"].append([epoch_ms, float(row["total_size"] or 0)])
-                chart_data["avg_leverage"].append([epoch_ms, float(row["avg_leverage"] or 0)])
-                chart_data["avg_travel_percent"].append([epoch_ms, float(row["avg_travel_percent"] or 0)])
-                chart_data["avg_heat"].append([epoch_ms, float(row["avg_heat_index"] or 0)])
-
-        return render_template("position_trends.html", chart_data=chart_data, timeframe=hours)
-    except Exception as e:
-        logger.error("Error in position_trends: %s", e, exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
 
 
 @positions_bp.route("/table", methods=["GET"])
+@route_log_alert
 def positions_table():
     try:
-        dl = get_locker()
-        positions = PositionService.get_all_positions(DB_PATH)
+        core = PositionCore(current_app.data_locker)
+        positions = core.get_all_positions()
         totals = CalcServices().calculate_totals(positions)
         return render_template("positions_table.html", positions=positions, totals=totals)
     except Exception as e:
-        logger.error(f"Error in positions_table: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/edit/<position_id>", methods=["POST"])
-def edit_position(position_id):
-    try:
-        dl = get_locker()
-        size = float(request.form.get("size", 0.0))
-        collateral = float(request.form.get("collateral", 0.0))
-        dl.update_position(position_id, size, collateral)
-        return redirect(url_for("positions.list_positions"))
-    except Exception as e:
-        logger.error(f"Error updating position {position_id}: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/delete/<position_id>", methods=["POST"])
-def delete_position(position_id):
-    try:
-        dl = get_locker()
-        dl.delete_position(position_id)
-        return redirect(url_for("positions.list_positions"))
-    except Exception as e:
-        logger.error(f"Error deleting position {position_id}: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/delete-all", methods=["POST"])
-def delete_all_positions():
-    try:
-        dl = get_locker()
-        dl.delete_all_positions()
-        return redirect(url_for("positions.list_positions"))
-    except Exception as e:
-        logger.error(f"Error deleting all positions: {e}", exc_info=True)
+        logger.error(f"Error in positions_table: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @positions_bp.route("/upload", methods=["POST"])
+@route_log_alert
 def upload_positions():
     try:
-        dl = get_locker()
-        if "file" not in request.files:
-            return jsonify({"error": "No file part in request"}), 400
-        file = request.files["file"]
+        core = PositionCore(current_app.data_locker)
+        file = request.files.get("file")
         if not file:
-            return jsonify({"error": "Empty file"}), 400
-        file_contents = file.read().decode("utf-8").strip()
-        if not file_contents:
+            return jsonify({"error": "No file part in request"}), 400
+        content = file.read().decode("utf-8").strip()
+        if not content:
             return jsonify({"error": "Uploaded file is empty"}), 400
-        positions_list = json.loads(file_contents)
-        if not isinstance(positions_list, list):
-            return jsonify({"error": "Top-level JSON must be a list"}), 400
-        for pos_dict in positions_list:
-            if "wallet_name" in pos_dict:
-                pos_dict["wallet"] = pos_dict["wallet_name"]
-            dl.create_position(pos_dict)
+        items = json.loads(content)
+        if not isinstance(items, list):
+            return jsonify({"error": "Expected a list of positions"}), 400
+        for item in items:
+            if "wallet_name" in item:
+                item["wallet"] = item["wallet_name"]
+            core.create_position(item)
         return jsonify({"message": "Positions uploaded successfully"}), 200
     except Exception as e:
-        logger.error(f"Error uploading positions: {e}", exc_info=True)
+        logger.error(f"Error uploading positions: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@positions_bp.route("/edit/<position_id>", methods=["POST"])
+@route_log_alert
+def edit_position(position_id):
+    return jsonify({"error": "Edit not yet implemented in PositionCore"}), 501
+
+
+@positions_bp.route("/delete/<position_id>", methods=["POST"])
+@route_log_alert
+def delete_position(position_id):
+    try:
+        core = PositionCore(current_app.data_locker)
+        core.delete_position(position_id)
+        return redirect(url_for("positions.list_positions"))
+    except Exception as e:
+        logger.error(f"Error deleting position {position_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@positions_bp.route("/delete-all", methods=["POST"])
+@route_log_alert
+def delete_all_positions():
+    try:
+        core = PositionCore(current_app.data_locker)
+        core.clear_all_positions()
+        return redirect(url_for("positions.list_positions"))
+    except Exception as e:
+        logger.error(f"Error deleting all positions: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@positions_bp.route("/update_jupiter", methods=["GET", "POST"])
+@route_log_alert
+def update_jupiter():
+    try:
+        core = PositionCore(current_app.data_locker)
+        result = core.update_positions_from_jupiter(source="user")
+        if "error" in result:
+            return jsonify(result), 500
+        return jsonify(result), 200
+    except Exception as e:
+        logger.error(f"💥 update_jupiter route failed: {e}")
         return jsonify({"error": str(e)}), 500
 
 
 @positions_bp.route("/api/data", methods=["GET"])
+@route_log_alert
 def positions_data_api():
     try:
-        dl = get_locker()
+        core = PositionCore(current_app.data_locker)
+        positions = core.get_all_positions()
         mini_prices = []
         for asset in ["BTC", "ETH", "SOL"]:
-            row = dl.get_latest_price(asset)
+            row = current_app.data_locker.get_latest_price(asset)
             if row:
                 mini_prices.append({
                     "asset_type": row["asset_type"],
                     "current_price": float(row["current_price"])
                 })
-        positions = PositionService.get_all_positions(DB_PATH)
-        for pos in positions:
-            wallet_name = pos.get("wallet_name")
-            pos["wallet_name"] = dl.get_wallet_by_name(wallet_name) if wallet_name else None
-        totals_dict = CalcServices().calculate_totals(positions)
+        totals = CalcServices().calculate_totals(positions)
         return jsonify({
             "mini_prices": mini_prices,
             "positions": positions,
-            "totals": totals_dict
+            "totals": totals
         })
     except Exception as e:
-        logger.error(f"Error in positions_data_api: {e}", exc_info=True)
+        logger.error(f"Error in positions_data_api: {e}")
         return jsonify({"error": str(e)}), 500
-
-
-
-
-@positions_bp.route("/delete-alert/<alert_id>", methods=["POST"])
-def delete_alert(alert_id):
-    try:
-        dl = get_locker()
-        dl.delete_alert(alert_id)
-        flash("Alert deleted!", "success")
-        # Assuming an alerts blueprint or endpoint exists for redirection
-        return redirect(url_for("alerts.list_alerts"))
-    except Exception as e:
-        logger.error(f"Error deleting alert {alert_id}: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-# Helper function to retrieve the SocketIO instance from the current app
-def get_socketio():
-    return current_app.extensions.get('socketio')
-
-# Define the helper function update_prices_wrapper.
-def update_prices_wrapper(source="undefined"):
-    try:
-
-        # Run the asynchronous price update, passing the source parameter.
-        asyncio.run(PriceMonitor(db_path=DB_PATH, config_path=CONFIG_PATH).update_prices(source=source))
-        class DummyResponse:
-            status_code = 200
-            def get_json(self):
-                return {"message": "Prices updated successfully"}
-        return DummyResponse()
-    except Exception as ex:
-        err_msg = str(ex)
-        logger.error(f"Error in update_prices_wrapper: {err_msg}", exc_info=True)
-        class DummyErrorResponse:
-            status_code = 500
-            def get_json(self):
-                return {"error": err_msg}
-        return DummyErrorResponse()
-
-
-@positions_bp.route("/update_jupiter", methods=["GET", "POST"])
-def update_jupiter():
-    try:
-        dl = current_app.data_locker
-        sync_service = PositionSyncService(dl)
-        result = sync_service.run_full_jupiter_sync(source="user")
-
-        if "error" in result:
-            return jsonify(result), 500
-        return jsonify(result), 200
-
-    except Exception as e:
-        logger.error(f"💥 update_jupiter route failed: {e}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/update_alert_config", methods=["POST"])
-def update_alert_config():
-    try:
-        config = load_config("sonic_config.json")
-        form_data = request.form.to_dict(flat=True)
-        updated_alerts = parse_nested_form(form_data)
-        config["alert_ranges"] = updated_alerts
-        updated_config = update_config(config, "sonic_config.json")
-        manager.reload_config()
-        return jsonify({"success": True})
-    except Exception as e:
-        logger.error("Error updating alert config: %s", e, exc_info=True)
-        return jsonify({"error": str(e)}), 500
-
-
-@positions_bp.route("/save_theme", methods=["POST"])
-def save_theme():
-    try:
-        new_theme_data = request.get_json()
-        if not new_theme_data:
-            return jsonify({"success": False, "error": "No data received"}), 400
-        config_path = current_app.config.get("CONFIG_PATH", CONFIG_PATH)
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-        config.setdefault("theme_profiles", {})
-        config["theme_profiles"]["sidebar"] = new_theme_data.get("sidebar", config["theme_profiles"].get("sidebar", {}))
-        config["theme_profiles"]["navbar"] = new_theme_data.get("navbar", config["theme_profiles"].get("navbar", {}))
-        with open(config_path, 'w') as f:
-            json.dump(config, f, indent=2)
-        return jsonify({"success": True})
-    except Exception as e:
-        current_app.logger.error("Error saving theme: %s", e, exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
-@positions_bp.context_processor
-def update_theme_context():
-    config_path = current_app.config.get("CONFIG_PATH", CONFIG_PATH)
-    try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-    except Exception as e:
-        logger.error(f"Error loading theme config: {e}", exc_info=True)
-        config = {}
-    theme = {
-        'sidebar': {
-            'bg': config.get('sidebar_bg', 'bg-primary'),
-            'color_mode': config.get('sidebar_mode', 'dark')
-        },
-        'navbar': {
-            'bg': config.get('navbar_bg', 'bg-secondary'),
-            'color_mode': config.get('navbar_mode', 'dark')
-        }
-    }
-    return dict(theme=theme)
-
-
-# ---------------------------------------------------------------------------
-# Helper: Parse Alert Config Form
-# ---------------------------------------------------------------------------
-def parse_nested_form(form_data: dict) -> dict:
-    updated = {}
-    for full_key, value in form_data.items():
-        if full_key.startswith("alert_ranges[") and full_key.endswith("]"):
-            inner = full_key[len("alert_ranges["):-1]
-            parts = inner.split("][")
-            if len(parts) == 2:
-                metric, field = parts
-                if metric not in updated:
-                    updated[metric] = {}
-                if field in ["enabled"]:
-                    updated[metric][field] = True
-                else:
-                    try:
-                        updated[metric][field] = float(value)
-                    except ValueError:
-                        updated[metric][field] = value
-            elif len(parts) == 3:
-                metric, subfield, field = parts
-                if metric not in updated:
-                    updated[metric] = {}
-                if subfield not in updated[metric]:
-                    updated[metric][subfield] = {}
-                updated[metric][subfield][field] = True
-    return updated
-
-

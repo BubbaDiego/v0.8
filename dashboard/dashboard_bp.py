@@ -18,9 +18,12 @@ from utils.fuzzy_wuzzy import fuzzy_match_key
 from core.constants import THEME_CONFIG_PATH
 from core.logging import log
 from dashboard.dashboard_service import get_dashboard_context
+from utils.route_decorators import route_log_alert
 #from sonic_app import global_data_locker
 
-dashboard_bp = Blueprint('dashboard', __name__, template_folder='templates')
+dashboard_bp = Blueprint('dashboard', __name__, template_folder='../templates/dashboard')
+
+
 
 
 
@@ -36,6 +39,7 @@ DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
 
 @dashboard_bp.route("/database_viewer")
+@route_log_alert
 def database_viewer():
 
     try:
@@ -59,6 +63,7 @@ def database_viewer():
 # Theme Setup Page
 # ---------------------------------
 @dashboard_bp.route("/theme_setup")
+@route_log_alert
 def theme_setup():
     from flask import current_app
     dl = current_app.data_locker
@@ -70,6 +75,7 @@ def theme_setup():
 # Save Theme Settings
 # ---------------------------------
 @dashboard_bp.route("/save_theme_mode", methods=["POST"])
+@route_log_alert
 def save_theme_mode():
     theme_mode = request.json.get("theme_mode")
     dl = get_locker()
@@ -77,6 +83,7 @@ def save_theme_mode():
     return jsonify({"success": True})
 
 @dashboard_bp.route("/save_theme", methods=["POST"])
+@route_log_alert
 def save_theme():
     theme_data = request.json
     with open(THEME_CONFIG_PATH, "w") as f:
@@ -84,6 +91,7 @@ def save_theme():
     return jsonify({"success": True})
 
 @dashboard_bp.route("/api/get_prices")
+@route_log_alert
 def get_prices():
     from flask import current_app
     try:
@@ -162,6 +170,7 @@ def apply_color(metric_name, value, limits):
         return "red"
 
 @dashboard_bp.route("/dash")
+@route_log_alert
 def dash_page():
     from dashboard.dashboard_service import get_dashboard_context
     context = get_dashboard_context(current_app.data_locker)
@@ -171,6 +180,7 @@ def dash_page():
 
 
 @dashboard_bp.route('/alerts/alert_config_page', methods=['GET'])
+@route_log_alert
 def alert_config_page():
     # 🛑 Disabled temporarily
     return "🚫 Alert Config is currently disabled.", 410
@@ -179,6 +189,7 @@ def alert_config_page():
 # API: Graph Data (Real portfolio history)
 # ---------------------------------
 @dashboard_bp.route("/api/graph_data")
+@route_log_alert
 def api_graph_data():
     dl = current_app.data_locker
     portfolio_history = dl.portfolio.get_snapshots() or []
@@ -193,6 +204,7 @@ def api_graph_data():
 # ---------------------------------
 
 @dashboard_bp.route("/api/size_composition")
+@route_log_alert
 def api_size_composition():
     try:
         core = PositionCoreService(current_app.data_locker)
@@ -221,6 +233,7 @@ def api_size_composition():
 # API: Collateral Composition Pie (Real positions)
 # ---------------------------------
 @dashboard_bp.route("/api/collateral_composition")
+@route_log_alert
 def api_collateral_composition():
     try:
         core = PositionCoreService(current_app.data_locker)

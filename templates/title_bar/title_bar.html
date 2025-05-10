@@ -1,0 +1,86 @@
+<!-- === title_bar.html === -->
+
+<nav class="navbar navbar-expand-md navbar-dark gradient-navbar border-bottom">
+  <div class="container-fluid">
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+
+      <!-- Left Side Links -->
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.dash_page') }}"><i class="fas fa-home"></i></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('positions.positions_table') }}"><i class="fas fa-table"></i></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('alerts_bp.alert_config_page') }}"><i class="fas fa-bell"></i></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('alerts_bp.monitor_page') }}"><i class="fas fa-th"></i></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('sonic_labs.hedge_calculator') }}"><span class="hedgehog-icon">🦔</span></a></li>
+      </ul>
+
+      <!-- Center Timer + Asset Prices -->
+      <ul class="navbar-nav mx-auto align-items-center">
+        <li class="nav-item d-none d-md-flex ms-3">
+          <div class="d-flex gap-2 align-items-center">
+            <div class="asset-panel">
+              <img src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=023" alt="BTC">
+              <span id="btcPrice">$--</span>
+            </div>
+            <div class="asset-panel">
+              <img src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=023" alt="ETH">
+              <span id="ethPrice">$--</span>
+            </div>
+            <div class="asset-panel">
+              <img src="https://cryptologos.cc/logos/solana-sol-logo.png?v=023" alt="SOL">
+              <span id="solPrice">$--</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Right Side Controls -->
+      <ul class="navbar-nav ms-auto mb-2 mb-md-0 align-items-center">
+        <li class="nav-item me-2">
+          <button id="updateJupiterBtn" class="btn btn-light btn-sm" title="Update Jupiter">
+            <img src="{{ url_for('static', filename='images/jupiter.jpg') }}" alt="Jupiter" style="width:24px; height:24px;">
+          </button>
+        </li>
+        <li class="nav-item me-2">
+          <button id="updatePricesBtn" class="btn btn-light btn-sm" title="Update Prices">$</button>
+        </li>
+        <li class="nav-item me-2">
+          <button id="updateFullCycleBtn" class="btn btn-light btn-sm" title="Run Full Cycle">🌀</button>
+        </li>
+        <li class="nav-item me-2">
+          <button id="clearAllBtn" class="btn btn-light btn-sm" title="Clear All">🗑️</button>
+        </li>
+        <li class="nav-item me-2">
+          <button id="layoutToggleButton" class="btn btn-light btn-sm" title="Toggle Layout Mode">
+            <i class="fas fa-arrows-alt-h"></i>
+          </button>
+        </li>
+        <li class="nav-item me-2">
+          <button id="themeToggleButton" class="btn btn-light btn-sm" title="Toggle Theme">
+            <i id="themeIcon" class="fas fa-sun"></i>
+          </button>
+        </li>
+
+        <!-- Gear Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="gearDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-cog"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="gearDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('dashboard.database_viewer') }}"><i class="fas fa-database me-1"></i> Database Viewer</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('dashboard.theme_setup') }}"><i class="fas fa-palette me-1"></i> Theme Builder</a></li>
+          </ul>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<!-- Title Bar Scripts -->
+<script src="{{ url_for('static', filename='js/title_bar.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
