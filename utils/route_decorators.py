@@ -8,10 +8,9 @@ def route_log_alert(func):
         method = request.method
         path = request.path
         ip = request.remote_addr or "unknown"
-        agent = request.headers.get("User-Agent", "N/A")
+        agent = request.headers.get("User-Agent", "N/A")[:12]  # 🔪 Trim to 25 chars
         route = f"{method} {path}"
 
-        # 🌐 Entry log (clean cyan, no payload)
         log.route(f"{route} :: IP={ip} :: Agent={agent}")
 
         try:
