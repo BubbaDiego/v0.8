@@ -39,7 +39,7 @@ def show_main_menu():
 
 async def step_engine_menu():
     steps = {
-        "1": "clear_all_data",
+    #    "1": "clear_all_data",
         "2": "market_updates",
         "3": "create_portfolio_alerts",
         "4": "create_position_alerts",

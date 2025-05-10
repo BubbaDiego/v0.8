@@ -63,7 +63,10 @@ class AlertEnrichmentService:
 
     async def _enrich_portfolio(self, alert):
         try:
-            context = get_dashboard_context()
+            context = get_dashboard_context(self.data_locker)
+            if not context:
+                raise RuntimeError("Dashboard context returned None")
+
             totals = context.get("totals", {})
             metric = (alert.description or "").strip().lower()
 

@@ -208,17 +208,19 @@ class Cyclone:
 
     async def run_cycle(self, steps=None):
         available_steps = {
-            "clear_all_data": self.run_clear_all_data,
+           # "clear_all_data": self.run_clear_all_data,
             "market_updates": self.run_market_updates,
+            "check_jupiter_for_updates": self.run_check_jupiter_for_updates,
+            "enrich_positions": self.run_enrich_positions,
+            "enrich_alerts": self.run_alert_enrichment,
+            "update_evaluated_value": self.run_update_evaluated_value,
             "create_portfolio_alerts": self.run_create_portfolio_alerts,
             "create_position_alerts": self.run_create_position_alerts,
             "create_global_alerts": self.run_create_global_alerts,
             "evaluate_alerts": self.run_alert_evaluation,
             "cleanse_ids": self.run_cleanse_ids,
             "link_hedges": self.run_link_hedges,
-            "enrich_positions": self.run_enrich_positions,
-            "enrich_alerts": self.run_alert_enrichment,
-            "update_evaluated_value": self.run_update_evaluated_value,
+
         }
 
         steps = steps or list(available_steps.keys())
@@ -282,11 +284,27 @@ class Cyclone:
 
 
 
+     # -------------------------------
+        # 🔹 Step 1: Check Jupiter Updates
+        # -------------------------------
+    async def run_check_jupiter_for_updates(self):
+        log.info("🚀 Checking Jupiter for Position Updates...", "Cyclone")
+        self.position_core.update_positions_from_jupiter()
+        log.success("✅ Jupiter sync complete.", "Cyclone")
+
+    # -------------------------------
+    # 🔹 Step 2: Enrich Positions
+    # -------------------------------
+    async def enrich_positions(self):
+        Log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
+        await self.position_core.enrich_positions()
+        Log.success("✅ Position enrichment complete.", "Cyclone")
+
 
 if __name__ == "__main__":
     configure_cyclone_console_log()
 
 #    from cyclone.cyclone_console_service import CycloneConsoleService
     cyclone = Cyclone(poll_interval=60)
- #   helper = CycloneConsoleService(cyclone)
+   # helper = CycloneConsoleService(cyclone)
     helper.run()

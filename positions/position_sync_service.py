@@ -20,27 +20,37 @@ class PositionSyncService:
     }
 
     def run_full_jupiter_sync(self, source="user") -> dict:
-
-       # now = datetime.now()
-
-        from positions.hedge_manager import HedgeManager  # if needed
+        from positions.hedge_manager import HedgeManager
 
         try:
-          #  deleted = self.dl.positions.delete_all_positions()
-
+            # Step 1: Sync Jupiter Positions
             result = self.update_jupiter_positions()
+
             if "error" in result:
-                return result
+                log.error(f"❌ Jupiter Sync Failed: {result['error']}", source="PositionSyncService")
+                return {
+                    "success": False,
+                    "error": result["error"],
+                    "imported": 0,
+                    "skipped": 0,
+                    "errors": 1,
+                    "hedges": 0,
+                    "timestamp": datetime.now().isoformat()
+                }
 
-            log.success(f"✅ Jupiter positions imported: {result['imported']}", source="PositionSyncService")
+            imported = result.get("imported", 0)
+            skipped = result.get("skipped", 0)
+            errors = result.get("errors", 0)
 
-            # Hedge generation (optional)
+            log.success(f"✅ Jupiter positions imported: {imported}", source="PositionSyncService")
+
+            # Step 2: Hedge Generation
             positions = self.dl.positions.get_all_positions()
             hedge_manager = HedgeManager(positions)
             hedges = hedge_manager.get_hedges()
             log.success(f"🌐 HedgeManager created {len(hedges)} hedges", source="PositionSyncService")
 
-            # Timestamp updates
+            # Step 3: Timestamp and Snapshot
             now = datetime.now()
             self.dl.system.set_last_update_times({
                 "last_update_time_positions": now.isoformat(),
@@ -53,23 +63,100 @@ class PositionSyncService:
                 CalcServices().calculate_totals(positions)
             )
 
+            # Step 4: Write HTML Report
+            try:
+                base_dir = os.path.abspath(os.path.join(self.dl.db.db_path, "..", ".."))
+                reports_dir = os.path.join(base_dir, "reports")
+                os.makedirs(reports_dir, exist_ok=True)
+
+                timestamp_str = now.strftime("%Y%m%d_%H%M%S")
+                report_filename = f"sync_report_{timestamp_str}.html"
+                report_path = os.path.join(reports_dir, report_filename)
+
+                html_content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cyclone Sync Report</title>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; background: #111; color: #ddd; padding: 20px; }}
+                        h2 {{ color: #00d8ff; }}
+                        .stat {{ margin-bottom: 8px; }}
+                        .ok {{ color: #7fff00; }}
+                        .fail {{ color: #ff4c4c; }}
+                        .neutral {{ color: #ffd700; }}
+                        .timestamp {{ font-size: 0.9em; color: #888; }}
+                    </style>
+                </head>
+                <body>
+                    <h2>🚀 Cyclone Jupiter Sync Report</h2>
+                    <div class="stat ok">✅ Imported: {imported}</div>
+                    <div class="stat neutral">➖ Skipped: {skipped}</div>
+                    <div class="stat fail">❌ Errors: {errors}</div>
+                    <div class="stat neutral">🔗 Hedges: {len(hedges)}</div>
+                    <div class="timestamp">🕒 Timestamp: {now.isoformat()}</div>
+                </body>
+                </html>
+                """
+
+                with open(report_path, "w", encoding="utf-8") as f:
+                    f.write(html_content)
+
+                log.success(f"📄 Sync report saved to: {report_path}", source="PositionSyncService")
+
+                # Step 5: Rotate Old Reports (Keep last 5)
+                report_files = sorted(
+                    [f for f in os.listdir(reports_dir) if f.startswith("sync_report_") and f.endswith(".html")],
+                    reverse=True
+                )
+
+                for old_file in report_files[5:]:
+                    try:
+                        os.remove(os.path.join(reports_dir, old_file))
+                        log.info(f"🧹 Removed old report: {old_file}", source="PositionSyncService")
+                    except Exception as e:
+                        log.warning(f"⚠️ Failed to delete old report {old_file}: {e}", source="PositionSyncService")
+
+            except Exception as e:
+                log.warning(f"⚠️ Failed to write HTML sync report: {e}", source="PositionSyncService")
+
+            # Step 6: Final Response Object
+            final_msg = f"Sync complete: {imported} imported, {skipped} skipped, {errors} errors, {len(hedges)} hedges"
+            log.info(f"📦 {final_msg}", source="PositionSyncService")
+
             return {
-                "message": f"Sync complete: {result['imported']} positions, {len(hedges)} hedges",
-                "imported": result["imported"],
+                "success": True,
+                "message": final_msg,
+                "imported": imported,
+                "skipped": skipped,
+                "errors": errors,
                 "hedges": len(hedges),
                 "timestamp": now.isoformat()
             }
 
         except Exception as e:
             log.error(f"❌ run_full_jupiter_sync failed: {e}", source="PositionSyncService")
-            return {"error": str(e)}
+            return {
+                "success": False,
+                "error": str(e),
+                "imported": 0,
+                "skipped": 0,
+                "errors": 1,
+                "hedges": 0,
+                "timestamp": datetime.now().isoformat()
+            }
 
     def update_jupiter_positions(self):
         log.info("🔄 Updating positions from Jupiter...", source="PositionSyncService")
         try:
             log.info(f"📁 Writing to DB: {self.dl.db.db_path}", source="PositionSyncService")
-            wallets = self.dl.wallets.get_wallets()
-            log.debug(f"Found {len(wallets)} wallets", source="PositionSyncService")
+
+            wallets = [{
+                "public_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
+                "name": "TestWallet"
+            }]
+            log.warning(f"🚨 OVERRIDE: Using test wallet for sync", source="PositionSyncService")
+
             new_positions = []
 
             for wallet in wallets:
@@ -77,21 +164,24 @@ class PositionSyncService:
                 name = wallet.get("name", "Unnamed")
 
                 if not pub:
-                    log.warning(f"Skipping {name} — missing address", source="PositionSyncService")
+                    log.warning(f"⚠️ Skipping {name} — missing address", source="PositionSyncService")
                     continue
 
                 try:
                     url = f"https://perps-api.jup.ag/v1/positions?walletAddress={pub}&showTpslRequests=true"
                     res = requests.get(url)
+
+                    log.debug(f"🌐 [{name}] Jupiter API status: {res.status_code}", source="JupiterAPI")
+                    log.debug(f"📝 Response Body:\n{res.text}", source="JupiterAPI")
+
                     res.raise_for_status()
                     data_list = res.json().get("dataList", [])
-
-                    log.info(f"{name} → {len(data_list)} Jupiter positions", source="PositionSyncService")
+                    log.info(f"📊 {name} → {len(data_list)} Jupiter positions", source="PositionSyncService")
 
                     for item in data_list:
                         pos_id = item.get("positionPubkey")
                         if not pos_id:
-                            log.warning("Missing positionPubkey, skipping", source="PositionSyncService")
+                            log.warning("🚫 Missing positionPubkey, skipping", source="PositionSyncService")
                             continue
 
                         raw_pos = {
@@ -107,41 +197,86 @@ class PositionSyncService:
                             "last_updated": datetime.fromtimestamp(float(item.get("updatedTime", 0))).isoformat(),
                             "wallet_name": name,
                             "pnl_after_fees_usd": float(item.get("pnlAfterFeesUsd", 0.0)),
-                            "travel_percent": float(item.get("pnlChangePctAfterFees", 0.0))
+                            "travel_percent": float(item.get("pnlChangePctAfterFees", 0.0)),
+                            "current_price": float(item.get("markPrice", 0.0))  # <- captured as markPrice
                         }
 
+                        log.debug(f"🆕 Parsed Jupiter position: {raw_pos}", source="Parser")
                         new_positions.append(raw_pos)
-                except Exception as e:
-                    log.error(f"{name} API error: {e}", source="PositionSyncService")
+
+                except requests.RequestException as e:
+                    log.error(f"❌ [{name}] API Request Error: {e}", source="JupiterAPI")
+                    log.debug(f"📝 Raw body:\n{res.text if 'res' in locals() else 'no response'}", source="JupiterAPI")
 
             imported = 0
+            errors = 0
             self.enricher = PositionEnrichmentService(self.dl)
 
-            for pos in new_positions:
+            # Get DB schema to sanitize fields
+            try:
                 cursor = self.dl.db.get_cursor()
-                cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos["id"],))
-                exists = cursor.fetchone()[0]
+                cursor.execute("PRAGMA table_info(positions);")
+                db_columns = set(row[1] for row in cursor.fetchall())
                 cursor.close()
+            except Exception as e:
+                log.warning(f"⚠️ Failed to fetch DB schema: {e}", source="InsertCheck")
+                db_columns = None
 
-                if exists == 0:
+            for pos in new_positions:
+                log.debug(f"🔍 Checking DB for position ID: {pos['id']}", source="InsertCheck")
+
+                try:
+                    cursor = self.dl.db.get_cursor()
+                    cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos["id"],))
+                    exists = cursor.fetchone()[0]
+                    cursor.close()
+                except Exception as e:
+                    log.error(f"❌ DB existence check failed for {pos['id']}: {e}", source="InsertCheck")
+                    errors += 1
+                    continue
+
+                if exists:
+                    log.info(f"⏭️ Skipped (already exists): {pos['id']}", source="InsertCheck")
+                    continue
+
+                try:
+                    log.debug(f"🧬 Enriching position {pos['id']}", source="Enrichment")
                     enriched = self.enricher.enrich(pos)
-
                     for key in ["alert_reference_id", "hedge_buddy_id"]:
                         enriched.setdefault(key, None)
 
-                    try:
-                        self.dl.positions.create_position(enriched)
-                        log.success(f"✅ Inserted: {enriched['id']}", source="InsertVerify")
-                        imported += 1
-                    except Exception as e:
-                        log.error(f"❌ Insert failed for {enriched['id']}: {e}", source="InsertVerify")
+                    # Strip fields not in DB schema (protect insert)
+                    if db_columns:
+                        enriched = {k: v for k, v in enriched.items() if k in db_columns}
+
+                    log.debug(f"✅ Enriched: {enriched}", source="Enrichment")
+                except Exception as e:
+                    log.error(f"❌ Enrichment failed for {pos['id']}: {e}", source="Enrichment")
+                    errors += 1
+                    continue
+
+                try:
+                    self.dl.positions.create_position(enriched)
+                    log.success(f"✅ Inserted: {enriched['id']}", source="InsertVerify")
+                    imported += 1
+                except Exception as e:
+                    log.error(f"❌ Insert failed for {enriched['id']}: {e}", source="InsertVerify")
+                    errors += 1
+
+            skipped = len(new_positions) - imported - errors
+            log.info(f"📦 Jupiter Sync Result → Imported: {imported}, Skipped: {skipped}, Errors: {errors}",
+                     source="SyncSummary")
 
             return {
                 "message": "Jupiter sync complete",
                 "imported": imported,
-                "skipped": len(new_positions) - imported
+                "skipped": skipped,
+                "errors": errors
             }
 
         except Exception as e:
-            log.error(f"❌ Sync failed: {e}", source="PositionSyncService")
+            log.critical(f"💥 Jupiter sync crashed: {e}", source="PositionSyncService")
             return {"error": str(e)}
+
+
+

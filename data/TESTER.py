@@ -1,43 +1,57 @@
-import sys
+import sqlite3
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from utils.calc_services import calculate_travel_percent
 
-def run_travel_percent_tests():
-    print("\n🚀 Travel Percent Test Suite\n")
+# === CONFIG ===
+DB_PATH = r"C:\v0.8\data\mother_brain.db"
 
-    test_cases = [
-        # 💥 LONG - liquidation zone
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 75,  "expected": -50.0},
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 50,  "expected": -100.0},
+# === POSITION SCHEMA ===
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS positions (
+    id TEXT PRIMARY KEY,
+    asset_type TEXT,
+    position_type TEXT,
+    entry_price REAL,
+    liquidation_price REAL,
+    collateral REAL,
+    size REAL,
+    leverage REAL,
+    value REAL,
+    last_updated TEXT,
+    wallet_name TEXT,
+    pnl_after_fees_usd REAL,
+    travel_percent REAL,
+    profit REAL,
+    liquidation_distance REAL,
+    heat_index REAL,
+    current_heat_index REAL,
+    alert_reference_id TEXT,
+    hedge_buddy_id TEXT,
+    current_price REAL -- 🆕 add this to avoid crash
+);
+"""
 
-        # 🚀 LONG - profit range
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 125, "expected": 50.0},
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 150, "expected": 100.0},
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 200, "expected": 200.0},
-        {"pos": "LONG", "ep": 100, "lp": 50,  "cp": 500, "expected": 800.0},
+def wipe_and_recreate_positions_table(db_path: str):
+    if not os.path.exists(db_path):
+        print(f"❌ DB file not found: {db_path}")
+        return
 
-        # 💥 SHORT - liquidation zone
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 125, "expected": -50.0},
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 150, "expected": -100.0},
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
 
-        # 🚀 SHORT - profit range
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 75,  "expected": 50.0},
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 50,  "expected": 100.0},
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 25,  "expected": 150.0},
-        {"pos": "SHORT", "ep": 100, "lp": 150, "cp": 0,   "expected": 200.0},
-    ]
+    try:
+        print("💣 Dropping existing 'positions' table...")
+        cur.execute("DROP TABLE IF EXISTS positions;")
+        conn.commit()
 
-    for i, case in enumerate(test_cases, 1):
-        actual = calculate_travel_percent(
-            entry_price=case["ep"],
-            current_price=case["cp"],
-            liquidation_price=case["lp"],
-            position_type=case["pos"]
-        )
+        print("🛠 Rebuilding clean 'positions' table...")
+        cur.execute(SCHEMA)
+        conn.commit()
 
-        status = "✅ PASS" if round(actual, 2) == case["expected"] else "❌ FAIL"
-        print(f"{status} | Test {i}: {case['pos']} | EP={case['ep']} CP={case['cp']} LP={case['lp']} → TP={actual:.2f}% (expected {case['expected']}%)")
+        print("✅ Positions table recreated with current_price column.")
+    except Exception as e:
+        print(f"❌ Failed to reset table: {e}")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
-    run_travel_percent_tests()
+    wipe_and_recreate_positions_table(DB_PATH)

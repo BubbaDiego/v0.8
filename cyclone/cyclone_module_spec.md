@@ -11,7 +11,7 @@ Evaluate risk and performance metrics
 
 Generate and evaluate alerts at multiple levels (position, portfolio, market)
 
-Manage hedging logic and pairing
+Manage hedging logic and pa[TESTER.py](../data/TESTER.py)iring
 
 Provide interactive console and programmatic API endpoints
 
