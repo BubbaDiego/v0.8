@@ -1,64 +1,47 @@
 document.addEventListener("DOMContentLoaded", () => {
-  renderGraph();
-  renderPieCharts();
-  // Removed startFreshnessTimer(); call — include it separately if needed
+  renderGraph(graphData);
+  renderPieCharts(sizeData, collateralData);
+  // Optionally start freshness timer here
 });
 
 // =========================
 // 📈 GRAPH - Portfolio Value Over Time
 // =========================
-function renderGraph() {
-  fetch("/api/graph_data")
-    .then(res => res.json())
-    .then(data => {
-      const options = {
-        chart: {
-          type: "line",
-          height: 300,
-          toolbar: { show: false },
-          zoom: { enabled: false }
-        },
-        series: [
-          { name: "Total Value", data: data.values },
-          { name: "Collateral", data: data.collateral }
-        ],
-        xaxis: {
-          categories: data.timestamps,
-          labels: { show: false }
-        },
-        stroke: { curve: "smooth", width: 3 },
-        colors: ["#007bff", "#28a745"],
-        grid: { borderColor: "#e0e0e0" },
-        tooltip: { shared: true, intersect: false }
-      };
+function renderGraph(data) {
+  const options = {
+    chart: {
+      type: "line",
+      height: 300,
+      toolbar: { show: false },
+      zoom: { enabled: false }
+    },
+    series: [
+      { name: "Total Value", data: data.values },
+      { name: "Collateral", data: data.collateral }
+    ],
+    xaxis: {
+      categories: data.timestamps,
+      labels: { show: false }
+    },
+    stroke: { curve: "smooth", width: 3 },
+    colors: ["#007bff", "#28a745"],
+    grid: { borderColor: "#e0e0e0" },
+    tooltip: { shared: true, intersect: false }
+  };
 
-      const chart = new ApexCharts(document.querySelector("#graphChart"), options);
-      chart.render();
+  const chart = new ApexCharts(document.querySelector("#graphChart"), options);
+  chart.render();
 
-      // ✅ Hide graph loader
-      const loader = document.getElementById("graphLoader");
-      if (loader) loader.style.display = "none";
-    })
-    .catch(err => console.error("❌ Failed to load graph data:", err));
+  const loader = document.getElementById("graphLoader");
+  if (loader) loader.style.display = "none";
 }
 
 // =========================
 // 🥧 PIE CHARTS - Size + Collateral Composition
 // =========================
-function renderPieCharts() {
-  fetch("/api/size_composition")
-    .then(res => res.json())
-    .then(data => {
-      renderDonutChart("#pieChartSize", data.series, "Size Composition");
-    })
-    .catch(err => console.error("❌ Size Pie Error:", err));
-
-  fetch("/api/collateral_composition")
-    .then(res => res.json())
-    .then(data => {
-      renderDonutChart("#pieChartCollateral", data.series, "Collateral Composition");
-    })
-    .catch(err => console.error("❌ Collateral Pie Error:", err));
+function renderPieCharts(size, collateral) {
+  renderDonutChart("#pieChartSize", size.series, "Size Composition");
+  renderDonutChart("#pieChartCollateral", collateral.series, "Collateral Composition");
 }
 
 // 🎯 Shared Donut Renderer + Spinner Cleanup
@@ -83,7 +66,6 @@ function renderDonutChart(selector, series, title) {
   const chart = new ApexCharts(document.querySelector(selector), options);
   chart.render();
 
-  // ✅ Hide matching loader manually
   if (selector === "#pieChartSize") {
     const loader = document.getElementById("pieSizeLoader");
     if (loader) loader.style.display = "none";

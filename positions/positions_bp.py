@@ -2,9 +2,6 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
-
-#print("[DEBUG TEMPLATE PATH]", os.listdir("templates/positions"))
-
 import pytz
 from datetime import datetime, timedelta
 from flask import (
@@ -17,14 +14,7 @@ from utils.calc_services import CalcServices
 from utils.route_decorators import route_log_alert
 
 
-import os
-#positions_bp = Blueprint(
- ##  __name__,
-   # template_folder=os.path.join(os.path.dirname(__file__), "../templates/positions")
-#)
-
 positions_bp = Blueprint("positions", __name__, template_folder="../templates/positions")
-
 
 
 def _convert_iso_to_pst(iso_str):

@@ -1,6 +1,8 @@
 # 🔌 system_bp.py — Blueprint for SystemCore wallet + theme endpoints
 
+import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
 from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, current_app
 from werkzeug.utils import secure_filename
@@ -128,20 +130,21 @@ def theme_mode():
     core = get_core()
     if request.method == "POST":
         data = request.get_json()
-        core.theme.set_theme_mode(data.get("theme_mode"))
+        core.set_theme_mode(data.get("theme_mode"))
         return jsonify(success=True)
     else:
-        mode = core.theme.get_theme_mode()
-        return jsonify(theme_mode=mode)
+        return jsonify(theme_mode=core.get_theme_mode())
+
 
 # 🎨 Get/save theme config
+@system_bp.route("/theme_config", methods=["GET", "POST"])
 @system_bp.route("/theme_config", methods=["GET", "POST"])
 def theme_config():
     core = get_core()
     if request.method == "POST":
         config = request.get_json()
-        core.theme.save_theme_config(config)
+        core.save_theme_config(config)
         return jsonify(success=True)
     else:
-        config = core.theme.load_theme_config()
-        return jsonify(config)
+        return jsonify(config=core.load_theme_config())
+

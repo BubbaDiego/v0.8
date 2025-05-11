@@ -5,8 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from core.core_imports import log
 from positions.position_store import PositionStore
 from positions.position_enrichment_service import PositionEnrichmentService
-from positions.position_enrichment_service import PositionEnrichmentService
-
+from positions.position_enrichment_service import validate_enriched_position
 from positions.hedge_manager import HedgeManager
 from utils.calc_services import CalcServices
 from datetime import datetime
@@ -78,26 +77,43 @@ class PositionCore:
             log.error(f"❌ Failed to generate hedges: {e}", source="PositionCore")
             return []
 
-
     async def enrich_positions(self):
         """
         Enriches all current positions and returns the list.
+        Performs validation after enrichment.
         """
         log.banner("🧠 Enriching All Positions via PositionCore")
 
         try:
             raw = self.store.get_all()
             enriched = []
+            failed = []
 
             for pos in raw:
                 try:
-                    enriched.append(self.enricher.enrich(pos))
+                    enriched_pos = self.enricher.enrich(pos)
+
+                    if validate_enriched_position(enriched_pos, source="EnrichmentValidator"):
+                        enriched.append(enriched_pos)
+                    else:
+                        failed.append(enriched_pos.get("id"))
+
                 except Exception as e:
                     log.error(f"⚠️ Failed to enrich position {pos.get('id')}: {e}", source="PositionCore")
 
-            log.success("✅ Position enrichment complete", source="PositionCore", payload={"enriched": len(enriched)})
+            log.success("✅ Position enrichment complete", source="PositionCore", payload={
+                "enriched": len(enriched),
+                "failed": len(failed)
+            })
+
+            if failed:
+                log.warning("⚠️ Some positions failed enrichment validation", source="PositionCore", payload={
+                    "invalid_ids": failed
+                })
+
             return enriched
 
         except Exception as e:
             log.error(f"❌ enrich_positions() failed: {e}", source="PositionCore")
             return []
+

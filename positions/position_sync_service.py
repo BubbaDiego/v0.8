@@ -187,7 +187,7 @@ class PositionSyncService:
                         raw_pos = {
                             "id": pos_id,
                             "asset_type": self.MINT_TO_ASSET.get(item.get("marketMint", ""), "BTC"),
-                            "position_type": item.get("side", "short").capitalize(),
+                            "position_type": item.get("side", "short").lower(),
                             "entry_price": float(item.get("entryPrice", 0.0)),
                             "liquidation_price": float(item.get("liquidationPrice", 0.0)),
                             "collateral": float(item.get("collateral", 0.0)),

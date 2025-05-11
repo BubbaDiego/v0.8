@@ -12,7 +12,6 @@ class PositionEnrichmentService:
     def __init__(self, data_locker=None):
         self.dl = data_locker
 
-
     def enrich(self, position):
         from utils.calc_services import CalcServices
         from core.logging import log
@@ -46,19 +45,28 @@ class PositionEnrichmentService:
                 position["wallet_name"] = "Unknown"
                 log.warning(f"⚠️ No wallet_name for [{pos_id}] — defaulted", source="Enrichment")
 
+            # 🔍 Step 2: Position Type Normalization
             raw_type = str(position.get("position_type", "")).strip().lower()
-            match = fuzzy_match_key(raw_type, {"LONG": None, "SHORT": None}, threshold=60.0)
-            position["position_type"] = match.upper() if match else "UNKNOWN"
-            if position["position_type"] == "UNKNOWN":
-                log.warning(f"⚠️ Cannot reliably enrich UNKNOWN position type for [{pos_id}]", source="Enrichment")
 
-            # Step 2: Validation before coercion
+            if raw_type in ["long", "l"]:
+                position["position_type"] = "LONG"
+            elif raw_type in ["short", "s"]:
+                position["position_type"] = "SHORT"
+            else:
+                match = fuzzy_match_key(raw_type, {"LONG": None, "SHORT": None}, threshold=60.0)
+                position["position_type"] = match.upper() if match else "UNKNOWN"
+
+            if position["position_type"] == "UNKNOWN":
+                log.warning(f"⚠️ Could not normalize position_type for [{pos_id}] — input: '{raw_type}'",
+                            source="Enrichment")
+
+            # Step 3: Validation before coercion
             required_fields = ['entry_price', 'current_price', 'liquidation_price', 'collateral', 'size']
             missing = [k for k in required_fields if position.get(k) is None]
             if missing:
                 log.warning(f"⚠️ Missing numeric fields for [{pos_id}]: {missing}", source="Enrichment")
 
-            # Step 3: Safe coercion
+            # Step 4: Safe coercion
             for field in required_fields:
                 try:
                     position[field] = float(position.get(field) or 0.0)
@@ -66,9 +74,10 @@ class PositionEnrichmentService:
                     log.error(f"❌ Failed to coerce field [{field}] for [{pos_id}]: {e}", source="Enrichment")
                     position[field] = 0.0
 
-            # Step 4: Derived field enrichment
+            # Step 5: Derived field enrichment
             position['value'] = position['size'] * position['current_price']
-            position['leverage'] = calc.calculate_leverage(position['size'], position['collateral']) if position['collateral'] > 0 else 0.0
+            position['leverage'] = calc.calculate_leverage(position['size'], position['collateral']) if position[
+                                                                                                            'collateral'] > 0 else 0.0
             position['travel_percent'] = calc.calculate_travel_percent(
                 position['position_type'],
                 position['entry_price'], position['current_price'], position['liquidation_price']
@@ -80,13 +89,14 @@ class PositionEnrichmentService:
             try:
                 risk = calc.calculate_composite_risk_index(position)
             except Exception as e:
-                log.error(f"❌ Risk index calculation failed: {e}", source="calculate_composite_risk_index", payload=position)
+                log.error(f"❌ Risk index calculation failed: {e}", source="calculate_composite_risk_index",
+                          payload=position)
                 risk = 0.0
 
             position['heat_index'] = risk
             position['current_heat_index'] = risk
 
-            # Step 5: Market price injection
+            # Step 6: Market price injection
             latest = self.dl.get_latest_price(asset)
             if latest and 'current_price' in latest:
                 position['current_price'] = float(latest['current_price'])
@@ -98,3 +108,33 @@ class PositionEnrichmentService:
         except Exception as e:
             log.error(f"🔥 Enrichment FAILED for [{pos_id}]: {e}", source="Enrichment")
             return position
+
+
+def validate_enriched_position(position: dict, source="EnrichmentValidator") -> bool:
+    pos_id = position.get("id", "UNKNOWN")
+    failures = []
+
+    required_fields = {
+        "position_type": lambda v: v in {"LONG", "SHORT"},
+        "leverage": lambda v: isinstance(v, (int, float)) and v >= 0,
+        "travel_percent": lambda v: isinstance(v, (int, float)),
+        "liquidation_distance": lambda v: isinstance(v, (int, float)),
+        "heat_index": lambda v: isinstance(v, (int, float)),
+        "value": lambda v: isinstance(v, (int, float)),
+        "current_price": lambda v: isinstance(v, (int, float)),
+        "wallet_name": lambda v: isinstance(v, str) and len(v) > 0,
+    }
+
+    for field, validator in required_fields.items():
+        value = position.get(field)
+        if value is None or not validator(value):
+            failures.append((field, value))
+
+    if failures:
+        log.error(f"❌ Position [{pos_id}] failed validation on {len(failures)} fields", source=source, payload={
+            f: v for f, v in failures
+        })
+        return False
+    else:
+        log.success(f"✅ Position [{pos_id}] passed all enrichment checks", source=source)
+        return True

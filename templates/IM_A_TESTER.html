@@ -2,6 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>🧠 Sonic Dashboard Layout Demo</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; background: #1e1e1e; color: #eee; }
+    h2 { margin-top: 2em; color: #00e6e6; }
+    .section { margin-bottom: 40px; border: 1px solid #333; padding: 20px; border-radius: 8px; background: #2c2c2c; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px 12px; border: 1px solid #444; text-align: left; }
+    .card { display: inline-block; background: #333; padding: 15px; margin: 10px; border-radius: 6px; width: 180px; box-shadow: 0 0 6px #000; }
+    .tile { background: #222; padding: 10px; margin: 6px; border-left: 6px solid #0ff; }
+    .timeline { border-left: 4px solid #0ff; padding-left: 20px; margin-left: 10px; }
+    .jsonbox { background: #111; padding: 10px; border: 1px dashed #666; white-space: pre-wrap; font-family: monospace; max-height: 200px; overflow: auto; }
+    .bar { height: 12px; background: #555; margin-top: 4px; border-radius: 4px; }
+    .fill { height: 100%; border-radius: 4px; }
+    .green { background: #0f0; }
+    .yellow { background: #ff0; }
+    .red { background: #f00; }
+    .collapse-toggle { cursor: pointer; color: #0ff; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<h1>🧠 Sonic Dashboard Payload Demo</h1>
+
+<!-- MOCK DATA -->
+<script>
+  const mockData = {
+    theme_mode: "dark",
+    portfolio_value: "$123,456",
+    totals: {
+      total_value: 123456,
+      total_size: 43210,
+      avg_leverage: 3.2,
+      avg_travel_percent: 12.3,
+      total_collateral: 40000
+    },
+    ledger_info: {
+      age_price: 12,
+      last_price_time: "2025-05-11T05:55:40Z",
+      age_positions: 22,
+      last_positions_time: "2025-05-11T05:55:41Z"
+    },
+    status_items: [
+      { title: "Value", icon: "💰", value: "$123,456", color: "green" },
+      { title: "Leverage", icon: "⚖️", value: "3.2", color: "yellow" },
+      { title: "Travel", icon: "✈️", value: "12.3%", color: "red" }
+    ],
+    monitor_items: [
+      { title: "Price", icon: "📈", value: "5:55 AM", color: "green" },
+      { title: "Positions", icon: "📊", value: "5:55 AM", color: "yellow" }
+    ],
+    portfolio_limits: {
+      total_value: { low: 10000, medium: 25000, high: 50000 }
+    }
+  };
+</script>
+
+<!-- LAYOUT 1: Tabular -->
+<div class="section">
+  <h2>📊 Developer View — Table</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Value</th><th>Color</th></tr></thead>
+    <tbody id="tableRows"></tbody>
+  </table>
+</div>
+
+<!-- LAYOUT 2: Cards -->
+<div class="section">
+  <h2>🧩 Dashboard Layer — Cards</h2>
+  <div id="cardDeck"></div>
+</div>
+
+<!-- LAYOUT 3: Collapsible Panels -->
+<div class="section">
+  <h2>🛠️ Sync Monitor — Collapsible Debug</h2>
+  <div class="collapse-toggle" onclick="togglePanel('panel1')">▶ Portfolio Totals</div>
+  <div id="panel1" style="display:none">
+    <pre class="jsonbox" id="totalsJson"></pre>
+  </div>
+  <div class="collapse-toggle" onclick="togglePanel('panel2')">▶ Ledger Info</div>
+  <div id="panel2" style="display:none">
+    <pre class="jsonbox" id="ledgerJson"></pre>
+  </div>
+</div>
+
+<!-- LAYOUT 4: Timeline -->
+<div class="section">
+  <h2>⏳ Sync Timeline</h2>
+  <div class="timeline" id="timelineBlock"></div>
+</div>
+
+<!-- LAYOUT 5: Raw JSON Debug -->
+<div class="section">
+  <h2>🧬 Raw Debug Payload</h2>
+  <div class="jsonbox" id="rawJsonDump"></div>
+</div>
+
+<!-- LAYOUT 6: Tiles + Meters -->
+<div class="section">
+  <h2>📈 Strategy Metrics — Tiles + Bars</h2>
+  <div id="tileSet"></div>
+</div>
+
+<script>
+  // LAYOUT 1: Table
+  const table = document.getElementById("tableRows");
+  mockData.status_items.forEach(item => {
+    table.innerHTML += `<tr><td>${item.icon} ${item.title}</td><td>${item.value}</td><td>${item.color}</td></tr>`;
+  });
+
+  // LAYOUT 2: Cards
+  const cardDeck = document.getElementById("cardDeck");
+  mockData.status_items.forEach(item => {
+    cardDeck.innerHTML += `<div class="card"><h3>${item.icon} ${item.title}</h3><p>${item.value}</p><p style="color:${item.color}">${item.color}</p></div>`;
+  });
+
+  // LAYOUT 3: Collapsibles
+  document.getElementById("totalsJson").textContent = JSON.stringify(mockData.totals, null, 2);
+  document.getElementById("ledgerJson").textContent = JSON.stringify(mockData.ledger_info, null, 2);
+  function togglePanel(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  }
+
+  // LAYOUT 4: Timeline
+  const timelineBlock = document.getElementById("timelineBlock");
+  Object.entries(mockData.ledger_info).forEach(([key, value]) => {
+    timelineBlock.innerHTML += `<div><strong>${key}</strong>: ${value}</div>`;
+  });
+
+  // LAYOUT 5: Full JSON
+  document.getElementById("rawJsonDump").textContent = JSON.stringify(mockData, null, 2);
+
+  // LAYOUT 6: Tiles + Meters
+  const tileSet = document.getElementById("tileSet");
+  mockData.status_items.forEach(item => {
+    let color = item.color;
+    let percent = item.color === "green" ? 90 : item.color === "yellow" ? 60 : 30;
+    tileSet.innerHTML += `
+      <div class="tile">
+        <strong>${item.icon} ${item.title}</strong>: ${item.value}
+        <div class="bar"><div class="fill ${color}" style="width: ${percent}%"></div></div>
+      </div>
+    `;
+  });
+</script>
+
+</body>
+</html>
+DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>Navbar Variations</title>
   <style>
     body {

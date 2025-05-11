@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask import Blueprint, render_template, jsonify, request, current_app
 from data.data_locker import DataLocker
-from positions.position_core_service import PositionCoreService
+from positions.position_core import PositionCore
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -15,7 +15,6 @@ from core.constants import THEME_CONFIG_PATH
 from core.logging import log
 from dashboard.dashboard_service import get_dashboard_context
 from utils.route_decorators import route_log_alert
-#from sonic_app import global_data_locker
 from dashboard.dashboard_logger import log_dashboard_full, list_positions_verbose
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='../templates/dashboard')
@@ -154,10 +153,8 @@ def api_graph_data():
 @route_log_alert
 def api_size_composition():
     try:
-        core = PositionCoreService(current_app.data_locker)
+        core = PositionCore(current_app.data_locker)
         positions = core.get_all_positions() or []
-
-        #positions = PositionCoreService.get_all_positions() or []
 
         long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
         short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
@@ -183,7 +180,7 @@ def api_size_composition():
 @route_log_alert
 def api_collateral_composition():
     try:
-        core = PositionCoreService(current_app.data_locker)
+        core = PositionCore(current_app.data_locker)
         positions = core.get_all_positions() or []
 
         long_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")

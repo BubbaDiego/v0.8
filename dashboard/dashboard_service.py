@@ -1,5 +1,9 @@
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core.logging import log
-from positions.position_core_service import PositionCoreService
+from positions.position_core import PositionCore
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
@@ -63,7 +67,7 @@ def apply_color(metric_name, value, limits):
 def get_dashboard_context(data_locker: DataLocker):
     log.info("📊 Assembling dashboard context", source="DashboardContext")
 
-    position_core = PositionCoreService(data_locker)
+    position_core = PositionCore(data_locker)
     positions = position_core.get_all_positions() or []
 
     for pos in positions:
@@ -76,7 +80,10 @@ def get_dashboard_context(data_locker: DataLocker):
         "total_size": sum(float(p.get("size", 0)) for p in positions),
         "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
         "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_heat_index": (sum(float(p.get("heat_index", 0)) for p in positions) / len(positions)) if positions else 0
+        "avg_heat_index": (
+    sum(float(p.get("heat_index") or 0.0) for p in positions) / len(positions)
+) if positions else 0
+
     }
 
     jm = JsonManager()

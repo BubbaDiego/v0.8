@@ -21,6 +21,10 @@ class ThemeService:
 
     def set_theme_mode(self, mode: str):
         try:
+            current_mode = self.get_theme_mode()
+            if current_mode == mode:
+                self.logger.debug(f"Theme mode already '{mode}', skipping update.", source="ThemeService")
+                return  # No-op
             self.dl.system.set_theme_mode(mode)
             self.logger.info(f"Theme mode set to {mode}", source="ThemeService")
         except Exception as e:
