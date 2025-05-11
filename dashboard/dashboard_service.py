@@ -1,7 +1,6 @@
 from core.logging import log
 from positions.position_core_service import PositionCoreService
 from data.data_locker import DataLocker
-from positions.position_sync_service import PositionSyncService
 from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
@@ -10,9 +9,24 @@ from utils.fuzzy_wuzzy import fuzzy_match_key
 from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
 
 
-global_data_locker = DataLocker(str(DB_PATH))
+def format_monitor_time(iso_str):
+    if not iso_str:
+        return "N/A"
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+        return pacific.strftime("%I:%M %p %m/%d").lstrip("0")
+    except Exception as e:
+        log.error(f"Time formatting failed: {e}", source="DashboardContext")
+        return "N/A"
 
-# 🔐 Controlled alias map
+def determine_color(age):
+    if age < 300:
+        return "green"
+    elif age < 900:
+        return "yellow"
+    return "red"
+
 ALERT_KEY_ALIASES = {
     "value": ["total_value_limits"],
     "leverage": ["avg_leverage_limits"],
@@ -22,66 +36,31 @@ ALERT_KEY_ALIASES = {
     "heat": ["total_heat_limits"]
 }
 
-def format_monitor_time(iso_str):
-    if not iso_str:
-        log.debug("iso_str is None or empty", source="format_monitor_time")
-        return "N/A"
-    try:
-        log.debug(f"Raw iso_str received: {iso_str}", source="format_monitor_time")
-        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
-        pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        hour = pacific.strftime("%I").lstrip('0') or '0'
-        minute = pacific.strftime("%M")
-        ampm = pacific.strftime("%p")
-        month = str(pacific.month)
-        day = str(pacific.day)
-        formatted = f"{hour}:{minute} {ampm} {month}/{day}"
-        log.debug(f"Parsed and formatted time: {formatted}", source="format_monitor_time")
-        return formatted
-    except Exception as e:
-        log.error(f"format_monitor_time failed for string '{iso_str}': {e}", source="format_monitor_time")
-        return "N/A"
-
 def apply_color(metric_name, value, limits):
     try:
         thresholds = limits.get(metric_name.lower())
         if thresholds is None:
             matched_key = fuzzy_match_key(metric_name, limits, aliases=ALERT_KEY_ALIASES, threshold=40.0)
-            log.info(f"🔍 FuzzyMatch resolved '{metric_name}' → '{matched_key}'", source="FuzzyMatch")
             thresholds = limits.get(matched_key)
-
         if thresholds is None or value is None:
             return "red"
-
         val = float(value)
-
         if metric_name.lower() == "travel":
-            if val >= thresholds["low"]:
-                return "green"
-            elif val >= thresholds["medium"]:
-                return "yellow"
-            else:
-                return "red"
-        else:
-            if val <= thresholds["low"]:
-                return "green"
-            elif val <= thresholds["medium"]:
-                return "yellow"
-            else:
-                return "red"
-
+            return (
+                "green" if val >= thresholds["low"] else
+                "yellow" if val >= thresholds["medium"] else
+                "red"
+            )
+        return (
+            "green" if val <= thresholds["low"] else
+            "yellow" if val <= thresholds["medium"] else
+            "red"
+        )
     except Exception as e:
-        log.error(f"apply_color failed → metric: '{metric_name}', value: {value}, error: {e}", source="DashboardContext")
+        log.error(f"apply_color failed: {e}", source="DashboardContext")
         return "red"
 
-def determine_color(age):
-    if age < 300:
-        return "green"
-    elif age < 900:
-        return "yellow"
-    return "red"
-
-def get_dashboard_context(data_locker):
+def get_dashboard_context(data_locker: DataLocker):
     log.info("📊 Assembling dashboard context", source="DashboardContext")
 
     position_core = PositionCoreService(data_locker)
@@ -101,19 +80,18 @@ def get_dashboard_context(data_locker):
     }
 
     jm = JsonManager()
-    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)  # ✅
-
+    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
     portfolio_limits = alert_limits.get("alert_limits", {}).get("total_portfolio_limits", {})
 
     ledger_info = {
         "age_price": get_ledger_status('monitor/price_ledger.json').get("age_seconds", 9999),
-        "last_price_time": get_ledger_status('monitor/price_ledger.json').get("last_timestamp", None),
+        "last_price_time": get_ledger_status('monitor/price_ledger.json').get("last_timestamp"),
         "age_positions": get_ledger_status('monitor/position_ledger.json').get("age_seconds", 9999),
-        "last_positions_time": get_ledger_status('monitor/position_ledger.json').get("last_timestamp", None),
+        "last_positions_time": get_ledger_status('monitor/position_ledger.json').get("last_timestamp"),
         "age_operations": get_ledger_status('monitor/operations_ledger.json').get("age_seconds", 9999),
-        "last_operations_time": get_ledger_status('monitor/operations_ledger.json').get("last_timestamp", None),
+        "last_operations_time": get_ledger_status('monitor/operations_ledger.json').get("last_timestamp"),
         "age_xcom": get_ledger_status('monitor/xcom_ledger.json').get("age_seconds", 9999),
-        "last_xcom_time": get_ledger_status('monitor/xcom_ledger.json').get("last_timestamp", None),
+        "last_xcom_time": get_ledger_status('monitor/xcom_ledger.json').get("last_timestamp"),
     }
 
     universal_items = [
@@ -149,19 +127,60 @@ def get_dashboard_context(data_locker):
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
-    log.debug("📊 Dashboard status items", source="DashboardContext", payload=status_items)
-    log.debug("🛁 Dashboard monitor items", source="DashboardContext", payload=monitor_items)
-    log.debug("📀 Portfolio limit config", source="DashboardContext", payload=portfolio_limits)
+    portfolio_history = data_locker.portfolio.get_snapshots() or []
+    graph_data = {
+        "timestamps": [entry.get("snapshot_time") for entry in portfolio_history],
+        "values": [float(entry.get("total_value", 0)) for entry in portfolio_history],
+        "collateral": [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
+    }
+
+    # 🧮 Size Composition
+    long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
+    short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
+    total = long_total + short_total
+
+    log.debug("📊 Size totals", source="DashboardContext", payload={
+        "long_total": long_total,
+        "short_total": short_total,
+        "combined": total
+    })
+
+    if total > 0:
+        size_composition = {"series": [round(long_total / total * 100), round(short_total / total * 100)]}
+    else:
+        size_composition = {"series": [0, 0], "label": "No position data"}
+
+    # 🧮 Collateral Composition
+    long_collat = sum(
+        float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
+    short_collat = sum(
+        float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
+    total_collat = long_collat + short_collat
+
+    log.debug("💰 Collateral totals", source="DashboardContext", payload={
+        "long_collat": long_collat,
+        "short_collat": short_collat,
+        "combined": total_collat
+    })
+
+    if total_collat > 0:
+        collateral_composition = {
+            "series": [round(long_collat / total_collat * 100), round(short_collat / total_collat * 100)]}
+    else:
+        collateral_composition = {"series": [0, 0], "label": "No collateral data"}
 
     return {
-        "theme_mode": data_locker.system.get_theme_mode(),
-        "positions": positions,
-        "liquidation_positions": positions,
-        "portfolio_value": "${:,.2f}".format(totals["total_value"]),
-        "portfolio_change": "N/A",
-        "totals": totals,
-        "ledger_info": ledger_info,
-        "status_items": status_items,
-        "monitor_items": monitor_items,
-        "portfolio_limits": portfolio_limits
-    }
+            "theme_mode": data_locker.system.get_theme_mode(),
+            "positions": positions,
+            "liquidation_positions": positions,
+            "portfolio_value": "${:,.2f}".format(totals["total_value"]),
+            "portfolio_change": "N/A",
+            "totals": totals,
+            "ledger_info": ledger_info,
+            "status_items": status_items,
+            "monitor_items": monitor_items,
+            "portfolio_limits": portfolio_limits,
+            "graph_data": graph_data,
+            "size_composition": size_composition,
+            "collateral_composition": collateral_composition
+        }

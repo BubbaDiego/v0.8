@@ -224,6 +224,6 @@ class Cyclone:
     # 🔹 Step 2: Enrich Positions
     # -------------------------------
     async def enrich_positions(self):
-        Log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
+        log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()
-        Log.success("✅ Position enrichment complete.", "Cyclone")
+        log.success("✅ Position enrichment complete.", "Cyclone")

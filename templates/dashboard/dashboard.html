@@ -71,10 +71,11 @@
 {{ super() }}
 <script>
   window.TOTAL_PORTFOLIO_LIMITS = {{ portfolio_limits | tojson }};
-  var GRAPH_DATA_URL = "{{ url_for('dashboard.api_graph_data') }}";
-  var SIZE_COMPOSITION_URL = "{{ url_for('dashboard.api_size_composition') }}";
-  var COLLATERAL_COMPOSITION_URL = "{{ url_for('dashboard.api_collateral_composition') }}";
+  const graphData = {{ graph_data | tojson }};
+  const sizeData = {{ size_composition | tojson }};
+  const collateralData = {{ collateral_composition | tojson }};
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/freshness_timer.js') }}"></script>

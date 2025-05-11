@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from core.core_imports import log
 # dl_alerts.py
 """
@@ -79,4 +82,6 @@ class DLAlertManager:
         self.db.commit()
         log.success("🧹 All alerts deleted", source="DLAlertManager")
 
+    def delete_all_alerts(self):
+        return self.clear_all_alerts()
 

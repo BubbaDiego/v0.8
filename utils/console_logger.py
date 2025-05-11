@@ -55,32 +55,28 @@ class ConsoleLogger:
         return "unknown"
 
     @classmethod
+    @classmethod
     def _is_logging_allowed(cls, module: str) -> bool:
+
         if not cls.logging_enabled:
             return False
 
-        fuzzy_muted = fuzzy_match_key(module, cls.module_log_control, threshold=50.0)
+        # 🔒 Explicit module-level control
+        if module in cls.module_log_control:
+            return cls.module_log_control[module]
 
-        if not fuzzy_muted:
-            for prefix in cls.module_log_control:
-                if not cls.module_log_control[prefix] and module.startswith(prefix):
-                    cls.debug(f"🐻 Hard-prefix block: '{module}' starts with '{prefix}'", source="Logger")
+        # 🔒 Group-based control
+        for group, modules in cls.group_map.items():
+            if module in modules:
+                if not cls.group_log_control.get(group, True):
                     return False
 
-        if fuzzy_muted:
-            allowed = cls.module_log_control.get(fuzzy_muted, True)
-            if not allowed:
-                # Avoid recursion hell
-             #   if module != "Logger":
-                #    print(
-                 #       f"🐻 Fuzzy mute matched '{module}' → '{fuzzy_muted}' (BLOCKED)")  # Or use `logging.debug()` not ConsoleLogger
+        # 🔒 Hard-coded prefix mute (optional)
+        for prefix in cls.module_log_control:
+            if not cls.module_log_control[prefix] and module.startswith(prefix):
                 return False
 
-        for group, mods in cls.group_map.items():
-            if module in mods and not cls.group_log_control.get(group, True):
-                cls.debug(f"🧠 Blocked by group '{group}' for module '{module}'", source="Logger")
-                return False
-
+        # ✅ Default = allowed
         return True
 
     @classmethod

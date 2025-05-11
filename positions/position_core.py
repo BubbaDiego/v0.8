@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from core.core_imports import log
 from positions.position_store import PositionStore
 from positions.position_enrichment_service import PositionEnrichmentService
+from positions.position_enrichment_service import PositionEnrichmentService
+
 from positions.hedge_manager import HedgeManager
 from utils.calc_services import CalcServices
 from datetime import datetime

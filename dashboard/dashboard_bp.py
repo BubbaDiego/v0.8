@@ -1,14 +1,10 @@
-# dashboard_bp.py
-# dashboard_bp.py
+
 
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
 from flask import Blueprint, render_template, jsonify, request, current_app
 from data.data_locker import DataLocker
-#from positions.position_sync_service import PositionSyncService
 from positions.position_core_service import PositionCoreService
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
@@ -20,12 +16,9 @@ from core.logging import log
 from dashboard.dashboard_service import get_dashboard_context
 from utils.route_decorators import route_log_alert
 #from sonic_app import global_data_locker
+from dashboard.dashboard_logger import log_dashboard_full, list_positions_verbose
 
 dashboard_bp = Blueprint('dashboard', __name__, template_folder='../templates/dashboard')
-
-
-
-
 
 
 # ✅ NEW WALLET IMAGE MAP
@@ -37,6 +30,16 @@ WALLET_IMAGE_MAP = {
 DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
 
+@dashboard_bp.route("/dash")
+@route_log_alert
+def dash_page():
+    from dashboard.dashboard_service import get_dashboard_context
+    context = get_dashboard_context(current_app.data_locker)
+    dl = current_app.data_locker
+
+    # 🧠 Log snapshot to console
+    list_positions_verbose(context)
+    return render_template("dashboard.html", **context)
 
 @dashboard_bp.route("/database_viewer")
 @route_log_alert
@@ -58,43 +61,10 @@ def database_viewer():
         return render_template("database_viewer.html", datasets={})
 
 
-
-# ---------------------------------
-# Theme Setup Page
-# ---------------------------------
-@dashboard_bp.route("/theme_setup")
-@route_log_alert
-def theme_setup():
-    from flask import current_app
-    dl = current_app.data_locker
-    theme_data = dl.load_theme_data()
-    return render_template('theme_setup.html', theme=theme_data)
-
-
-# ---------------------------------
-# Save Theme Settings
-# ---------------------------------
-@dashboard_bp.route("/save_theme_mode", methods=["POST"])
-@route_log_alert
-def save_theme_mode():
-    theme_mode = request.json.get("theme_mode")
-    dl = get_locker()
-    dl.set_theme_mode(theme_mode)
-    return jsonify({"success": True})
-
-@dashboard_bp.route("/save_theme", methods=["POST"])
-@route_log_alert
-def save_theme():
-    theme_data = request.json
-    with open(THEME_CONFIG_PATH, "w") as f:
-        json.dump(theme_data, f, indent=2)
-    return jsonify({"success": True})
-
-
 # ---------------------------------
 # Main Dashboard Page
 # ---------------------------------
-def format_monitor_time(iso_str):
+def format_monsssssitor_time(iso_str):
     if not iso_str:
         print("DEBUG: iso_str is None or empty")
         return "N/A"
@@ -153,13 +123,6 @@ def apply_color(metric_name, value, limits):
         print(f"[apply_color ERROR] Metric: {metric_name}, Value: {value}, Error: {e}")
         return "red"
 
-@dashboard_bp.route("/dash")
-@route_log_alert
-def dash_page():
-    from dashboard.dashboard_service import get_dashboard_context
-    context = get_dashboard_context(current_app.data_locker)
-    dl = current_app.data_locker
-    return render_template("dashboard.html", **context)
 
 
 

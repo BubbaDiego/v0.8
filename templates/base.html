@@ -49,6 +49,7 @@
       color: var(--dark-page-text-color) !important;
     }
   </style>
+
   <script src="../static/js/title_bar.js"></script>
 </head>
 
@@ -56,11 +57,10 @@
   <div class="wrapper">
     {% include "title_bar.html" %}
 
-   <!-- Toast container -->
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 60px;">
-  <div id="toastContainer" class="toast-container"></div>
-</div>
-
+    <!-- Toast container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 60px;">
+      <div id="toastContainer" class="toast-container"></div>
+    </div>
 
     <div class="content-wrapper">
       <div class="content">
@@ -86,7 +86,7 @@
 
   {% block extra_scripts %}{% endblock %}
 
-  <!-- 🌗 Theme Toggle Script with Transition + Reload -->
+  <!-- 🌗 Theme Toggle Script (System API version) -->
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const layoutMode = localStorage.getItem("layoutMode") || "fluid";
@@ -104,10 +104,18 @@
           document.body.classList.remove('light-bg', 'dark-bg');
           document.body.classList.add(`${newMode}-bg`);
 
-          document.cookie = `themeMode=${newMode}; path=/; max-age=31536000`;
-          localStorage.setItem('themeMode', newMode);
-
-          setTimeout(() => location.reload(), 300);
+          // Save via new /system API
+          fetch("/system/theme_mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ theme_mode: newMode })
+          })
+          .then(() => {
+            document.cookie = `themeMode=${newMode}; path=/; max-age=31536000`;
+            localStorage.setItem('themeMode', newMode);
+            setTimeout(() => location.reload(), 300);
+          })
+          .catch(err => console.error("❌ Theme update failed", err));
         });
       }
     });

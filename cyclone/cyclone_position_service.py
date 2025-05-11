@@ -13,8 +13,9 @@ from positions.position_core_service import PositionCoreService
 from positions.position_sync_service import PositionSyncService
 from monitor.monitor_utils import LedgerWriter
 from data.alert import AlertType, Condition
+from core.logging import log
 from alerts.alert_utils import log_alert_summary
-from core.core_imports import DB_PATH, log
+from core.constants import DB_PATH
 
 print("👁 Viewer using DB path:", os.path.abspath(DB_PATH))
 

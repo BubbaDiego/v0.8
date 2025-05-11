@@ -28,7 +28,7 @@ from dashboard.dashboard_bp import dashboard_bp
 from portfolio.portfolio_bp import portfolio_bp
 from sonic_labs.sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
-from wallets.wallets_bp import wallet_bp
+from system.system_bp import system_bp
 
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
@@ -65,15 +65,11 @@ app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
 app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
-app.register_blueprint(wallet_bp)
+app.register_blueprint(system_bp)
 app.register_blueprint(settings_bp)
 
 #app.json_manager = JsonManager(logger=log)
 configure_console_log()
-
-print("\033[96m[TEST] CYAN LOG WORKS ✅\033[0m")
-
-
 
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])

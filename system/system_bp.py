@@ -1,0 +1,147 @@
+# 🔌 system_bp.py — Blueprint for SystemCore wallet + theme endpoints
+
+import os
+import json
+from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, current_app
+from werkzeug.utils import secure_filename
+
+from system.system_core import SystemCore
+from wallets.wallet_schema import WalletIn
+
+UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+system_bp = Blueprint("system", __name__, url_prefix="/system")
+
+def get_core():
+    return SystemCore(current_app.data_locker)
+
+# 🌐 List meta data
+@system_bp.route("/metadata", methods=["GET"])
+def system_metadata():
+    try:
+        core = get_core()
+        metadata = core.get_strategy_metadata()
+        return jsonify(metadata)
+    except Exception as e:
+        log.error(f"Failed to fetch system metadata: {e}", source="SystemBP")
+        return jsonify({"error": str(e)}), 500
+
+
+# 🌐 List all wallets
+@system_bp.route("/wallets", methods=["GET"])
+def list_wallets():
+    core = get_core()
+    wallets = core.wallets.list_wallets()
+    return render_template("wallets/wallet_list.html", wallets=wallets)
+
+# ➕ Add a wallet
+@system_bp.route("/wallets/add", methods=["POST"])
+def add_wallet():
+    try:
+        form = request.form
+        file = request.files.get("image_file")
+        filename = None
+
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
+
+        image_path = f"/static/uploads/wallets/{filename}" if filename else form.get("image_path")
+
+        data = WalletIn(
+            name=form.get("name"),
+            public_address=form.get("public_address"),
+            private_address=form.get("private_address"),
+            image_path=image_path,
+            balance=float(form.get("balance", 0.0)),
+            tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
+            is_active=form.get("is_active", "off") == "on",
+            type=form.get("type", "personal")
+        )
+
+        get_core().wallets.create_wallet(data)
+        flash("✅ Wallet added!", "success")
+
+    except Exception as e:
+        flash(f"❌ Failed to add wallet: {e}", "danger")
+
+    return redirect(url_for("system.list_wallets"))
+
+# 🗑️ Delete wallet
+@system_bp.route("/wallets/delete/<name>", methods=["POST"])
+def delete_wallet(name):
+    try:
+        get_core().wallets.delete_wallet(name)
+        flash("🗑️ Wallet deleted.", "info")
+    except Exception as e:
+        flash(f"❌ Delete failed: {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+# 💾 Export wallets to JSON
+@system_bp.route("/wallets/export", methods=["POST"])
+def export_wallets():
+    try:
+        get_core().wallets.export_wallets()
+        flash("💾 Exported to wallets.json", "success")
+    except Exception as e:
+        flash(f"❌ Export failed: {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+# ♻️ Import from JSON
+@system_bp.route("/wallets/import", methods=["POST"])
+def import_wallets():
+    try:
+        count = get_core().wallets.import_wallets()
+        flash(f"♻️ Imported {count} wallets from JSON", "success")
+    except Exception as e:
+        flash(f"❌ Import failed: {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+# ✏️ Update wallet (from modal)
+@system_bp.route("/wallets/update/<name>", methods=["POST"])
+def update_wallet(name):
+    try:
+        form = request.form
+
+        data = WalletIn(
+            name=name,
+            public_address=form.get("public_address"),
+            private_address=form.get("private_address"),
+            image_path=form.get("image_path"),
+            balance=float(form.get("balance", 0.0)),
+            tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
+            is_active="is_active" in form,
+            type=form.get("type", "personal")
+        )
+
+        get_core().wallets.update_wallet(name, data)
+        flash(f"💾 Updated wallet '{name}'", "success")
+    except Exception as e:
+        flash(f"❌ Failed to update wallet '{name}': {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+# 🌗 Get/set theme mode
+@system_bp.route("/theme_mode", methods=["GET", "POST"])
+def theme_mode():
+    core = get_core()
+    if request.method == "POST":
+        data = request.get_json()
+        core.theme.set_theme_mode(data.get("theme_mode"))
+        return jsonify(success=True)
+    else:
+        mode = core.theme.get_theme_mode()
+        return jsonify(theme_mode=mode)
+
+# 🎨 Get/save theme config
+@system_bp.route("/theme_config", methods=["GET", "POST"])
+def theme_config():
+    core = get_core()
+    if request.method == "POST":
+        config = request.get_json()
+        core.theme.save_theme_config(config)
+        return jsonify(success=True)
+    else:
+        config = core.theme.load_theme_config()
+        return jsonify(config)
