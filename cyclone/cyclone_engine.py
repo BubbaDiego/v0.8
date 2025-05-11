@@ -16,7 +16,7 @@ from config.config_loader import load_config
 # Cores and Services
 from alerts.alert_core import AlertCore
 from positions.position_core import PositionCore
-from cyclone.cyclone_maintenance_service import SystemMaintenanceService
+from cyclone.cyclone_maintenance_service import CycloneMaintenanceService
 from cyclone.cyclone_wallet_service import CycloneWalletService
 
 
@@ -72,7 +72,7 @@ class Cyclone:
         self.position_core = PositionCore(self.data_locker)
         self.alert_core = AlertCore(self.data_locker, lambda: self.config)
         self.wallet_service = CycloneWalletService(self.data_locker)
-        self.maintenance_service = SystemMaintenanceService(self.data_locker)
+        self.maintenance_service = CycloneMaintenanceService(self.data_locker)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
 

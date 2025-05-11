@@ -2,7 +2,7 @@
 
 from core.logging import log
 
-class SystemMaintenanceService:
+class CycloneMaintenanceService:
     def __init__(self, data_locker):
         self.dl = data_locker
 
