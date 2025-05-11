@@ -33,6 +33,9 @@ from wallets.wallets_bp import wallet_bp
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
 from utils.route_decorators import route_log_alert
+from settings.settings_bp import settings_bp
+
+
 
 # --- Flask Setup ---
 app = Flask(__name__)
@@ -63,6 +66,7 @@ app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
 app.register_blueprint(theme_bp)
 app.register_blueprint(wallet_bp)
+app.register_blueprint(settings_bp)
 
 #app.json_manager = JsonManager(logger=log)
 configure_console_log()

@@ -49,16 +49,18 @@
       color: var(--dark-page-text-color) !important;
     }
   </style>
+  <script src="../static/js/title_bar.js"></script>
 </head>
 
 <body class="hold-transition layout-top-nav {{ theme_mode }}-bg">
   <div class="wrapper">
     {% include "title_bar.html" %}
 
-    <!-- 🔔 Toast Container -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
-      <div id="toastContainer" class="toast-container"></div>
-    </div>
+   <!-- Toast container -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 60px;">
+  <div id="toastContainer" class="toast-container"></div>
+</div>
+
 
     <div class="content-wrapper">
       <div class="content">
