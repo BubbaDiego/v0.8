@@ -1,160 +1,21 @@
-/* Gradient Navbar */
-.gradient-navbar {
-  background: linear-gradient(90deg, #7db3f5, #4a90e2);
-  border-bottom: 2px solid white;
+/* static/css/title_bar.css */
+.title-bar {
+  background-color: var(--light-page-bg-color);
+  color: var(--light-page-text-color);
+  border-bottom: 1px solid #ccc;
 }
 
-/* === title_bar.css === */
-
-/* Asset Panels (BTC, ETH, SOL) */
-.asset-panel {
-  background-color: #f8f9fa;
-  border: 2px solid white;
-  border-radius: 999px;
-  padding: 0.25rem 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-.asset-panel img {
-  width: 20px;
-  height: 20px;
-}
-.asset-panel span {
-  font-weight: bold;
-  font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
+body.dark-bg .title-bar {
+  background-color: var(--dark-page-bg-color);
+  color: var(--dark-page-text-color);
+  border-bottom: 1px solid #444;
 }
 
-/* Theme-aware background for asset panel */
-body.dark-bg .asset-panel {
-  background-color: #444;
-  color: #eee;
+.title-bar .btn {
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
 }
 
-body.light-bg .asset-panel {
-  background-color: #f8f9fa;
-  color: #000;
-}
-
-/* Timer Box in Center */
-.timer-box {
-  background: #ddd;
-  border: 2px solid white;
-  border-radius: 8px;
-  padding: 0.25rem 0.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-.timer-box span {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* Update Buttons (Jupiter, Prices, Full Cycle, Clear) */
-#updateJupiterBtn, #updatePricesBtn, #updateFullCycleBtn, #clearAllBtn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 50%;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.4rem;
-  color: black;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-#updateJupiterBtn img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-}
-
-/* Hover Effect for Buttons */
-#updateJupiterBtn:hover, #updatePricesBtn:hover, #updateFullCycleBtn:hover, #clearAllBtn:hover {
-  background-color: #e2e6ea;
-}
-
-/* Theme Toggle (Sun/Moon container) */
-#toggleContainer {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-/* Spinning Animation for Loading */
-.spin {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Light/Dark mode awareness */
-body.light-bg .gradient-navbar {
-  background: linear-gradient(90deg, #4a90e2, #7db3f5);
-}
-
-body.dark-bg .gradient-navbar {
-  background: linear-gradient(90deg, #2c3e50, #4a90e2);
-}
-
-body.light-bg .asset-panel {
-  background-color: #f8f9fa;
-  color: #000;
-}
-
-body.dark-bg .asset-panel {
-  background-color: #333;
-  color: #ddd;
-}
-
-body.light-bg .timer-box {
-  background: #ddd;
-  color: #000;
-}
-
-body.dark-bg .timer-box {
-  background: #222;
-  color: #ddd;
-}
-
-body.light-bg #updateJupiterBtn,
-body.light-bg #updatePricesBtn,
-body.light-bg #updateFullCycleBtn,
-body.light-bg #clearAllBtn {
-  background: #f8f9fa;
-  color: black;
-}
-
-body.dark-bg #updateJupiterBtn,
-body.dark-bg #updatePricesBtn,
-body.dark-bg #updateFullCycleBtn,
-body.dark-bg #clearAllBtn {
-  background: #444;
-  color: white;
-}
-
-
-
-/* Small Tweaks for Mobile */
-@media (max-width: 768px) {
-  .asset-panel {
-    padding: 0.2rem 0.3rem;
-  }
-  .timer-box {
-    gap: 0.5rem;
-  }
-  #updateJupiterBtn, #updatePricesBtn, #updateFullCycleBtn, #clearAllBtn {
-    width: 32px;
-    height: 32px;
-    font-size: 1.2rem;
-  }
+.title-bar .btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }

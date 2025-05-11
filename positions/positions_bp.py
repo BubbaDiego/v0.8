@@ -1,7 +1,9 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
-import os
-import os
-print("[DEBUG TEMPLATE PATH]", os.listdir("templates/positions"))
+
+#print("[DEBUG TEMPLATE PATH]", os.listdir("templates/positions"))
 
 import pytz
 from datetime import datetime, timedelta
@@ -9,12 +11,20 @@ from flask import (
     Blueprint, request, jsonify, render_template,
     redirect, url_for, flash, current_app
 )
-from core.logging import log as logger
+from core.logging import log
 from positions.position_core import PositionCore
 from utils.calc_services import CalcServices
 from utils.route_decorators import route_log_alert
 
-positions_bp = Blueprint("positions", __name__, template_folder="positions")
+
+import os
+#positions_bp = Blueprint(
+ ##  __name__,
+   # template_folder=os.path.join(os.path.dirname(__file__), "../templates/positions")
+#)
+
+positions_bp = Blueprint("positions", __name__, template_folder="../templates/positions")
+
 
 
 def _convert_iso_to_pst(iso_str):

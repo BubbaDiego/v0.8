@@ -12,11 +12,15 @@ from core.constants import DB_PATH
 from core.logging import log
 from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from config.config_loader import load_config
+
+# Cores and Services
 from alerts.alert_core import AlertCore
 from positions.position_core import PositionCore
+from cyclone.cyclone_maintenance_service import SystemMaintenanceService
+from cyclone.cyclone_wallet_service import CycloneWalletService
+
 
 global_data_locker = DataLocker(str(DB_PATH))  # There can be only one
-
 logging.basicConfig(level=logging.DEBUG)
 
 def configure_cyclone_console_log():
@@ -61,15 +65,14 @@ class Cyclone:
         self.poll_interval = poll_interval
         self.logger.setLevel(logging.DEBUG)
 
-        log.info("Initializing Cyclone engine...", source="Cyclone")
-
         self.data_locker = global_data_locker
         self.price_monitor = PriceMonitor()
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
         self.position_core = PositionCore(self.data_locker)
-
         self.alert_core = AlertCore(self.data_locker, lambda: self.config)
+        self.wallet_service = CycloneWalletService(self.data_locker)
+        self.maintenance_service = SystemMaintenanceService(self.data_locker)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
 
@@ -84,103 +87,8 @@ class Cyclone:
     async def run_composite_position_pipeline(self):
         await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
 
-    def clear_prices_backend(self):
-        try:
-            cursor = self.data_locker.db.get_cursor()
-            cursor.execute("DELETE FROM prices")
-            self.data_locker.db.commit()
-            deleted = cursor.rowcount
-            cursor.close()
-            print(f"🧹 Prices cleared. {deleted} record(s) deleted.")
-        except Exception as e:
-            print(f"❌ Error clearing prices: {e}")
-
-    def clear_wallets_backend(self):
-        try:
-            cursor = self.data_locker.db.get_cursor()
-            cursor.execute("DELETE FROM wallets")
-            self.data_locker.db.commit()
-            deleted = cursor.rowcount
-            cursor.close()
-            print(f"🧹 Wallets cleared. {deleted} record(s) deleted.")
-        except Exception as e:
-            print(f"Error clearing wallets: {e}")
-
-    def add_wallet_backend(self):
-        try:
-            name = input("Enter wallet name: ").strip()
-            public_address = input("Enter public address: ").strip()
-            private_address = input("Enter private address: ").strip()
-            image_path = input("Enter image path (optional): ").strip()
-            balance_str = input("Enter balance (optional): ").strip()
-            try:
-                balance = float(balance_str)
-            except Exception:
-                balance = 0.0
-
-            wallet = {
-                "name": name,
-                "public_address": public_address,
-                "private_address": private_address,
-                "image_path": image_path,
-                "balance": balance
-            }
-
-            self.data_locker.wallets.create_wallet(wallet)
-            print(f"✅ Wallet '{name}' added successfully.")
-        except Exception as e:
-            print(f"Error adding wallet: {e}")
-
-    def view_wallets_backend(self):
-        try:
-            wallets = self.data_locker.wallets.get_wallets()
-            if not wallets:
-                print("⚠️ No wallets found.")
-                return
-
-            print("💼 Wallets")
-            print(f"📦 Total: {len(wallets)}\n")
-            for w in wallets:
-                print(f"🧾 Name:     {w['name']}")
-                print(f"🏦 Address:  {w['public_address']}")
-                print(f"💰 Balance:  {w['balance']}")
-                print(f"🖼️ Image:    {w['image_path']}")
-                print("-" * 40)
-        except Exception as e:
-            print(f"❌ Error viewing wallets: {e}")
-
     async def run_create_market_alerts(self):
-        log.info("Creating Market Alerts", source="Cyclone")
-        try:
-            dummy_alert = {
-                "id": str(uuid4()),
-                "alert_type": "PRICE_THRESHOLD",
-                "alert_class": "Market",
-                "asset_type": "BTC",
-                "trigger_value": 60000,
-                "condition": "ABOVE",
-                "notification_type": "SMS",
-                "level": "Normal",
-                "last_triggered": None,
-                "status": "Active",
-                "frequency": 1,
-                "counter": 0,
-                "liquidation_distance": 0.0,
-                "travel_percent": -10.0,
-                "liquidation_price": 50000,
-                "notes": "Sample market alert created by Cyclone",
-                "description": "Cyclone test alert",
-                "position_reference_id": None,
-                "evaluated_value": 59000,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            success = self.data_locker.create_alert(dummy_alert)
-            if success:
-                log.success("Market alert created successfully.", source="Cyclone")
-            else:
-                log.warning("Market alert creation failed.", source="Cyclone")
-        except Exception as e:
-            log.error(f"Error creating market alert: {e}", source="Cyclone")
+        await self.alert_service.create_market_alerts()
 
     async def run_clear_all_data(self):
         log.warning("⚠️ Starting Clear All Data", source="Cyclone")
@@ -189,18 +97,6 @@ class Cyclone:
             log.success("All alerts, prices, and positions have been deleted.", source="Cyclone")
         except Exception as e:
             log.error(f"Clear All Data failed: {e}", source="Cyclone")
-
-    def _clear_all_data_core(self):
-        tables = ["alerts", "prices", "positions"]
-        for table in tables:
-            try:
-                cursor = self.data_locker.db.get_cursor()
-                cursor.execute(f"DELETE FROM {table}")
-                self.data_locker.db.commit()
-                cursor.close()
-                log.success(f"✅ Cleared all rows from `{table}`", source="Cyclone")
-            except Exception as e:
-                log.error(f"❌ Failed to clear `{table}`: {e}", source="Cyclone")
 
     def run_debug_position_update(self):
         print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
@@ -282,9 +178,25 @@ class Cyclone:
         await self.alert_core.update_evaluated_values()
         log.success("✅ Evaluated alert values updated", source="Cyclone")
 
+    def clear_prices_backend(self):
+        self.sys.clear_prices()
 
+    def clear_wallets_backend(self):
+        self.sys.clear_wallets()
 
-     # -------------------------------
+    def clear_alerts_backend(self):
+        self.sys.clear_alerts()
+
+    def clear_positions_backend(self):
+        self.sys.clear_positions()
+
+    def _clear_all_data_core(self):
+        self.sys.clear_all_tables()
+
+    async def run_position_updates(self):
+        await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
+
+    # -------------------------------
         # 🔹 Step 1: Check Jupiter Updates
         # -------------------------------
     async def run_check_jupiter_for_updates(self):
@@ -299,12 +211,3 @@ class Cyclone:
         Log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()
         Log.success("✅ Position enrichment complete.", "Cyclone")
-
-
-if __name__ == "__main__":
-    configure_cyclone_console_log()
-
-#    from cyclone.cyclone_console_service import CycloneConsoleService
-    cyclone = Cyclone(poll_interval=60)
-   # helper = CycloneConsoleService(cyclone)
-    helper.run()

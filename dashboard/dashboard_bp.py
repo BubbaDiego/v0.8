@@ -90,22 +90,6 @@ def save_theme():
         json.dump(theme_data, f, indent=2)
     return jsonify({"success": True})
 
-@dashboard_bp.route("/api/get_prices")
-@route_log_alert
-def get_prices():
-    from flask import current_app
-    try:
-        dl = current_app.data_locker
-        prices = dl.get_price_dict()
-        return jsonify({
-            "BTC": prices.get("BTC"),
-            "ETH": prices.get("ETH"),
-            "SOL": prices.get("SOL")
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 
 # ---------------------------------
 # Main Dashboard Page
@@ -255,7 +239,6 @@ def api_collateral_composition():
         print(f"[Pie Chart Error] Collateral composition: {e}")
         return jsonify({"error": str(e)}), 500
 
-
 @dashboard_bp.route("/api/ledger_ages")
 def api_ledger_ages():
     return jsonify({
@@ -265,16 +248,4 @@ def api_ledger_ages():
         "last_positions_time": get_ledger_status('monitor/position_ledger.json')["last_timestamp"],
         "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
         "last_cyclone_time": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
-    })
-
-
-@dashboard_bp.route("/get_alert_limits")
-def get_alert_limits():
-    # 🔕 Temporarily disabled until rework
-    return jsonify({
-        "call_refractory_period": 1800,
-        "call_refractory_start": None,
-        "snooze_countdown": 300,
-        "snooze_start": None,
-        "disabled": True
     })
