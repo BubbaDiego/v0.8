@@ -141,7 +141,7 @@ class CalcServices:
         return leverage
 
     def calculate_travel_percent(self, position_type: str, entry_price: float, current_price: float, liquidation_price: float) -> float:
-        if entry_price <= 0 or liquidation_price <= 0 or entry_price == liquidation_price:
+        if entry_price <= 0 or liquidation_price <= 0:
             log.warning("Invalid price parameters in travel percent", "calculate_travel_percent")
             return 0.0
 

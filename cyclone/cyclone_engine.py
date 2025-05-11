@@ -193,6 +193,22 @@ class Cyclone:
     def _clear_all_data_core(self):
         self.sys.clear_all_tables()
 
+    # ⚙️ Corrected clear helpers
+    def clear_prices_backend(self):
+        self.maintenance_service.clear_prices()
+
+    def clear_wallets_backend(self):
+        self.maintenance_service.clear_wallets()
+
+    def clear_alerts_backend(self):
+        self.maintenance_service.clear_alerts()
+
+    def clear_positions_backend(self):
+        self.maintenance_service.clear_positions()
+
+    def _clear_all_data_core(self):
+        self.maintenance_service.clear_all_tables()
+
     async def run_position_updates(self):
         await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
 

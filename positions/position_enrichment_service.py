@@ -73,10 +73,6 @@ class PositionEnrichmentService:
                 position['current_price'] = float(latest['current_price'])
                 log.info(f"🌐 Market price injected for {asset}: {position['current_price']}", source="Enrichment")
 
-            # ❌ Remove volatile field
-            if 'current_price' in position:
-                log.debug(f"🧹 Removing volatile field 'current_price' before storing", source="Enrichment")
-                position.pop("current_price")
 
             log.success(f"✅ Enriched [{pos_id}] complete", source="Enrichment")
             return position

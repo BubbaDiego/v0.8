@@ -1,3 +1,5 @@
+// === static/js/title_bar.js ===
+
 function showToast(message, isError = false) {
   const toastId = 'toast-' + Date.now();
   const toast = document.createElement('div');
@@ -44,7 +46,8 @@ function callEndpoint(url, icon = "✅", label = "Action") {
     });
 }
 
-// Individual triggers
+// === Action Triggers ===
+
 function triggerPositionUpdate() {
   callEndpoint('/cyclone/run_position_updates', "🪐", "Jupiter Sync");
 }
@@ -60,3 +63,11 @@ function triggerAlertEvaluation() {
 function triggerFullCycle() {
   callEndpoint('/cyclone/run_full_cycle', "🌪️", "Cyclone Run");
 }
+
+// 🗑️ New Cyclone Delete Trigger
+function wipeCyclone() {
+  callEndpoint('/cyclone/clear_all_data', "🗑️", "Cyclone Delete");
+}
+
+// === Auto-bind if needed ===
+// Not necessary if you're calling `onclick` directly in HTML buttons

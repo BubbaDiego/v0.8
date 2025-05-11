@@ -108,6 +108,9 @@ class DLPositionManager:
             log.error(f"Error fetching positions: {e}", source="DLPositionManager")
             return []
 
+    def _delete_all_positions(self):
+        self.delete_all_positions()
+
 
     def delete_position(self, position_id: str):
         try:

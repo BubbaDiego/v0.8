@@ -37,7 +37,7 @@
     <button class="btn btn-light" title="Prices" onclick="triggerMarketUpdate()">💲</button>
     <button class="btn btn-light" title="Cyclone" onclick="triggerFullCycle()">🌪️</button>
 
-    <!-- 🗑️ Trash Delete Button -->
+    <!-- 🗑️ Trash/Delete Cyclone Button -->
     <button class="btn btn-light" title="Wipe Cyclone" onclick="wipeCyclone()">🗑️</button>
 
     <button class="btn btn-light" id="themeToggleButton" title="Toggle Light/Dark">🌓</button>
