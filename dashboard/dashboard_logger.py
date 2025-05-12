@@ -32,20 +32,8 @@ def log_dashboard_full(ctx: dict):
     log.info("📦 Totals", source="DashboardContext", payload=ctx.get("totals"))
     log.info("📈 Ledger Info", source="DashboardContext", payload=ctx.get("ledger_info"))
     log.info("🎯 Portfolio Limits", source="DashboardContext", payload=ctx.get("portfolio_limits"))
-
-    log.info("📊 Status Items", source="DashboardContext", payload={
-        item["title"]: {
-            "value": item["value"],
-            "color": item["color"]
-        } for item in ctx.get("status_items", [])
-    })
-
-    log.info("🛠️ Monitor Items", source="DashboardContext", payload={
-        item["title"]: {
-            "value": item["value"],
-            "color": item["color"]
-        } for item in ctx.get("monitor_items", [])
-    })
+    log.info("📊 Status Items", source="DashboardContext", payload=ctx.get("status_items", {}))
+    log.info("🛠️ Monitor Items", source="DashboardContext", payload=ctx.get("monitor_items", {}))
 
     # 🧠 Charts + Visual Data (last 3 only)
     graph = ctx.get("graph_data", {})
