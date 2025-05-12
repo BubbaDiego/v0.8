@@ -10,6 +10,7 @@ from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from utils.fuzzy_wuzzy import fuzzy_match_key
+from utils.calc_services import CalcServices
 from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
 
 
@@ -67,15 +68,15 @@ def apply_color(metric_name, value, limits):
 def get_dashboard_context(data_locker: DataLocker):
     log.info("📊 Assembling dashboard context", source="DashboardContext")
 
-    position_core = PositionCore(data_locker)
-    positions = position_core.get_all_positions() or []
+    # 🧠 Pull + enrich live positions
+    calc = CalcServices()
+    positions = PositionCore(data_locker).get_all_positions() or []
+    positions = calc.aggregator_positions(positions, DB_PATH)
+    totals = calc.calculate_totals(positions)
 
     for pos in positions:
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name
-
-    from utils.calc_services import CalcServices
-    totals = CalcServices().calculate_totals(positions)
 
     jm = JsonManager()
     alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
@@ -132,53 +133,36 @@ def get_dashboard_context(data_locker: DataLocker):
         "collateral": [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
     }
 
-    # 🧮 Size Composition
     long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
     short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
     total = long_total + short_total
 
-    log.debug("📊 Size totals", source="DashboardContext", payload={
-        "long_total": long_total,
-        "short_total": short_total,
-        "combined": total
-    })
+    size_composition = (
+        {"series": [round(long_total / total * 100), round(short_total / total * 100)]}
+        if total > 0 else {"series": [0, 0], "label": "No position data"}
+    )
 
-    if total > 0:
-        size_composition = {"series": [round(long_total / total * 100), round(short_total / total * 100)]}
-    else:
-        size_composition = {"series": [0, 0], "label": "No position data"}
-
-    # 🧮 Collateral Composition
-    long_collat = sum(
-        float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
-    short_collat = sum(
-        float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
+    long_collat = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
+    short_collat = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
     total_collat = long_collat + short_collat
 
-    log.debug("💰 Collateral totals", source="DashboardContext", payload={
-        "long_collat": long_collat,
-        "short_collat": short_collat,
-        "combined": total_collat
-    })
-
-    if total_collat > 0:
-        collateral_composition = {
-            "series": [round(long_collat / total_collat * 100), round(short_collat / total_collat * 100)]}
-    else:
-        collateral_composition = {"series": [0, 0], "label": "No collateral data"}
+    collateral_composition = (
+        {"series": [round(long_collat / total_collat * 100), round(short_collat / total_collat * 100)]}
+        if total_collat > 0 else {"series": [0, 0], "label": "No collateral data"}
+    )
 
     return {
-            "theme_mode": data_locker.system.get_theme_mode(),
-            "positions": positions,
-            "liquidation_positions": positions,
-            "portfolio_value": "${:,.2f}".format(totals["total_value"]),
-            "portfolio_change": "N/A",
-            "totals": totals,
-            "ledger_info": ledger_info,
-            "status_items": status_items,
-            "monitor_items": monitor_items,
-            "portfolio_limits": portfolio_limits,
-            "graph_data": graph_data,
-            "size_composition": size_composition,
-            "collateral_composition": collateral_composition
-        }
+        "theme_mode": data_locker.system.get_theme_mode(),
+        "positions": positions,
+        "liquidation_positions": positions,
+        "portfolio_value": "${:,.2f}".format(totals["total_value"]),
+        "portfolio_change": "N/A",
+        "totals": totals,
+        "ledger_info": ledger_info,
+        "status_items": status_items,
+        "monitor_items": monitor_items,
+        "portfolio_limits": portfolio_limits,
+        "graph_data": graph_data,
+        "size_composition": size_composition,
+        "collateral_composition": collateral_composition
+    }

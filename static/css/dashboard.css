@@ -1042,6 +1042,23 @@ body.dark-bg .status-icon {
   font-size: 13px;
   box-shadow: 0 0 3px rgba(0,0,0,0.4);
 
+/* make any row of .common-box flex children */
+.box-row {
+  display: flex;
+  gap: 1rem;       /* space between boxes */
+}
+
+/* let each chart box evenly share the space */
+.box-row .common-box {
+  flex: 1;
+}
+
+/* if you want a little extra centering inside each box... */
+.common-box.pie-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
 
 

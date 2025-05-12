@@ -37,7 +37,7 @@ def dash_page():
     dl = current_app.data_locker
 
     # 🧠 Log snapshot to console
-    list_positions_verbose(context)
+    log_dashboard_full(context)
     return render_template("dashboard.html", **context)
 
 @dashboard_bp.route("/database_viewer")

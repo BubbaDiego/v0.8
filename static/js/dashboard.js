@@ -1,7 +1,24 @@
+// store chart instances for toggling
+window.pieCharts = {};
+
+// DOM ready: render graph + pies, then hook toggles
 document.addEventListener("DOMContentLoaded", () => {
   renderGraph(graphData);
   renderPieCharts(sizeData, collateralData);
-  // Optionally start freshness timer here
+
+  // set up click-to-toggle between donut and pie
+  ["#pieChartSize", "#pieChartCollateral"].forEach(sel => {
+    const chartEl = document.querySelector(sel);
+    if (!chartEl) return;
+    chartEl.style.cursor = "pointer";
+    chartEl.addEventListener("click", () => {
+      const chart = window.pieCharts[sel];
+      if (!chart) return;
+      const curType = chart.w.config.chart.type;
+      const newType = curType === "donut" ? "pie" : "donut";
+      chart.updateOptions({ chart: { type: newType } });
+    });
+  });
 });
 
 // =========================
@@ -17,16 +34,16 @@ function renderGraph(data) {
     },
     series: [
       { name: "Total Value", data: data.values },
-      { name: "Collateral", data: data.collateral }
+      { name: "Collateral",   data: data.collateral }
     ],
     xaxis: {
       categories: data.timestamps,
       labels: { show: false }
     },
-    stroke: { curve: "smooth", width: 3 },
-    colors: ["#007bff", "#28a745"],
-    grid: { borderColor: "#e0e0e0" },
-    tooltip: { shared: true, intersect: false }
+    colors: ["#3498db", "#2ecc71"],
+    grid: { borderColor: "#444" },
+    stroke: { curve: "smooth" },
+    tooltip: { x: { format: "dd MMM yyyy" } }
   };
 
   const chart = new ApexCharts(document.querySelector("#graphChart"), options);
@@ -40,7 +57,7 @@ function renderGraph(data) {
 // 🥧 PIE CHARTS - Size + Collateral Composition
 // =========================
 function renderPieCharts(size, collateral) {
-  renderDonutChart("#pieChartSize", size.series, "Size Composition");
+  renderDonutChart("#pieChartSize",     size.series,     "Size Composition");
   renderDonutChart("#pieChartCollateral", collateral.series, "Collateral Composition");
 }
 
@@ -58,13 +75,13 @@ function renderDonutChart(selector, series, title) {
       align: "center",
       style: { fontSize: "14px", fontWeight: "bold" }
     },
-    tooltip: {
-      y: { formatter: val => `${val}%` }
-    }
+    tooltip: { y: { formatter: val => `${val}%` } }
   };
 
   const chart = new ApexCharts(document.querySelector(selector), options);
   chart.render();
+  // store reference for toggle
+  window.pieCharts[selector] = chart;
 
   if (selector === "#pieChartSize") {
     const loader = document.getElementById("pieSizeLoader");

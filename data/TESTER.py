@@ -1,65 +1,66 @@
-# repair_alerts_sql_and_schema.py
+# test_calc_services_totals.py
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import sqlite3
-from core.core_imports import DB_PATH
-from core.logging import log
 
-REQUIRED_ALERT_COLUMNS = {
-    "id": "TEXT PRIMARY KEY",
-    "created_at": "TEXT",
-    "alert_type": "TEXT",
-    "alert_class": "TEXT",
-    "asset_type": "TEXT DEFAULT 'ALL'",
-    "trigger_value": "REAL",
-    "condition": "TEXT DEFAULT 'ABOVE'",
-    "notification_type": "TEXT",
-    "level": "TEXT DEFAULT 'Normal'",
-    "last_triggered": "TEXT",
-    "status": "TEXT DEFAULT 'Active'",
-    "frequency": "INTEGER DEFAULT 1",
-    "counter": "INTEGER DEFAULT 0",
-    "liquidation_distance": "REAL DEFAULT 0.0",
-    "travel_percent": "REAL DEFAULT 0.0",
-    "liquidation_price": "REAL DEFAULT 0.0",
-    "notes": "TEXT",
-    "description": "TEXT",
-    "position_reference_id": "TEXT",
-    "evaluated_value": "REAL DEFAULT 0.0",
-    "position_type": "TEXT DEFAULT 'N/A'"
-}
+from utils.calc_services import CalcServices
 
+def test_calculate_totals():
+    svc = CalcServices()
 
-def repair_alerts_table():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+    # 🧪 Sample synthetic positions
+    test_positions = [
+        {
+            "size": 1000,
+            "value": 1200,
+            "collateral": 400,
+            "leverage": 2.5,
+            "travel_percent": 50,
+            "heat_index": 60
+        },
+        {
+            "size": 500,
+            "value": 700,
+            "collateral": 200,
+            "leverage": 2.0,
+            "travel_percent": 30,
+            "heat_index": 30
+        },
+        {
+            "size": 0,  # simulate edge case
+            "value": 0,
+            "collateral": 0,
+            "leverage": 0,
+            "travel_percent": 0,
+            "heat_index": 0
+        }
+    ]
 
-        # Get current columns
-        cursor.execute("PRAGMA table_info(alerts);")
-        current_cols = [row[1] for row in cursor.fetchall()]
+    totals = svc.calculate_totals(test_positions)
 
-        # Add any missing columns
-        for col_name, col_def in REQUIRED_ALERT_COLUMNS.items():
-            if col_name not in current_cols:
-                log.info(f"🛠 Adding missing column: {col_name}", source="AlertTableRepair")
-                cursor.execute(f"ALTER TABLE alerts ADD COLUMN {col_name} {col_def};")
-                conn.commit()
-                log.success(f"✅ Added column: {col_name}", source="AlertTableRepair")
-            else:
-                log.debug(f"✔️ Column exists: {col_name}", source="AlertTableRepair")
+    # 🧠 Expected values
+    expected = {
+        "total_size": 1500,
+        "total_value": 1900,
+        "total_collateral": 600,
+        "avg_leverage": ((2.5 * 1000) + (2.0 * 500)) / 1500,
+        "avg_travel_percent": ((50 * 1000) + (30 * 500)) / 1500,
+        "avg_heat_index": (60 + 30) / 2
+    }
 
-        # Check for deprecated columns (like 'asset')
-        if "asset" in current_cols:
-            log.warning("⚠️ 'asset' column exists but is deprecated — consider migrating data and recreating table without it", source="AlertTableRepair")
+    # ✅ Assertions
+    def assert_approx(actual, expected, field, tolerance=0.01):
+        assert abs(actual - expected) < tolerance, f"❌ {field} mismatch: {actual} vs {expected}"
+        print(f"✅ {field}: {actual:.2f} ✅")
 
-        conn.close()
-        log.success("🎉 alerts table schema verified and repaired", source="AlertTableRepair")
+    assert_approx(totals["total_size"], expected["total_size"], "total_size")
+    assert_approx(totals["total_value"], expected["total_value"], "total_value")
+    assert_approx(totals["total_collateral"], expected["total_collateral"], "total_collateral")
+    assert_approx(totals["avg_leverage"], expected["avg_leverage"], "avg_leverage")
+    assert_approx(totals["avg_travel_percent"], expected["avg_travel_percent"], "avg_travel_percent")
+    assert_approx(totals["avg_heat_index"], expected["avg_heat_index"], "avg_heat_index")
 
-    except Exception as e:
-        log.error(f"❌ Failed to patch alerts table: {e}", source="AlertTableRepair")
-
+    print("🎯 All tests passed!")
 
 if __name__ == "__main__":
-    repair_alerts_table()
+    test_calculate_totals()
