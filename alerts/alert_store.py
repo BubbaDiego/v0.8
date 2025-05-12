@@ -125,7 +125,7 @@ class AlertStore:
             cursor = self.data_locker.db.get_cursor()
             sql = """
                 INSERT INTO alerts (
-                    id, created_at, alert_type, alert_class, asset, asset_type,
+                    id, created_at, alert_type, alert_class, asset_type,
                     trigger_value, condition, notification_type, level,
                     last_triggered, status, frequency, counter, liquidation_distance,
                     travel_percent, liquidation_price, notes, description,
