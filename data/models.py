@@ -31,17 +31,29 @@ class AlertLevel(str, Enum):
     HIGH = "High"
 
 class AlertType(str, Enum):
-    PRICE_THRESHOLD = "PriceThreshold"
-    DELTA_CHANGE = "DeltaChange"
-    TRAVEL_PERCENT_LIQUID = "TravelPercent"
-    TIME = "Time"
-    PROFIT = "Profit"         # New alert type for profit alerts
-    HEAT_INDEX = "HeatIndex"  # New alert type for heat index alerts
+    # 🔍 Position-Specific Alerts
+    PRICE_THRESHOLD = "pricethreshold"
+    DELTA_CHANGE = "deltachange"
+    TRAVEL_PERCENT_LIQUID = "travelpercentliquid"
+    TIME = "time"
+    PROFIT = "profit"
+    HEAT_INDEX = "heatindex"
+
+    # 📦 Portfolio-Wide Alerts
+    TOTAL_VALUE = "totalvalue"
+    TOTAL_SIZE = "totalsize"
+    TOTAL_LEVERAGE = "avgleverage"
+    TOTAL_RATIO = "valuetocollateralratio"
+    TOTAL_TRAVEL_PERCENT = "avgtravelpercent"
+    TOTAL_HEAT_INDEX = "totalheat"
+
 
 class AlertClass(str, Enum):
     SYSTEM = "System"
     MARKET = "Market"
     POSITION = "Position"
+    PORTFOLIO = "Portfolio"  # ✅ Add this line
+
 
 class NotificationType(str, Enum):
     EMAIL = "Email"

@@ -29,14 +29,27 @@ class AlertEvaluationService:
                 return alert
 
             alert_class = str(alert.alert_class).strip().lower()
+            raw_type = str(alert.alert_type).strip()
 
+            # 🔍 Try to resolve AlertType enum (works for both legacy & new)
+            enum_type = fuzzy_match_enum(raw_type.split('.')[-1], AlertType)
+
+            if not enum_type:
+                log.warning(f"⚠️ Unable to resolve AlertType from: {raw_type}", source="AlertEvaluation")
+                return self._evaluate(alert)
+
+            # ✅ Route portfolio-class alerts using type-based evaluator
             if alert_class == "portfolio":
                 return self._evaluate_portfolio(alert)
 
+            # ✅ Route position-class alerts
             if alert_class == "position":
                 return self._evaluate_position(alert)
 
-            log.warning(f"⚠️ Unknown alert class '{alert_class}', using fallback _evaluate for {alert.id}", source="AlertEvaluation")
+            log.warning(
+                f"⚠️ Unknown alert class '{alert_class}', using fallback _evaluate for {alert.id}",
+                source="AlertEvaluation"
+            )
             return self._evaluate(alert)
 
         except Exception as e:
@@ -82,28 +95,32 @@ class AlertEvaluationService:
             alert_limits = config.get("alert_limits", config)
             total_limits = alert_limits.get("total_portfolio_limits", {})
 
-            metric = (alert.description or "").strip().lower()
-            raw_key = f"{metric}_limits"
+            raw_type = str(alert.alert_type)
+            enum_type = fuzzy_match_enum(raw_type.split('.')[-1], AlertType)
 
-            aliases = {
-                "total_heat_limits": ["avg_heat_index_limits", "heat_index_limits", "heat_limits"],
-                "value_to_collateral_ratio_limits": ["vcr_limits", "valuecollateral_limits", "ratio_limits"],
-                "avg_travel_percent_limits": ["travel_percent_limits", "travel_limits"]
+            if not enum_type:
+                log.warning(f"⚠️ Unable to resolve AlertType enum from: {raw_type}", source="AlertEvaluation")
+                return alert
+
+            alert_key_map = {
+                AlertType.TOTAL_VALUE: "total_value",
+                AlertType.TOTAL_SIZE: "total_size",
+                AlertType.TOTAL_LEVERAGE: "avg_leverage",
+                AlertType.TOTAL_RATIO: "value_to_collateral_ratio",
+                AlertType.TOTAL_TRAVEL_PERCENT: "avg_travel_percent",
+                AlertType.TOTAL_HEAT_INDEX: "total_heat",
             }
 
-            json_mgr = JsonManager()
-            resolved_key = json_mgr.resolve_key_fuzzy(raw_key, total_limits, aliases=aliases)
+            metric_key = alert_key_map.get(enum_type)
+            if not metric_key:
+                log.warning(f"⚠️ No portfolio key mapped for alert type: {enum_type}", source="AlertEvaluation")
+                return alert
+
+            resolved_key = f"{metric_key}_limits"
             thresholds = total_limits.get(resolved_key)
 
-            log.debug(f"📊 Evaluating Portfolio Alert {alert.id} → description='{metric}' → key='{resolved_key}'",
-                      source="AlertEvaluation")
-
             if not thresholds:
-                log.warning(
-                    f"⚠️ Thresholds not found for '{metric}'. Resolved key: '{resolved_key}'",
-                    source="AlertEvaluation",
-                    payload={"available_keys": list(total_limits.keys())}
-                )
+                log.warning(f"⚠️ No thresholds found for key: {resolved_key}", source="AlertEvaluation")
                 return alert
 
             value = alert.evaluated_value
@@ -115,27 +132,25 @@ class AlertEvaluationService:
             medium = thresholds.get("medium")
             high = thresholds.get("high")
 
-            log.debug(f"📈 Thresholds for {resolved_key}: low={low}, medium={medium}, high={high}",
-                      source="AlertEvaluation")
+            log.debug(
+                f"📈 Evaluating {enum_type.value} → {value} against {resolved_key}: low={low}, medium={medium}, high={high}",
+                source="AlertEvaluation")
 
             if value >= high:
-                alert.level = "High"
+                alert.level = AlertLevel.HIGH
             elif value >= medium:
-                alert.level = "Medium"
+                alert.level = AlertLevel.MEDIUM
             elif value >= low:
-                alert.level = "Low"
+                alert.level = AlertLevel.LOW
             else:
-                alert.level = "Normal"
+                alert.level = AlertLevel.NORMAL
 
-            log.success(
-                f"✅ Portfolio alert evaluated: {metric}={value} → AlertLevel.{alert.level.upper()}",
-                source="AlertEvaluation"
-            )
-
+            log.success(f"✅ Evaluated {enum_type.value} alert: {value} → level={alert.level}", source="AlertEvaluation")
             return alert
 
         except Exception as e:
             log.error(f"❌ Portfolio evaluation failed for alert {alert.id}: {e}", source="AlertEvaluation")
+            alert.level = AlertLevel.NORMAL
             return alert
 
     def _evaluate_position(self, alert):

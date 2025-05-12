@@ -5,14 +5,40 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from alerts.alert_utils import normalize_alert_type, normalize_condition, normalize_notification_type
 from data.alert import AlertType, Condition
+from data.models import AlertClass
+
+from data.models import (
+    AlertType,
+    AlertClass,
+    NotificationType,
+    Status
+)
+
+
 from alerts.alert_utils import log_alert_summary
-
-
 from uuid import uuid4
 from core.logging import log
 from datetime import datetime
 from data.alert import Alert, AlertLevel
 import sqlite3
+
+PORTFOLIO_POSITION_ID = "619"
+
+# 🔐 Enum Sanity Check
+from data.models import AlertType
+
+REQUIRED_ALERT_TYPES = [
+    "TOTAL_VALUE",
+    "TOTAL_SIZE",
+    "TOTAL_LEVERAGE",
+    "TOTAL_RATIO",
+    "TOTAL_TRAVEL_PERCENT",
+    "TOTAL_HEAT_INDEX"
+]
+
+for enum_name in REQUIRED_ALERT_TYPES:
+    assert hasattr(AlertType, enum_name), f"❌ Missing AlertType.{enum_name} — restart required or model desynced"
+
 
 class AlertStore:
     def __init__(self, data_locker):
@@ -45,8 +71,8 @@ class AlertStore:
             "description": "",
             "position_reference_id": None,
             "evaluated_value": 0.0,
-            "position_type": "N/A",
-            "asset": "PORTFOLIO"
+            "position_type": "N/A"#,
+        #    "asset": "PORTFOLIO"
         }
 
         alert_data = alert_data or {}
@@ -168,63 +194,69 @@ class AlertStore:
         log.info(f"✅ Loaded {len(active_alerts)} active alerts", source="AlertStore")
         return active_alerts
 
-
     def create_position_alerts(self):
         log.banner("📊 AlertStore: Creating Position Alerts")
-        created = 0
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         positions = self.data_locker.positions.get_all_positions()
+        created = 0
 
         for pos in positions:
-            try:
-                base = {
-                    "asset": pos["asset_type"],
-                    "asset_type": pos["asset_type"],
-                    "position_reference_id": pos["id"],
-                    "position_type": pos.get("position_type", "long"),
-                    "notification_type": "SMS",
-                    "level": "Normal",
-                    "last_triggered": None,
-                    "status": "Active",
-                    "frequency": 1,
-                    "counter": 0,
-                    "notes": "Auto-created by Cyclone",
-                    "description": f"Alert for {pos['asset_type']}",
-                    "liquidation_distance": pos.get("liquidation_distance", 0.0),
-                    "travel_percent": pos.get("travel_percent", 0.0),
-                    "liquidation_price": pos.get("liquidation_price", 0.0),
-                    "evaluated_value": pos.get("value", 0.0),
-                    "created_at": now
-                }
+            pos_id = pos.get("id")
+            pos_type = pos.get("position_type", "N/A")
+            asset_type = pos.get("asset_type", "OTHER")
 
+            try:
                 alerts = [
                     {
-                        **base,
-                        "id": str(uuid4()),
-                        "alert_type": AlertType.HeatIndex.value,
-                        "alert_class": "Position",
-                        "trigger_value": 50,
-                        "condition": Condition.ABOVE.value
+                        "alert_type": AlertType.HEAT_INDEX.value,
+                        "description": "heat_index",
+                        "trigger_value": 30.0
                     },
                     {
-                        **base,
-                        "id": str(uuid4()),
-                        "alert_type": AlertType.Profit.value,
-                        "alert_class": "Position",
-                        "trigger_value": 1000,
-                        "condition": Condition.ABOVE.value
+                        "alert_type": AlertType.TRAVEL_PERCENT_LIQUID.value,
+                        "description": "travel_percent",
+                        "trigger_value": 100.0
+                    },
+                    {
+                        "alert_type": AlertType.PROFIT.value,
+                        "description": "profit",
+                        "trigger_value": 50.0
                     }
                 ]
 
-                for alert in alerts:
+                for spec in alerts:
+                    alert = {
+                        "id": str(uuid4()),
+                        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "alert_type": spec["alert_type"],
+                        "alert_class": AlertClass.POSITION.value,
+                        "asset_type": asset_type,
+                        "trigger_value": spec["trigger_value"],
+                        "condition": Condition.ABOVE.value,
+                        "notification_type": NotificationType.SMS.value,
+                        "level": "Normal",
+                        "last_triggered": None,
+                        "status": Status.ACTIVE.value,
+                        "frequency": 1,
+                        "counter": 0,
+                        "liquidation_distance": pos.get("liquidation_distance", 0.0),
+                        "travel_percent": pos.get("travel_percent", 0.0),
+                        "liquidation_price": pos.get("liquidation_price", 0.0),
+                        "notes": f"Auto-generated alert for {spec['description']}",
+                        "description": spec["description"],
+                        "position_reference_id": pos_id,
+                        "evaluated_value": 0.0,
+                        "position_type": pos_type
+                    }
+
                     self.create_alert(alert)
                     log_alert_summary(alert)
                     created += 1
 
             except Exception as e:
-                log.error(f"❌ Skipped alert for position {pos.get('id')}: {e}", source="AlertStore")
+                log.error(f"❌ Skipped alert for position {pos_id}: {e}", source="AlertStore")
 
         log.success(f"✅ Position alert creation complete: {created} alerts", source="AlertStore")
+
 
 
     def create_portfolio_alerts(self):
@@ -233,37 +265,36 @@ class AlertStore:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         metrics = [
-            (AlertType.TotalValue, "total_value", 50000),
-            (AlertType.TotalSize, "total_size", 1.0),
-            (AlertType.AvgLeverage, "avg_leverage", 2.0),
-            (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0),
-            (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2),
-            (AlertType.TotalHeat, "total_heat", 25.0),
+            (AlertType.TOTAL_VALUE, "total_value", 50000),
+            (AlertType.TOTAL_SIZE, "total_size", 1.0),
+            (AlertType.TOTAL_LEVERAGE, "avg_leverage", 2.0),
+            (AlertType.TOTAL_TRAVEL_PERCENT, "avg_travel_percent", 10.0),
+            (AlertType.TOTAL_RATIO, "value_to_collateral_ratio", 1.2),
+            (AlertType.TOTAL_HEAT_INDEX, "total_heat", 25.0),
         ]
 
-        for alert_type, metric_desc, trigger_value in metrics:
+        for alert_type, description, trigger_value in metrics:
             try:
                 alert = {
                     "id": str(uuid4()),
                     "created_at": now,
-                    "alert_type": alert_type.value,
-                    "alert_class": "Portfolio",
-                    "asset": "PORTFOLIO",
+                    "alert_type": alert_type.value,  # ✅ enum.value is already lowercase
+                    "alert_class": AlertClass.PORTFOLIO.value,
                     "asset_type": "ALL",
                     "trigger_value": trigger_value,
                     "condition": Condition.ABOVE.value,
-                    "notification_type": "SMS",
+                    "notification_type": NotificationType.SMS.value,
                     "level": "Normal",
                     "last_triggered": None,
-                    "status": "Active",
+                    "status": Status.ACTIVE.value,
                     "frequency": 1,
                     "counter": 0,
                     "liquidation_distance": 0.0,
                     "travel_percent": 0.0,
                     "liquidation_price": 0.0,
-                    "notes": "Auto-generated portfolio alert",
-                    "description": metric_desc,
-                    "position_reference_id": None,
+                    "notes": f"Auto-generated portfolio alert for {description}",
+                    "description": description,
+                    "position_reference_id": PORTFOLIO_POSITION_ID,
                     "evaluated_value": 0.0,
                     "position_type": "N/A"
                 }
@@ -273,10 +304,9 @@ class AlertStore:
                 created += 1
 
             except Exception as e:
-                log.error(f"💥 Failed to create alert for {metric_desc}: {e}", source="AlertStore")
+                log.error(f"💥 Failed to create alert for {description}: {e}", source="AlertStore")
 
         log.success(f"✅ Portfolio alert creation complete: {created} alerts", source="AlertStore")
-
 
     def create_global_alerts(self):
         log.banner("🌐 AlertStore: Creating Global Market Alerts")
