@@ -1,7 +1,8 @@
-// === title_bar.js ===
 console.log("✅ title_bar.js loaded");
 
-// Toast utility
+// ======================
+// 🧪 Toast Utility
+// ======================
 function showToast(message, isError = false) {
   const toast = document.createElement('div');
   toast.className = `toast align-items-center text-bg-${isError ? 'danger' : 'success'} border-0`;
@@ -24,14 +25,18 @@ function showToast(message, isError = false) {
   toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
 
-// Core action endpoint handler
-function callEndpoint(url, icon = "✅", label = "Action") {
+// ======================
+// 🎯 Call POST Endpoint with Optional Follow-up
+// ======================
+function callEndpoint(url, icon = "✅", label = "Action", postAction = null) {
   showToast(`${icon} ${label} started...`);
-  fetch(url, { method: 'POST' })
+
+  return fetch(url, { method: 'POST' })
     .then(res => res.json())
     .then(data => {
       if (data.message) {
         showToast(`${icon} ${label} complete: ${data.message}`);
+        if (typeof postAction === "function") postAction();
       } else if (data.error) {
         showToast(`❌ ${label} failed: ${data.error}`, true);
       } else {
@@ -44,19 +49,48 @@ function callEndpoint(url, icon = "✅", label = "Action") {
     });
 }
 
-// === Bind all [data-action] buttons ===
+// ======================
+// 🔁 AJAX Dashboard Section Refresh
+// ======================
+function reloadDashboardSection() {
+  const section = document.getElementById("dashboardSection");
+  if (!section) return;
+
+  section.classList.add("loading");
+
+  fetch("/api/dashboard_html")
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to load dashboard HTML");
+      return res.text();
+    })
+    .then(html => {
+      section.innerHTML = html;
+      section.classList.remove("loading");
+      console.log("✅ Dashboard reloaded via AJAX");
+    })
+    .catch(err => {
+      console.error("❌ Error refreshing dashboard section:", err);
+      section.classList.remove("loading");
+    });
+}
+
+// ======================
+// 🔗 Bind Title Bar Actions
+// ======================
 document.addEventListener('DOMContentLoaded', () => {
   const actions = {
-    sync: () => callEndpoint('/cyclone/run_position_updates', "🪐", "Jupiter Sync"),
-    market: () => callEndpoint('/cyclone/run_market_updates', "💲", "Market Update"),
-    full: () => callEndpoint('/cyclone/run_full_cycle', "🌪️", "Full Cycle"),
-    wipe: () => callEndpoint('/cyclone/clear_all_data', "🗑️", "Cyclone Delete")
+    sync: () => callEndpoint('/cyclone/run_position_updates', "🪐", "Jupiter Sync", reloadDashboardSection),
+    market: () => callEndpoint('/cyclone/run_market_updates', "💲", "Market Update", reloadDashboardSection),
+    full: () => callEndpoint('/cyclone/run_full_cycle', "🌪️", "Full Cycle", reloadDashboardSection),
+    wipe: () => callEndpoint('/cyclone/clear_all_data', "🗑️", "Cyclone Delete", reloadDashboardSection)
   };
 
   document.querySelectorAll('[data-action]').forEach(btn => {
     const key = btn.getAttribute('data-action');
     if (actions[key]) {
       btn.addEventListener('click', actions[key]);
+    } else {
+      console.warn(`⚠️ Unknown [data-action="${key}"]`);
     }
   });
 });

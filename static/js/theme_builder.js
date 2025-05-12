@@ -1,128 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{% block title %}My Website{% endblock %}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+console.log("🎨 theme_builder.js loaded");
 
-  <!-- Shared Styles -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
+function applyThemePreview(config) {
+  document.documentElement.style.setProperty("--bg", config.background || "#ffffff");
+  document.documentElement.style.setProperty("--text", config.text || "#111111");
+  document.documentElement.style.setProperty("--card-bg", config.card || "#f0f0f0");
+  document.documentElement.style.setProperty("--navbar-bg", config.navbar || "#fafafa");
+}
 
-  <!-- Core API URLs (✅ Must load FIRST) -->
-  <script src="{{ url_for('static', filename='js/api_routes.js') }}"></script>
+function getThemeConfigFromUI() {
+  return {
+    background: document.getElementById("backgroundColor").value,
+    text: document.getElementById("textColor").value,
+    card: document.getElementById("cardBackground").value,
+    navbar: document.getElementById("navbarBackground").value
+  };
+}
 
-  <!-- Core Base Functions (✅ Must load SECOND) -->
-  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+function loadPresets() {
+  fetch("/system/theme_config")
+    .then(res => res.json())
+    .then(data => {
+      const presetList = document.getElementById("presetList");
+      presetList.innerHTML = "";
 
-  <!-- Theme Stylesheet Decider -->
-  <link id="themeStylesheet" rel="stylesheet" href="">
+      if (!data || typeof data !== "object") return;
 
-  {% block extra_styles %}{% endblock %}
-
-  <!-- Preload Critical Images -->
-  <link rel="preload" href="{{ url_for('static', filename='images/btc_logo.png') }}" as="image">
-  <link rel="preload" href="{{ url_for('static', filename='images/eth_logo.png') }}" as="image">
-  <link rel="preload" href="{{ url_for('static', filename='images/sol_logo.png') }}" as="image">
-  <link rel="preload" href="{{ url_for('static', filename='images/obivault.jpg') }}" as="image">
-  <link rel="preload" href="{{ url_for('static', filename='images/r2vault.jpg') }}" as="image">
-
-  <!-- Theme Setup Early -->
-  <script>
-    (function() {
-      const themeMode = localStorage.getItem('themeMode') || 'light';
-      document.documentElement.classList.add(themeMode + '-bg');
-      const themeLink = document.getElementById('themeStylesheet');
-      if (themeMode === 'dark') {
-        themeLink.href = "{{ url_for('static', filename='css/base_dark.css') }}";
-      } else {
-        themeLink.href = "{{ url_for('static', filename='css/base_light.css') }}";
-      }
-    })();
-  </script>
-
-  <!-- Root Variables for Backgrounds -->
-  <style>
-    :root {
-      --light-page-bg-color: #f5f5f5;
-      --light-page-text-color: #000;
-      --dark-page-bg-color: #3a3838;
-      --dark-page-text-color: #ddd;
-    }
-    body.light-bg {
-      background-color: var(--light-page-bg-color) !important;
-      color: var(--light-page-text-color) !important;
-      background-image: none !important;
-    }
-    body.dark-bg {
-      background-color: var(--dark-page-bg-color) !important;
-      color: var(--dark-page-text-color) !important;
-      background-image: none !important;
-    }
-  </style>
-</head>
-
-<body class="hold-transition layout-top-nav">
-  <div class="wrapper">
-    {% include "title_bar.html" %}
-
-    <!-- Main Content -->
-    <div class="content-wrapper">
-      <div class="content">
-        <div id="layoutContainer" class="container-fluid">
-          {% block page_title %}{% endblock %}
-          <div class="pt-5">
-            {% block content %}{% endblock %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Shared Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
-
-  {% block extra_scripts %}{% endblock %}
-
-  <!-- Layout & Dynamic Theme Finalizer -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const layoutMode = localStorage.getItem("layoutMode") || "fluid";
-      const allLayouts = document.querySelectorAll('.container, .container-fluid');
-      allLayouts.forEach(wrapper => {
-        wrapper.classList.remove('container', 'container-fluid');
-        wrapper.classList.add(layoutMode === "fixed" ? "container" : "container-fluid");
+      Object.entries(data).forEach(([name, values]) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        option.dataset.config = JSON.stringify(values);
+        presetList.appendChild(option);
       });
-
-      const themeToggleButton = document.getElementById('themeToggleButton');
-      if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', function() {
-          const themeIcon = document.getElementById('themeIcon');
-          const themeLink = document.getElementById('themeStylesheet');
-          const currentMode = localStorage.getItem('themeMode') || 'light';
-          const newMode = (currentMode === 'light') ? 'dark' : 'light';
-
-          document.body.classList.remove('light-bg', 'dark-bg');
-          document.body.classList.add(newMode + '-bg');
-          document.body.style.transition = 'background-color 0.4s ease, color 0.4s ease';
-
-          if (newMode === 'dark') {
-            themeLink.href = "{{ url_for('static', filename='css/base_dark.css') }}";
-            themeIcon.classList.remove('fa-sun');
-            themeIcon.classList.add('fa-moon');
-          } else {
-            themeLink.href = "{{ url_for('static', filename='css/base_light.css') }}";
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-          }
-
-          localStorage.setItem('themeMode', newMode);
-        });
-      }
     });
-  </script>
+}
 
-</body>
-</html>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🎛️ Theme Builder loaded");
+
+  loadPresets();
+
+  // Live preview when selecting preset
+  document.getElementById("presetList").addEventListener("change", e => {
+    const selected = e.target.selectedOptions[0];
+    if (!selected) return;
+    const config = JSON.parse(selected.dataset.config);
+    applyThemePreview(config);
+    Object.entries(config).forEach(([key, val]) => {
+      if (key === "background") document.getElementById("backgroundColor").value = val;
+      if (key === "text") document.getElementById("textColor").value = val;
+      if (key === "card") document.getElementById("cardBackground").value = val;
+      if (key === "navbar") document.getElementById("navbarBackground").value = val;
+    });
+  });
+
+  // Save preset
+  document.getElementById("savePresetBtn").addEventListener("click", () => {
+    const name = document.getElementById("presetName").value.trim();
+    if (!name) return alert("Preset name required.");
+    const config = getThemeConfigFromUI();
+
+    fetch("/system/theme_config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [name]: config })
+    }).then(() => {
+      alert("Preset saved!");
+      loadPresets();
+    });
+  });
+
+  // Set selected as active theme
+  document.getElementById("setActiveBtn").addEventListener("click", () => {
+    const selected = document.getElementById("presetList").selectedOptions[0];
+    if (!selected) return;
+    const config = JSON.parse(selected.dataset.config);
+    applyThemePreview(config);
+    // Optional: Store active theme on backend if needed
+  });
+
+  // Delete selected
+  document.getElementById("deletePresetBtn").addEventListener("click", () => {
+    const selected = document.getElementById("presetList").selectedOptions[0];
+    if (!selected) return;
+    const name = selected.value;
+
+    fetch("/system/theme_config")
+      .then(res => res.json())
+      .then(config => {
+        delete config[name];
+        return fetch("/system/theme_config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config)
+        });
+      })
+      .then(() => {
+        alert("Preset deleted.");
+        loadPresets();
+      });
+  });
+});

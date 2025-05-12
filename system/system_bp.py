@@ -124,6 +124,62 @@ def update_wallet(name):
         flash(f"❌ Failed to update wallet '{name}': {e}", "danger")
     return redirect(url_for("system.list_wallets"))
 
+# === 🎨 Theme Profile Routes ===
+
+# 🔍 GET: All saved theme profiles
+@system_bp.route("/themes", methods=["GET"])
+def list_themes():
+    try:
+        core = get_core()
+        profiles = core.get_all_profiles()
+        return jsonify(profiles)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 💾 POST: Save or update a theme profile
+@system_bp.route("/themes", methods=["POST"])
+def save_theme():
+    try:
+        data = request.get_json()
+        if not isinstance(data, dict) or not data:
+            return jsonify({"error": "Invalid theme payload"}), 400
+
+        for name, config in data.items():
+            get_core().save_profile(name, config)
+
+        return jsonify({"message": "Profile(s) saved."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ❌ DELETE: Remove a theme profile
+@system_bp.route("/themes/<name>", methods=["DELETE"])
+def delete_theme(name):
+    try:
+        get_core().delete_profile(name)
+        return jsonify({"message": f"Theme '{name}' deleted."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 🌟 POST: Set a profile as active
+@system_bp.route("/themes/activate/<name>", methods=["POST"])
+def activate_theme(name):
+    try:
+        get_core().set_active_profile(name)
+        return jsonify({"message": f"Theme '{name}' set as active."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 🎯 GET: Active theme profile
+@system_bp.route("/themes/active", methods=["GET"])
+def get_active_theme():
+    try:
+        profile = get_core().get_active_profile()
+        return jsonify(profile)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
 # 🌗 Get/set theme mode
 @system_bp.route("/theme_mode", methods=["GET", "POST"])
 def theme_mode():
