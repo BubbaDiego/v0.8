@@ -31,15 +31,13 @@
     </div>
   </div>
 
-  <!-- Right Action Buttons -->
-  <div class="right-buttons d-flex gap-2">
-    <button class="btn btn-light" title="Jupiter" onclick="triggerPositionUpdate()">🪐</button>
-    <button class="btn btn-light" title="Prices" onclick="triggerMarketUpdate()">💲</button>
-    <button class="btn btn-light" title="Cyclone" onclick="triggerFullCycle()">🌪️</button>
+    <!-- 🔘 Title bar action buttons -->
+    <div class="title-bar-actions">
+      <button class="btn btn-outline-primary" data-action="sync">🪐 Sync</button>
+      <button class="btn btn-outline-success" data-action="market">💲 Market</button>
+      <button class="btn btn-outline-info" data-action="full">🌪️ Full Cycle</button>
+      <button class="btn btn-outline-danger" data-action="wipe">🗑️ Delete</button>
+      <button class="btn btn-outline-secondary" id="themeToggleButton">🌗 Toggle Theme</button>
+    </div>
 
-    <!-- 🗑️ Trash Delete Button -->
-    <button class="btn btn-light" title="Wipe Cyclone" onclick="wipeCyclone()">🗑️</button>
-
-    <button class="btn btn-light" id="themeToggleButton" title="Toggle Light/Dark">🌓</button>
-  </div>
 </nav>

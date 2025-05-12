@@ -1,129 +1,50 @@
 <!DOCTYPE html>
-<html lang="en" class="{{ theme_mode }}-bg">
+<html lang="en" data-theme="light"> <!-- overwritten by script -->
 <head>
   <meta charset="utf-8">
-  <title>{% block title %}My Website{% endblock %}</title>
+  <title>{% block title %}Dashboard{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- 🚀 Early Theme Mode Injection -->
+  <!-- 🌓 Early Theme Setup -->
   <script>
-    (function applyThemeEarly() {
-      const match = document.cookie.match(/(^|;) ?themeMode=([^;]*)/);
-      const mode = match ? match[2] : "dark";
-      document.documentElement.classList.add(`${mode}-bg`);
-      document.body?.classList.add(`${mode}-bg`);
+    (function () {
+      const mode = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('themeMode='))
+        ?.split('=')[1] || "light";
+      document.documentElement.setAttribute("data-theme", mode);
     })();
   </script>
 
-  <!-- 🧱 Core Libraries -->
+  <!-- 🧱 CSS Core -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/all.min.css">
-
-  <!-- 🎨 Core Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/tables.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/icons.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/cards.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 
-  <!-- 🌗 Dynamic Theme -->
-  {% set theme_mode = request.cookies.get('themeMode', 'light') %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base_' + theme_mode + '.css') }}">
-
-  <!-- Extra Style Hooks -->
-  {% block extra_styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
-  {% endblock %}
-
-  <!-- 🌈 Animated Background Transitions -->
-  <style>
-    :root {
-      --light-page-bg-color: #f5f5f5;
-      --light-page-text-color: #000;
-      --dark-page-bg-color: #3a3838;
-      --dark-page-text-color: #ddd;
-    }
-
-    body.light-bg, body.dark-bg {
-      transition: background-color 0.4s ease, color 0.4s ease;
-    }
-
-    body.light-bg {
-      background-color: var(--light-page-bg-color) !important;
-      color: var(--light-page-text-color) !important;
-    }
-
-    body.dark-bg {
-      background-color: var(--dark-page-bg-color) !important;
-      color: var(--dark-page-text-color) !important;
-    }
-  </style>
-
-  <!-- JS Utility -->
-  <script src="../static/js/title_bar.js"></script>
+  {% block extra_styles %}{% endblock %}
 </head>
 
-<body class="hold-transition layout-top-nav {{ theme_mode }}-bg">
+<body>
   <div class="wrapper">
     {% include "title_bar.html" %}
 
-    <!-- 🔔 Toast Container -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080; right: 0; top: 60px;">
-      <div id="toastContainer" class="toast-container"></div>
-    </div>
+    <!-- ✅ Toast container -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
     <div class="content-wrapper">
-      <div class="content">
-        <div id="layoutContainer" class="container-fluid">
-          {% block page_title %}{% endblock %}
-          <div class="pt-5">
-            {% block content %}{% endblock %}
-          </div>
-        </div>
+      <div class="container py-5">
+        {% block page_title %}{% endblock %}
+        {% block content %}{% endblock %}
       </div>
     </div>
   </div>
 
-  <!-- Core JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+  <!-- ✅ Bootstrap JS (needed for Toasts) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- App-Wide JS -->
-  <script src="{{ url_for('static', filename='js/api_routes.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+  <!-- ✅ App Logic Scripts -->
+  <script src="{{ url_for('static', filename='js/theme_toggle.js') }}"></script>
   <script src="{{ url_for('static', filename='js/title_bar.js') }}"></script>
 
   {% block extra_scripts %}{% endblock %}
-
-  <!-- 🌘 Theme Toggle Handler -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const themeToggleButton = document.getElementById('themeToggleButton');
-      if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', () => {
-          const isDark = document.body.classList.contains('dark-bg');
-          const newMode = isDark ? 'light' : 'dark';
-
-          document.body.classList.remove('light-bg', 'dark-bg');
-          document.body.classList.add(`${newMode}-bg`);
-          document.documentElement.classList.remove('light-bg', 'dark-bg');
-          document.documentElement.classList.add(`${newMode}-bg`);
-
-          // Save to backend + cookie
-          fetch("/system/theme_mode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ theme_mode: newMode })
-          }).then(() => {
-            document.cookie = `themeMode=${newMode}; path=/; max-age=31536000`;
-            localStorage.setItem('themeMode', newMode);
-            setTimeout(() => location.reload(), 250);
-          }).catch(err => console.error("❌ Theme update failed", err));
-        });
-      }
-    });
-  </script>
 </body>
 </html>
