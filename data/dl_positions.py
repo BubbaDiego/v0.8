@@ -31,13 +31,30 @@ class DLPositionManager:
         import traceback
 
         try:
-            # ✅ Ensure required fields are present
-            if "current_price" not in position:
-                position["current_price"] = 0.0  # Default/fallback
-            if "profit" not in position:
-                position["profit"] = position.get("value", 0.0)
-            if "heat_index" not in position:
-                position["heat_index"] = position.get("current_heat_index", 0.0)
+            # ✅ Full field protection — all required fields covered
+            position.setdefault("id", str(uuid4()))
+            position.setdefault("asset_type", "UNKNOWN")
+            position.setdefault("entry_price", 0.0)
+            position.setdefault("liquidation_price", 0.0)
+            position.setdefault("position_type", "LONG")
+            position.setdefault("wallet_name", "Unspecified")
+            position.setdefault("collateral", 0.0)
+            position.setdefault("size", 0.0)
+            position.setdefault("leverage", 1.0)
+            position.setdefault("value", 0.0)
+            position.setdefault("current_price", 0.0)
+            position.setdefault("travel_percent", 0.0)
+            position.setdefault("pnl_after_fees_usd", 0.0)
+            position.setdefault("current_heat_index", 0.0)
+            position.setdefault("heat_index", position["current_heat_index"])
+            position.setdefault("liquidation_distance", 0.0)
+            position.setdefault("status", "ACTIVE")
+            position.setdefault("last_updated", datetime.now().isoformat())
+
+            # ✅ Optional references
+            position.setdefault("alert_reference_id", None)
+            position.setdefault("hedge_buddy_id", None)
+            position.setdefault("profit", position["value"])
 
             cursor = self.db.get_cursor()
 
@@ -49,7 +66,7 @@ class DLPositionManager:
                     wallet_name, alert_reference_id, hedge_buddy_id,
                     pnl_after_fees_usd, travel_percent,
                     profit, liquidation_distance,
-                    heat_index, current_heat_index
+                    heat_index, current_heat_index, status
                 ) VALUES (
                     :id, :asset_type, :position_type, :entry_price,
                     :current_price, :liquidation_price, :collateral,
@@ -57,18 +74,13 @@ class DLPositionManager:
                     :wallet_name, :alert_reference_id, :hedge_buddy_id,
                     :pnl_after_fees_usd, :travel_percent,
                     :profit, :liquidation_distance,
-                    :heat_index, :current_heat_index
+                    :heat_index, :current_heat_index, :status
                 )
             """, position)
 
             self.db.commit()
 
             log.success(f"💾 Position INSERTED: {position['id']}", source="DLPositionManager")
-            # 🚨 Play fatal beep on insert error
-            winsound.MessageBeep(winsound.MB_ICONHAND)  # Red X system error sound
-            winsound.PlaySound("path_to_sound.wav", winsound.SND_FILENAME)
-
-            log.debug(f"📂 DB path in use: {self.db.db_path}", source="DLPositionManager")
 
         except Exception as e:
             err_msg = f"❌ Failed to insert position {position.get('id')}: {e}"
@@ -77,7 +89,6 @@ class DLPositionManager:
             tb = traceback.format_exc()
             log.debug(tb, source="DLPositionManager")
 
-            # 🧾 Log failure to file
             try:
                 logs_dir = os.path.join(os.path.dirname(self.db.db_path), "..", "logs")
                 os.makedirs(logs_dir, exist_ok=True)
@@ -226,6 +237,17 @@ class DLPositionManager:
             log.success(f"✅ Position inserted for test: {position['id']}", source="DLPositionManager")
         except Exception as e:
             log.error(f"❌ Failed to insert test position: {e}", source="DLPositionManager")
+
+    def get_active_positions(self) -> list:
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("SELECT * FROM positions WHERE status = 'ACTIVE'")
+            rows = cursor.fetchall()
+            log.debug(f"🔎 Found {len(rows)} active positions", source="DLPositionManager")
+            return [dict(row) for row in rows]
+        except Exception as e:
+            log.error(f"❌ Failed to fetch active positions: {e}", source="DLPositionManager")
+            return []
 
     def get_position_by_id(self, pos_id: str):
         cursor = self.db.get_cursor()

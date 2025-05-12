@@ -17,17 +17,10 @@ class PositionCore:
         self.enricher = PositionEnrichmentService(data_locker)
 
     def get_all_positions(self):
-        raw = self.store.get_all()
-        enriched = []
+        return self.store.get_all_positions()
 
-        for pos in raw:
-            try:
-                enriched.append(self.enricher.enrich(pos))
-            except Exception as e:
-                log.error(f"⚠️ Failed to enrich pos {pos.get('id')}: {e}", source="PositionCore")
-
-        log.success(f"✅ Final enriched list: {len(enriched)}", source="PositionCore")
-        return enriched
+    def get_active_positions(self):
+        return self.store.get_active_positions()
 
     def create_position(self, pos: dict):
         enriched = self.enricher.enrich(pos)

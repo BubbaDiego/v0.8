@@ -21,6 +21,20 @@ class PositionStore:
             log.error(f"❌ Failed to load positions: {e}", source="PositionStore")
             return []
 
+    def get_all_positions(self):
+        return self.get_all()
+
+    def get_active_positions(self) -> list:
+        try:
+            cursor = self.dl.db.get_cursor()  # ✅ FIXED: Use DataLocker’s db
+            cursor.execute("SELECT * FROM positions WHERE status = 'ACTIVE'")
+            rows = cursor.fetchall()
+            log.debug(f"📊 Pulled {len(rows)} ACTIVE positions", source="PositionStore")
+            return [dict(row) for row in rows]
+        except Exception as e:
+            log.error(f"❌ Failed to get active positions: {e}", source="PositionStore")
+            return []
+
     def get_by_id(self, pos_id: str) -> dict:
         return self.dl.positions.get_position_by_id(pos_id)
 

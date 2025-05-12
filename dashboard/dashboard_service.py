@@ -74,17 +74,8 @@ def get_dashboard_context(data_locker: DataLocker):
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name
 
-    totals = {
-        "total_collateral": sum(float(p.get("collateral", 0)) for p in positions),
-        "total_value": sum(float(p.get("value", 0)) for p in positions),
-        "total_size": sum(float(p.get("size", 0)) for p in positions),
-        "avg_leverage": (sum(float(p.get("leverage", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_travel_percent": (sum(float(p.get("travel_percent", 0)) for p in positions) / len(positions)) if positions else 0,
-        "avg_heat_index": (
-    sum(float(p.get("heat_index") or 0.0) for p in positions) / len(positions)
-) if positions else 0
-
-    }
+    from utils.calc_services import CalcServices
+    totals = CalcServices().calculate_totals(positions)
 
     jm = JsonManager()
     alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
