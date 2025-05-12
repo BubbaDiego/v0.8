@@ -95,7 +95,7 @@ class AlertStore:
             else:
                 alert_dict = alert_obj
 
-            # Normalize enum fields
+            # Normalize enums
             if "alert_type" in alert_dict:
                 alert_dict["alert_type"] = normalize_alert_type(alert_dict["alert_type"]).value
             if "condition" in alert_dict:
@@ -103,25 +103,10 @@ class AlertStore:
             if "notification_type" in alert_dict:
                 alert_dict["notification_type"] = normalize_notification_type(alert_dict["notification_type"]).value
 
-            # Optional: Inject starting_value for non-portfolio alerts
-            alert_class = alert_dict.get("alert_class", "").lower()
-            asset = alert_dict.get("asset")
-            if asset and alert_class != "portfolio":
-                try:
-                    if hasattr(self.data_locker, "get_current_value"):
-                        current = self.data_locker.get_current_value(asset)
-                        alert_dict["starting_value"] = current
-                        log.debug(f"[create_alert] starting_value: {current}", source="AlertStore")
-                    else:
-                        alert_dict["starting_value"] = alert_dict.get("trigger_value", 0)
-                        log.warning("[create_alert] Stubbed starting_value from trigger", source="AlertStore")
-                except Exception as e:
-                    log.warning(f"[create_alert] Could not fetch starting value for {asset}: {e}", source="AlertStore")
-
-            # Initialize default alert data
+            # Finalize defaults
             alert_dict = self.initialize_alert_data(alert_dict)
 
-            # Insert into DB
+            # Insert — only 21 fields, asset removed
             cursor = self.data_locker.db.get_cursor()
             sql = """
                 INSERT INTO alerts (
@@ -131,7 +116,7 @@ class AlertStore:
                     travel_percent, liquidation_price, notes, description,
                     position_reference_id, evaluated_value, position_type
                 ) VALUES (
-                    :id, :created_at, :alert_type, :alert_class, :asset, :asset_type,
+                    :id, :created_at, :alert_type, :alert_class, :asset_type,
                     :trigger_value, :condition, :notification_type, :level,
                     :last_triggered, :status, :frequency, :counter, :liquidation_distance,
                     :travel_percent, :liquidation_price, :notes, :description,
@@ -151,6 +136,17 @@ class AlertStore:
         except Exception as e:
             log.error(f"❌ Failed to create alert", source="AlertStore", payload={"error": str(e)})
             raise
+
+    def delete_alert(self, alert_id: str) -> bool:
+        try:
+            cursor = self.data_locker.db.get_cursor()
+            cursor.execute("DELETE FROM alerts WHERE id = ?", (alert_id,))
+            self.data_locker.db.commit()
+            log.info(f"🗑 Deleted alert {alert_id}", source="AlertStore")
+            return True
+        except Exception as e:
+            log.error(f"❌ Failed to delete alert {alert_id}: {e}", source="AlertStore")
+            return False
 
     def get_alerts(self) -> list:
         try:
