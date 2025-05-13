@@ -1,13 +1,32 @@
-
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sqlite3
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.core_imports import DB_PATH
 from data.data_locker import DataLocker
 
+def ensure_wallets_table(db):
+    cursor = db.get_cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS wallets (
+            name TEXT PRIMARY KEY,
+            public_address TEXT,
+            private_address TEXT,
+            image_path TEXT,
+            balance REAL DEFAULT 0.0,
+            tags TEXT DEFAULT '',
+            is_active BOOLEAN DEFAULT 1,
+            type TEXT DEFAULT 'personal'
+        )
+    """)
+    db.commit()
+    print("✅ Wallets table is ready.")
+
+# ✅ Initialize connection
 dl = DataLocker(str(DB_PATH))
+ensure_wallets_table(dl.db)
 
 wallets_to_add = [
     {
@@ -28,6 +47,7 @@ wallets_to_add = [
 
 for w in wallets_to_add:
     try:
-        dl.wallets.create_wallet(w)  # ✅ Use the wallets manager
+        dl.wallets.create_wallet(w)
+        print(f"✅ Inserted wallet: {w['name']}")
     except Exception as e:
         print(f"❌ Failed to insert {w['name']}: {e}")

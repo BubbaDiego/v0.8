@@ -6,8 +6,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import json
 from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, current_app
 from werkzeug.utils import secure_filename
+#from config.alert_limits_json import legacy_alert_limits  # Simulating legacy load
 
 from system.system_core import SystemCore
+from data.dl_thresholds import DLThresholdManager
+from data.models import AlertThreshold
 from wallets.wallet_schema import WalletIn
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
@@ -204,3 +207,122 @@ def theme_config():
     else:
         return jsonify(config=core.load_theme_config())
 
+
+@system_bp.route("/seed_demo_thresholds", methods=["POST", "GET"])
+def seed_demo_thresholds():
+    from datetime import datetime, timezone
+    from uuid import uuid4
+    from data.models import AlertThreshold
+
+    db = current_app.data_locker.db
+    dl_mgr = DLThresholdManager(db)
+
+    def notify_str(n):  # takes {"call": T, "sms": F, ...} and returns "SMS,Voice"
+        mapping = {"call": "Voice", "sms": "SMS", "email": "Email"}
+        return ",".join(name for key, name in mapping.items() if n.get(key))
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    definitions = [
+        # Position alerts
+        ("Profit", "Position", "profit", "profit_ranges"),
+        ("HeatIndex", "Position", "heat_index", "heat_index_ranges"),
+        ("TravelPercentLiquid", "Position", "travel_percent_liquid", "travel_percent_liquid_ranges"),
+        ("LiquidationDistance", "Position", "liquidation_distance", "liquidation_distance_ranges"),
+
+        # Portfolio alerts
+        ("TotalValue", "Portfolio", "total_value", "portfolio"),
+        ("TotalSize", "Portfolio", "total_size", "portfolio"),
+        ("AvgLeverage", "Portfolio", "avg_leverage", "portfolio"),
+        ("AvgTravelPercent", "Portfolio", "avg_travel_percent", "portfolio"),
+        ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", "portfolio"),
+        ("TotalHeat", "Portfolio", "total_heat_index", "portfolio"),
+
+        # Market
+        ("PriceThreshold", "Market", "current_price", "price_alerts"),
+    ]
+
+
+
+    created = 0
+    for alert_type, alert_class, metric_key, legacy_key in definitions:
+        if alert_class == "Market":
+            low, med, high = 30000, 40000, 50000
+        elif legacy_key in legacy_alert_limits:
+            raw = legacy_alert_limits[legacy_key]
+            low, med, high = raw["low"], raw["medium"], raw["high"]
+        else:
+            low, med, high = 10, 25, 50  # fallback
+
+        def level_notify(level):
+            if legacy_key not in legacy_alert_limits.get("notifications", {}):
+                return ""
+            return notify_str(legacy_alert_limits["notifications"][legacy_key].get(level, {}).get("notify_by", {}))
+
+        threshold = AlertThreshold(
+            id=str(uuid4()),
+            alert_type=alert_type,
+            alert_class=alert_class,
+            metric_key=metric_key,
+            condition="ABOVE",
+            low=low,
+            medium=med,
+            high=high,
+            enabled=True,
+            low_notify=level_notify("low"),
+            medium_notify=level_notify("medium"),
+            high_notify=level_notify("high"),
+            last_modified=now
+        )
+
+        dl_mgr.insert(threshold)
+        created += 1
+
+    return jsonify({"status": "seeded", "count": created})
+
+
+@system_bp.route("/alert_thresholds", methods=["GET"])
+def list_alert_thresholds():
+    db = current_app.data_locker.db
+    thresholds = DLThresholdManager(db).get_all()
+
+    grouped = {}
+
+    for t in thresholds:
+        for level in ["low", "medium", "high"]:
+            # ✅ Notify list for checkbox rendering
+            notify_field = f"{level}_notify"
+            raw = getattr(t, notify_field, "") or ""
+            notify_list = [v.strip() for v in raw.split(",") if v.strip()]
+            setattr(t, f"{notify_field}_list", notify_list)
+
+            # ✅ Value field (e.g. t.low_val, t.medium_val)
+            value_field = getattr(t, level, None)
+            setattr(t, f"{level}_val", value_field)
+
+        grouped.setdefault(t.alert_class, []).append(t)
+
+    return render_template("system/alert_thresholds.html", grouped_thresholds=grouped)
+
+
+
+
+# === POST: Update a threshold (AJAX) ===
+@system_bp.route("/alert_thresholds/update/<id>", methods=["POST"])
+def update_alert_threshold(id):
+    try:
+        data = request.json
+        fields = {
+            "low": float(data["low"]),
+            "medium": float(data["medium"]),
+            "high": float(data["high"]),
+            "enabled": bool(data["enabled"]),
+            "low_notify": ",".join(data.get("low_notify", [])),
+            "medium_notify": ",".join(data.get("medium_notify", [])),
+            "high_notify": ",".join(data.get("high_notify", []))
+        }
+        db = current_app.data_locker.db
+        DLThresholdManager(db).update(id, fields)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

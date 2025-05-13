@@ -15,7 +15,8 @@ Dependencies:
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+import uuid
+from uuid import uuid4
 from data.database import DatabaseManager
 from data.dl_alerts import DLAlertManager
 from data.dl_prices import DLPriceManager
@@ -25,6 +26,8 @@ from data.dl_brokers import DLBrokerManager
 from data.dl_portfolio import DLPortfolioManager
 from data.dl_system_data import DLSystemDataManager
 from core.core_imports import log
+from datetime import datetime, timezone
+
 
 class DataLocker:
     def __init__(self, db_path: str):
@@ -38,7 +41,140 @@ class DataLocker:
         self.portfolio = DLPortfolioManager(self.db)
         self.system = DLSystemDataManager(self.db)
 
+        self.ensure_alert_threshold_table()
+        self.seed_default_thresholds()
+        self.initialize_database()
+
+
         log.info("All DL managers bootstrapped successfully.", source="DataLocker")
+
+    def initialize_database(self):
+        """
+        Creates all required tables in the database if they do not exist.
+        This method can be run safely and repeatedly.
+        """
+        cursor = self.db.get_cursor()
+
+        table_defs = {
+            "wallets": """
+                CREATE TABLE IF NOT EXISTS wallets (
+                    name TEXT PRIMARY KEY,
+                    public_address TEXT,
+                    private_address TEXT,
+                    image_path TEXT,
+                    balance REAL DEFAULT 0.0,
+                    tags TEXT DEFAULT '',
+                    is_active BOOLEAN DEFAULT 1,
+                    type TEXT DEFAULT 'personal'
+                )
+            """,
+            "alerts": """
+                CREATE TABLE IF NOT EXISTS alerts (
+                    id TEXT PRIMARY KEY,
+                    created_at TEXT,
+                    alert_type TEXT,
+                    alert_class TEXT,
+                    asset_type TEXT,
+                    trigger_value REAL,
+                    condition TEXT,
+                    notification_type TEXT,
+                    level TEXT,
+                    last_triggered TEXT,
+                    status TEXT,
+                    frequency INTEGER,
+                    counter INTEGER,
+                    liquidation_distance REAL,
+                    travel_percent REAL,
+                    liquidation_price REAL,
+                    notes TEXT,
+                    description TEXT,
+                    position_reference_id TEXT,
+                    evaluated_value REAL,
+                    position_type TEXT
+                )
+            """,
+            "alert_thresholds": """
+                CREATE TABLE IF NOT EXISTS alert_thresholds (
+                    id TEXT PRIMARY KEY,
+                    alert_type TEXT NOT NULL,
+                    alert_class TEXT NOT NULL,
+                    metric_key TEXT NOT NULL,
+                    condition TEXT NOT NULL,
+                    low REAL NOT NULL,
+                    medium REAL NOT NULL,
+                    high REAL NOT NULL,
+                    enabled BOOLEAN DEFAULT 1,
+                    last_modified TEXT DEFAULT CURRENT_TIMESTAMP,
+                    low_notify TEXT,
+                    medium_notify TEXT,
+                    high_notify TEXT
+                )
+            """,
+            "brokers": """
+                CREATE TABLE IF NOT EXISTS brokers (
+                    name TEXT PRIMARY KEY,
+                    image_path TEXT,
+                    web_address TEXT,
+                    total_holding REAL DEFAULT 0.0
+                )
+            """,
+            "positions": """
+                CREATE TABLE IF NOT EXISTS positions (
+                    id TEXT PRIMARY KEY,
+                    asset_type TEXT,
+                    position_type TEXT,
+                    entry_price REAL,
+                    liquidation_price REAL,
+                    travel_percent REAL,
+                    value REAL,
+                    collateral REAL,
+                    size REAL,
+                    leverage REAL,
+                    wallet_name TEXT,
+                    last_updated TEXT,
+                    alert_reference_id TEXT,
+                    hedge_buddy_id TEXT,
+                    current_price REAL,
+                    liquidation_distance REAL,
+                    heat_index REAL,
+                    current_heat_index REAL,
+                    pnl_after_fees_usd REAL
+                )
+            """,
+            "prices": """
+                CREATE TABLE IF NOT EXISTS prices (
+                    id TEXT PRIMARY KEY,
+                    asset_type TEXT,
+                    current_price REAL,
+                    previous_price REAL,
+                    last_update_time TEXT,
+                    previous_update_time TEXT,
+                    source TEXT
+                )
+            """,
+            "system_vars": """
+                CREATE TABLE IF NOT EXISTS system_vars (
+                    id TEXT PRIMARY KEY DEFAULT 'main',
+                    last_update_time_positions TEXT,
+                    last_update_positions_source TEXT,
+                    last_update_time_prices TEXT,
+                    last_update_prices_source TEXT,
+                    last_update_time_jupiter TEXT,
+                    theme_mode TEXT,
+                    strategy_start_value REAL,
+                    strategy_description TEXT
+                )
+            """
+        }
+
+        for name, ddl in table_defs.items():
+            try:
+                cursor.execute(ddl)
+                log.success(f"✅ Table ensured: {name}", source="DataLocker")
+            except Exception as e:
+                log.error(f"❌ Failed creating table {name}: {e}", source="DataLocker")
+
+        self.db.commit()
 
     # Inside DataLocker class
     def read_positions(self):
@@ -77,3 +213,62 @@ class DataLocker:
 
     def get_wallet_by_name(self, wallet_name: str):
         return self.wallets.get_wallet_by_name(wallet_name)
+
+    def ensure_alert_threshold_table(self):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS alert_thresholds (
+                    id TEXT PRIMARY KEY,
+                    alert_type TEXT NOT NULL,
+                    alert_class TEXT NOT NULL,
+                    metric_key TEXT NOT NULL,
+                    condition TEXT NOT NULL,
+                    low REAL NOT NULL,
+                    medium REAL NOT NULL,
+                    high REAL NOT NULL,
+                    enabled BOOLEAN DEFAULT 1,
+                    last_modified TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            self.db.commit()
+            log.success("✅ alert_thresholds table ready", source="DataLocker")
+        except Exception as e:
+            log.error(f"❌ Failed to init alert_thresholds table: {e}", source="DataLocker")
+
+    def seed_default_thresholds(self):
+        existing = self.db.get_cursor().execute("SELECT COUNT(*) FROM alert_thresholds").fetchone()[0]
+        if existing > 0:
+            return  # Already seeded
+
+        sample_thresholds = [
+            {
+                "id": str(uuid.uuid4()),
+                "alert_type": "TotalValue",
+                "alert_class": "Portfolio",
+                "metric_key": "total_value",
+                "condition": "ABOVE",
+                "low": 10000,
+                "medium": 25000,
+                "high": 50000,
+                "enabled": True,
+                "last_modified": datetime.utcnow().isoformat()
+            },
+            # Add more as needed...
+        ]
+
+        cursor = self.db.get_cursor()
+        for t in sample_thresholds:
+            cursor.execute("""
+                INSERT INTO alert_thresholds (
+                    id, alert_type, alert_class, metric_key,
+                    condition, low, medium, high, enabled, last_modified
+                ) VALUES (
+                    :id, :alert_type, :alert_class, :metric_key,
+                    :condition, :low, :medium, :high, :enabled, :last_modified
+                )
+            """, t)
+
+        self.db.commit()
+        log.success("✅ Seeded default thresholds", source="DataLocker")
+

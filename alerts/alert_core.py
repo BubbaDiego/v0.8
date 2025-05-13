@@ -4,6 +4,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
+from alerts.threshold_service import ThresholdService
 from alerts.alert_store import AlertStore
 from xcom.notification_service import NotificationService
 from core.core_imports import log
@@ -14,9 +15,8 @@ class AlertCore:
         self.config_loader = config_loader
         self.repo = AlertStore(data_locker)
         self.enricher = AlertEnrichmentService(data_locker)
-        self.evaluator = AlertEvaluationService(
-            thresholds=config_loader().get("alert_limits", {})
-        )
+        threshold_service = ThresholdService(data_locker.db)
+        self.evaluator = AlertEvaluationService(threshold_service)
         self.notifier = NotificationService(config_loader)
         self.alert_store = AlertStore(data_locker)
         self.evaluator.inject_repo(self.repo)  # ⚡️ enable DB updates

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Alert Thresholds{% endblock %}
+
+{% block page_title %}
+  <h1>📏 Alert Threshold Configuration</h1>
+{% endblock %}
+
+{% block content %}
+{% for alert_class, thresholds in grouped_thresholds.items() %}
+  <div class="group-header mt-4 p-2 bg-primary text-white rounded">
+    {{ alert_class }} Alerts
+  </div>
+  {% for t in thresholds %}
+    <div class="card my-2" id="card-{{ t.id }}">
+      <div class="card-header d-flex justify-content-between align-items-center" onclick="toggleCard('{{ t.id }}')">
+        <strong>{{ t.alert_type }} ({{ t.condition }})</strong>
+        <div class="collapsed-content">
+          Low: {{ t.low_val }}, Med: {{ t.medium_val }}, High: {{ t.high_val }}
+          {% for level in ['low', 'medium', 'high'] %}
+            {% for ch in ['SMS', 'Email', 'Voice'] %}
+              {% if ch in t[level + '_notify_list'] %}
+                <span class="badge bg-secondary ms-1">{{ ch[0] }}</span>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="expanded p-3" id="expand-{{ t.id }}" style="display: none;">
+        <form onsubmit="saveThreshold(event, '{{ t.id }}')">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Level</th><th>Value</th><th>SMS</th><th>Email</th><th>Voice</th><th>Enabled</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for level in ['low', 'medium', 'high'] %}
+              <tr>
+                <td>{{ level|capitalize }}</td>
+                <td><input name="{{ level }}" type="number" value="{{ t[level + '_val'] }}" class="form-control form-control-sm" /></td>
+                {% for ch in ['SMS', 'Email', 'Voice'] %}
+                  <td><input type="checkbox" name="{{ level }}_notify" value="{{ ch }}" {% if ch in t[level + '_notify_list'] %}checked{% endif %}></td>
+                {% endfor %}
+                {% if loop.first %}
+                  <td rowspan="3" style="vertical-align: middle; text-align: center;">
+                    <input name="enabled" type="checkbox" {% if t.enabled %}checked{% endif %}>
+                  </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="text-end">
+            <button type="submit" class="btn btn-sm btn-success">💾 Save</button>
+            <span class="status small ms-2" id="status-{{ t.id }}"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+{% endfor %}
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .group-header {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .card-header {
+    cursor: pointer;
+    background: #f8f9fa;
+  }
+  .collapsed-content {
+    font-size: 0.85em;
+    color: #555;
+  }
+  .status {
+    font-size: 0.85em;
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCard(id) {
+  document.querySelectorAll(".expanded").forEach(el => {
+    if (el.id !== "expand-" + id) el.style.display = "none";
+  });
+  const target = document.getElementById("expand-" + id);
+  target.style.display = target.style.display === "block" ? "none" : "block";
+}
+
+function saveThreshold(e, id) {
+  e.preventDefault();
+  const form = document.getElementById("expand-" + id).querySelector("form");
+  const data = new FormData(form);
+  const json = {
+    low: data.get("low"),
+    medium: data.get("medium"),
+    high: data.get("high"),
+    enabled: data.get("enabled") !== null,
+    low_notify: data.getAll("low_notify"),
+    medium_notify: data.getAll("medium_notify"),
+    high_notify: data.getAll("high_notify")
+  };
+
+  fetch(`/system/alert_thresholds/update/${id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(json)
+  })
+  .then(res => res.json())
+  .then(res => {
+    const status = document.getElementById("status-" + id);
+    if (res.success) {
+      status.textContent = "✅ Saved!";
+      status.style.color = "green";
+    } else {
+      status.textContent = "❌ Failed: " + res.error;
+      status.style.color = "red";
+    }
+    setTimeout(() => status.textContent = "", 3000);
+  });
+}
+</script>
+{% endblock %}
