@@ -1,10 +1,36 @@
 console.log("🎨 theme_builder.js loaded");
 
 function applyThemePreview(config) {
-  document.documentElement.style.setProperty("--bg", config.background || "#ffffff");
-  document.documentElement.style.setProperty("--text", config.text || "#111111");
-  document.documentElement.style.setProperty("--card-bg", config.card || "#f0f0f0");
-  document.documentElement.style.setProperty("--navbar-bg", config.navbar || "#fafafa");
+  const preview = document.querySelector(".theme-preview-box");
+  const card = document.querySelector(".theme-preview-card");
+  const table = document.querySelector(".theme-preview-table");
+  const chart = document.querySelector(".theme-preview-chart");
+
+  if (!config) return;
+
+  // Preview box + card
+  preview.style.backgroundColor = config.background || "#ffffff";
+  preview.style.color = config.text || "#111111";
+
+  card.style.backgroundColor = config.card || "#f0f0f0";
+  card.style.color = config.text || "#111111";
+
+  // Table
+  table.style.backgroundColor = config.background || "#ffffff";
+  table.style.color = config.text || "#111111";
+  table.querySelectorAll("th, td").forEach(cell => {
+    cell.style.borderColor = config.text || "#111111";
+  });
+
+  // Chart
+  chart.style.background = `linear-gradient(90deg, ${config.navbar || "#fafafa"}, ${config.card || "#f0f0f0"})`;
+}
+
+function setInputFields(config) {
+  document.getElementById("backgroundColor").value = config.background || "#ffffff";
+  document.getElementById("textColor").value = config.text || "#111111";
+  document.getElementById("cardBackground").value = config.card || "#f0f0f0";
+  document.getElementById("navbarBackground").value = config.navbar || "#fafafa";
 }
 
 function getThemeConfigFromUI() {
@@ -35,51 +61,76 @@ function loadPresets() {
     });
 }
 
+function loadActiveProfile() {
+  fetch("/system/themes/active")
+    .then(res => res.json())
+    .then(config => {
+      if (!config) return;
+      setInputFields(config);
+      applyThemePreview(config);
+    })
+    .catch(err => console.warn("⚠️ Failed to load active theme:", err));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🎛️ Theme Builder loaded");
 
   loadPresets();
+  loadActiveProfile();
 
-  // Live preview when selecting preset
-  document.getElementById("presetList").addEventListener("change", e => {
-    const selected = e.target.selectedOptions[0];
-    if (!selected) return;
-    const config = JSON.parse(selected.dataset.config);
-    applyThemePreview(config);
-    Object.entries(config).forEach(([key, val]) => {
-      if (key === "background") document.getElementById("backgroundColor").value = val;
-      if (key === "text") document.getElementById("textColor").value = val;
-      if (key === "card") document.getElementById("cardBackground").value = val;
-      if (key === "navbar") document.getElementById("navbarBackground").value = val;
+  const backgroundColorInput = document.getElementById("backgroundColor");
+  const textColorInput = document.getElementById("textColor");
+  const cardBackgroundInput = document.getElementById("cardBackground");
+  const navbarBackgroundInput = document.getElementById("navbarBackground");
+
+  const colorInputs = [backgroundColorInput, textColorInput, cardBackgroundInput, navbarBackgroundInput];
+  colorInputs.forEach(input => {
+    input.addEventListener("input", () => {
+      applyThemePreview(getThemeConfigFromUI());
     });
   });
 
-  // Save preset
+  document.getElementById("presetList").addEventListener("change", e => {
+    const selected = e.target.selectedOptions[0];
+    if (!selected || !selected.dataset.config) return;
+    const config = JSON.parse(selected.dataset.config);
+    setInputFields(config);
+    applyThemePreview(config);
+  });
+
   document.getElementById("savePresetBtn").addEventListener("click", () => {
     const name = document.getElementById("presetName").value.trim();
     if (!name) return alert("Preset name required.");
     const config = getThemeConfigFromUI();
 
-    fetch("/system/theme_config", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [name]: config })
-    }).then(() => {
-      alert("Preset saved!");
-      loadPresets();
-    });
+    // Merge with existing
+    fetch("/system/theme_config")
+      .then(res => res.json())
+      .then(existing => {
+        existing = existing || {};
+        existing[name] = config;
+        return fetch("/system/theme_config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(existing)
+        });
+      })
+      .then(() => {
+        alert("✅ Preset saved!");
+        loadPresets();
+      });
   });
 
-  // Set selected as active theme
   document.getElementById("setActiveBtn").addEventListener("click", () => {
     const selected = document.getElementById("presetList").selectedOptions[0];
     if (!selected) return;
-    const config = JSON.parse(selected.dataset.config);
-    applyThemePreview(config);
-    // Optional: Store active theme on backend if needed
+    const name = selected.value;
+
+    fetch(`/system/themes/activate/${encodeURIComponent(name)}`, {
+      method: "POST"
+    }).then(() => alert(`✅ Theme '${name}' activated.`));
   });
 
-  // Delete selected
   document.getElementById("deletePresetBtn").addEventListener("click", () => {
     const selected = document.getElementById("presetList").selectedOptions[0];
     if (!selected) return;
@@ -96,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       })
       .then(() => {
-        alert("Preset deleted.");
+        alert("🗑️ Preset deleted.");
         loadPresets();
       });
   });
