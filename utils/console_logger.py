@@ -55,7 +55,6 @@ class ConsoleLogger:
         return "unknown"
 
     @classmethod
-    @classmethod
     def _is_logging_allowed(cls, module: str) -> bool:
 
         if not cls.logging_enabled:

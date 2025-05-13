@@ -326,3 +326,32 @@ def update_alert_threshold(id):
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@system_bp.route("/alert_thresholds/export", methods=["GET"])
+def export_alert_thresholds():
+    db = current_app.data_locker.db
+    thresholds = DLThresholdManager(db).get_all()
+    data = [t.to_dict() for t in thresholds]
+
+    return jsonify(data)
+
+@system_bp.route("/alert_thresholds/import", methods=["POST"])
+def import_alert_thresholds():
+    try:
+        payload = request.get_json()
+        if not isinstance(payload, list):
+            return jsonify({"success": False, "error": "Expected a list of thresholds"}), 400
+
+        db = current_app.data_locker.db
+        dl_mgr = DLThresholdManager(db)
+
+        count = 0
+        for t in payload:
+            if "id" not in t:
+                continue
+            dl_mgr.update(t["id"], t)  # update existing
+            count += 1
+
+        return jsonify({"success": True, "updated": count})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500

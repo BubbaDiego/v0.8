@@ -25,15 +25,29 @@ class SystemCore:
             self.log.error(f"Error generating system summary: {e}")
             return {}
 
-    def get_portfolio_thresholds(self):
+    def get_portfolio_thresholds(self) -> dict:
         svc = ThresholdService(self.theme.dl.db)
-        return {
-            "avg_leverage": svc.get_thresholds("AvgLeverage", "Portfolio", "ABOVE"),
-            "total_value": svc.get_thresholds("TotalValue", "Portfolio", "ABOVE"),
-            "total_size": svc.get_thresholds("TotalSize", "Portfolio", "ABOVE"),
-            # etc...
+
+        metrics = {
+            "avg_leverage": ("AvgLeverage", "Portfolio", "ABOVE"),
+            "total_value": ("TotalValue", "Portfolio", "ABOVE"),
+            "total_size": ("TotalSize", "Portfolio", "ABOVE"),
+            "avg_travel_percent": ("AvgTravelPercent", "Portfolio", "ABOVE"),
+            "value_to_collateral_ratio": ("ValueToCollateralRatio", "Portfolio", "ABOVE"),
+            "total_heat": ("TotalHeat", "Portfolio", "ABOVE")
         }
 
+        result = {}
+        for key, (atype, aclass, cond) in metrics.items():
+            th = svc.get_thresholds(atype, aclass, cond)
+            result[key] = {
+                "low": th.low if th else None,
+                "medium": th.medium if th else None,
+                "high": th.high if th else None,
+                "condition": th.condition if th else "ABOVE"
+            }
+
+        return result
     def get_strategy_metadata(self):
         try:
             return self.theme.dl.system.get_last_update_times()

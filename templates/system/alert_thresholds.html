@@ -8,6 +8,13 @@
 
 {% block content %}
 <div class="container-fluid">
+  <!-- ⚙️ Import / Export Controls -->
+  <div class="mb-3">
+    <button class="btn btn-sm btn-primary" onclick="downloadThresholds()">📤 Export Thresholds</button>
+    <input type="file" id="thresholdUpload" style="display:none;" onchange="uploadThresholds(this)">
+    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('thresholdUpload').click()">📥 Import Thresholds</button>
+  </div>
+
   <div class="row">
     {% for alert_class, thresholds in grouped_thresholds.items() %}
       <div class="col-md-6">
@@ -21,19 +28,34 @@
           </div>
           <div class="card-body">
             {% for t in thresholds %}
-              <div class="mb-3 border rounded shadow-sm" id="card-{{ t.id }}">
-                <div class="p-2 bg-light d-flex justify-content-between align-items-center rounded-top" onclick="toggleCard('{{ t.id }}')">
-                  <strong>{{ t.alert_type }} ({{ t.condition }})</strong>
-                  <small>
-                    Low: {{ t.low_val }}, Med: {{ t.medium_val }}, High: {{ t.high_val }}
-                    {% for level in ['low', 'medium', 'high'] %}
-                      {% for ch in ['SMS', 'Email', 'Voice'] %}
-                        {% if ch in t[level + '_notify_list'] %}
-                          <span class="badge bg-secondary ms-1">{{ ch[0] }}</span>
-                        {% endif %}
-                      {% endfor %}
-                    {% endfor %}
-                  </small>
+              <div class="mb-3 border rounded shadow-sm" id="card-{{ t.id }}" style="cursor: pointer;" onclick="toggleCard('{{ t.id }}')">
+                <div class="p-2 bg-light rounded-top">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                      {% if t.alert_type == "AvgLeverage" %}
+                        <span>⚖️</span><strong>Total Leverage</strong>
+                      {% elif t.alert_type == "AvgTravelPercent" %}
+                        <span>✈️</span><strong>Total Travel Percent</strong>
+                      {% elif t.alert_type == "TotalHeat" %}
+                        <span>🔥</span><strong>Total Heat</strong>
+                      {% elif t.alert_type == "TotalValue" %}
+                        <span>💰</span><strong>Total Value</strong>
+                      {% elif t.alert_type == "TotalSize" %}
+                        <span>📊</span><strong>Total Size</strong>
+                      {% elif t.alert_type == "ValueToCollateralRatio" %}
+                        <span>📐</span><strong>Total Ratio</strong>
+                      {% elif t.alert_class == "Position" %}
+                        <span>🔔</span><strong>{{ t.alert_type }}</strong>
+                      {% else %}
+                        <span>🔔</span><strong>{{ t.alert_type }}</strong>
+                      {% endif %}
+                    </div>
+                    <small class="text-end">
+                      <span style="color:green">🟢</span> Low: {{ t.low_val }},
+                      <span style="color:orange">🟡</span> Med: {{ t.medium_val }},
+                      <span style="color:red">🔴</span> High: {{ t.high_val }}
+                    </small>
+                  </div>
                 </div>
 
                 <div class="expanded p-3" id="expand-{{ t.id }}" style="display: none;">
@@ -46,7 +68,7 @@
                         {% for level in ['low', 'medium', 'high'] %}
                           <tr>
                             <td>{{ level|capitalize }}</td>
-                            <td><input name="{{ level }}" type="number" value="{{ t[level + '_val'] }}" class="form-control form-control-sm"></td>
+                            <td><input name="{{ level }}" type="number" step="any" value="{{ t[level + '_val'] }}" class="form-control form-control-sm"></td>
                             {% for ch in ['SMS', 'Email', 'Voice'] %}
                               <td><input type="checkbox" name="{{ level }}_notify" value="{{ ch }}"
                                 {% if ch in t[level + '_notify_list'] %} checked {% endif %}></td>
@@ -115,6 +137,49 @@ function saveThreshold(e, id) {
     }
     setTimeout(() => status.textContent = "", 3000);
   });
+}
+
+function downloadThresholds() {
+  fetch("/system/alert_thresholds/export")
+    .then(res => res.json())
+    .then(data => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "alert_thresholds.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+}
+
+function uploadThresholds(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function () {
+    try {
+      const json = JSON.parse(reader.result);
+      fetch("/system/alert_thresholds/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          alert(`✅ Imported ${res.updated} thresholds`);
+          location.reload();
+        } else {
+          alert("❌ Import failed: " + res.error);
+        }
+      });
+    } catch (e) {
+      alert("❌ Invalid JSON: " + e.message);
+    }
+  };
+  reader.readAsText(file);
 }
 </script>
 {% endblock %}

@@ -89,38 +89,55 @@ def format_monsssssitor_time(iso_str):
         print(f"DEBUG: Exception occurred in format_monitor_time: {e}")
         return "N/A"
 
-def apply_color(metric_name: str, value: float, thresholds: Optional["AlertThreshold"]) -> str:
-    """
-    Given a value and its associated DB threshold object, return a UI color class.
-    """
+def apply_color(metric_name: str, value: float, thresholds: dict) -> str:
     try:
         if not thresholds or value is None:
-            return "red"  # fallback
+            return "red"
 
         val = float(value)
-        cond = thresholds.condition.upper()
+        cond = thresholds.get("condition", "ABOVE").upper()
 
-        # Directional logic
         if cond == "ABOVE":
-            if val >= thresholds.high:
-                return "red"
-            elif val >= thresholds.medium:
-                return "yellow"
-            else:
-                return "green"
+            return (
+                "red" if val >= thresholds["high"] else
+                "yellow" if val >= thresholds["medium"] else
+                "green"
+            )
         elif cond == "BELOW":
-            if val <= thresholds.low:
-                return "red"
-            elif val <= thresholds.medium:
-                return "yellow"
-            else:
-                return "green"
+            return (
+                "red" if val <= thresholds["low"] else
+                "yellow" if val <= thresholds["medium"] else
+                "green"
+            )
         else:
             return "green"
 
     except Exception as e:
-        print(f"[apply_color ERROR] Metric: {metric_name}, Value: {value}, Error: {e}")
+        print(f"❌ apply_color failed: {e}")
         return "red"
+
+def get_alert_label(alert_type):
+    labels = {
+        "AvgLeverage": "Total Leverage",
+        "AvgTravelPercent": "Total Travel Percent",
+        "TotalHeat": "Total Heat",
+        "TotalValue": "Total Value",
+        "TotalSize": "Total Size",
+        "ValueToCollateralRatio": "Total Ratio",
+    }
+    return labels.get(alert_type, alert_type)
+
+def get_alert_icon(alert_type):
+    icons = {
+        "AvgLeverage": "⚖️",
+        "AvgTravelPercent": "✈️",
+        "TotalHeat": "🔥",
+        "TotalValue": "💰",
+        "TotalSize": "📊",
+        "ValueToCollateralRatio": "📐",
+    }
+    return icons.get(alert_type, "🔔")
+
 
 
 @dashboard_bp.route('/alerts/alert_config_page', methods=['GET'])

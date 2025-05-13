@@ -1,131 +1,145 @@
-import os
 import sqlite3
-from datetime import datetime, timezone
-from uuid import uuid4
+import os
+from datetime import datetime
 
-DB_PATH = os.path.abspath("C:/v0.8/data/mother_brain.db")  # Update if needed
+DB_PATH = r"C:\v0.8\data\mother_brain.db"
 
-def ensure_table_and_columns(cursor):
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS alert_thresholds (
-            id TEXT PRIMARY KEY,
-            alert_type TEXT NOT NULL,
-            alert_class TEXT NOT NULL,
-            metric_key TEXT NOT NULL,
-            condition TEXT NOT NULL,
-            low REAL NOT NULL,
-            medium REAL NOT NULL,
-            high REAL NOT NULL,
-            enabled BOOLEAN DEFAULT 1,
-            last_modified TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    existing_cols = [row["name"] for row in cursor.execute("PRAGMA table_info(alert_thresholds)")]
-    for col in ["low_notify", "medium_notify", "high_notify"]:
-        if col not in existing_cols:
-            print(f"⚠️  Adding column: {col}")
-            cursor.execute(f"ALTER TABLE alert_thresholds ADD COLUMN {col} TEXT")
-
-def notify_str(notify_by):
-    mapping = {"call": "Voice", "sms": "SMS", "email": "Email"}
-    return ",".join(name for key, name in mapping.items() if notify_by.get(key))
-
-def upsert_threshold(cursor, threshold):
-    cursor.execute("""
-        SELECT id FROM alert_thresholds
-        WHERE alert_type = ? AND alert_class = ?
-        LIMIT 1
-    """, (threshold["alert_type"], threshold["alert_class"]))
-    row = cursor.fetchone()
-
-    if row:
-        threshold["id"] = row["id"]
-        print(f"📝 Updating: {threshold['alert_type']} ({threshold['alert_class']})")
-
-        cursor.execute("""
-            UPDATE alert_thresholds SET
-                metric_key = :metric_key,
-                condition = :condition,
-                low = :low,
-                medium = :medium,
-                high = :high,
-                enabled = :enabled,
-                last_modified = :last_modified,
-                low_notify = :low_notify,
-                medium_notify = :medium_notify,
-                high_notify = :high_notify
-            WHERE id = :id
-        """, threshold)
-    else:
-        threshold["id"] = str(uuid4())
-        print(f"✅ Inserting: {threshold['alert_type']} ({threshold['alert_class']})")
-        cursor.execute("""
-            INSERT INTO alert_thresholds (
-                id, alert_type, alert_class, metric_key, condition,
-                low, medium, high, enabled, last_modified,
-                low_notify, medium_notify, high_notify
-            ) VALUES (
-                :id, :alert_type, :alert_class, :metric_key, :condition,
-                :low, :medium, :high, :enabled, :last_modified,
-                :low_notify, :medium_notify, :high_notify
-            )
-        """, threshold)
-
-def main():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+def ensure_tables(db_path):
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    ensure_table_and_columns(cursor)
+    print(f"🛠️ Connected to DB: {db_path}")
 
-    now = datetime.now(timezone.utc).isoformat()
+    tables = {
+        "positions": """
+            CREATE TABLE IF NOT EXISTS positions (
+                id TEXT PRIMARY KEY,
+                asset_type TEXT,
+                position_type TEXT,
+                entry_price REAL,
+                liquidation_price REAL,
+                travel_percent REAL,
+                value REAL,
+                collateral REAL,
+                size REAL,
+                leverage REAL,
+                wallet_name TEXT,
+                last_updated TEXT,
+                alert_reference_id TEXT,
+                hedge_buddy_id TEXT,
+                current_price REAL,
+                liquidation_distance REAL,
+                heat_index REAL,
+                current_heat_index REAL,
+                pnl_after_fees_usd REAL,
+                profit REAL DEFAULT 0.0,
+                status TEXT,
+                last_update_jupiter_source TEXT
+            );
+        """,
+        "alerts": """
+            CREATE TABLE IF NOT EXISTS alerts (
+                id TEXT PRIMARY KEY,
+                created_at TEXT,
+                alert_type TEXT,
+                alert_class TEXT,
+                asset_type TEXT,
+                trigger_value REAL,
+                condition TEXT,
+                notification_type TEXT,
+                level TEXT,
+                last_triggered TEXT,
+                status TEXT,
+                frequency INTEGER,
+                counter INTEGER,
+                liquidation_distance REAL,
+                travel_percent REAL,
+                liquidation_price REAL,
+                notes TEXT,
+                description TEXT,
+                position_reference_id TEXT,
+                evaluated_value REAL,
+                position_type TEXT
+            );
+        """,
+        "alert_thresholds": """
+            CREATE TABLE IF NOT EXISTS alert_thresholds (
+                id TEXT PRIMARY KEY,
+                alert_type TEXT NOT NULL,
+                alert_class TEXT NOT NULL,
+                metric_key TEXT NOT NULL,
+                condition TEXT NOT NULL,
+                low REAL NOT NULL,
+                medium REAL NOT NULL,
+                high REAL NOT NULL,
+                enabled BOOLEAN DEFAULT 1,
+                last_modified TEXT DEFAULT CURRENT_TIMESTAMP,
+                low_notify TEXT,
+                medium_notify TEXT,
+                high_notify TEXT
+            );
+        """,
+        "wallets": """
+            CREATE TABLE IF NOT EXISTS wallets (
+                name TEXT PRIMARY KEY,
+                public_address TEXT,
+                private_address TEXT,
+                image_path TEXT,
+                balance REAL DEFAULT 0.0,
+                tags TEXT DEFAULT '',
+                is_active BOOLEAN DEFAULT 1,
+                type TEXT DEFAULT 'personal'
+            );
+        """,
+        "prices": """
+            CREATE TABLE IF NOT EXISTS prices (
+                id TEXT PRIMARY KEY,
+                asset_type TEXT,
+                current_price REAL,
+                previous_price REAL,
+                last_update_time TEXT,
+                previous_update_time TEXT,
+                source TEXT
+            );
+        """,
+        "system_vars": """
+            CREATE TABLE IF NOT EXISTS system_vars (
+                id TEXT PRIMARY KEY DEFAULT 'main',
+                last_update_time_positions TEXT,
+                last_update_positions_source TEXT,
+                last_update_time_prices TEXT,
+                last_update_prices_source TEXT,
+                last_update_time_jupiter TEXT,
+                last_update_jupiter_source TEXT,
+                theme_mode TEXT,
+                strategy_start_value REAL,
+                strategy_description TEXT
+            );
+        """,
+        "positions_totals_history": """
+            CREATE TABLE IF NOT EXISTS positions_totals_history (
+                id TEXT PRIMARY KEY,
+                snapshot_time TEXT,
+                total_size REAL,
+                total_value REAL,
+                total_collateral REAL,
+                avg_leverage REAL,
+                avg_travel_percent REAL,
+                avg_heat_index REAL
+            );
+        """
+    }
 
-    definitions = [
-        ("Profit", "Position", "profit", {"low": 22, "medium": 51, "high": 99},
-         {"low": {"sms": True, "email": True}, "medium": {"email": True}, "high": {"call": True}}),
-        ("HeatIndex", "Position", "heat_index", {"low": 7, "medium": 33, "high": 66},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("TravelPercentLiquid", "Position", "travel_percent_liquid", {"low": -25, "medium": -50, "high": -75},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("LiquidationDistance", "Position", "liquidation_distance", {"low": 10, "medium": 25, "high": 50},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("TotalValue", "Portfolio", "total_value", {"low": 10000, "medium": 25000, "high": 50000},
-         {"low": {"sms": True}, "medium": {"sms": True, "email": True}, "high": {"sms": True, "email": True, "call": True}}),
-        ("TotalSize", "Portfolio", "total_size", {"low": 1, "medium": 5, "high": 10},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("AvgLeverage", "Portfolio", "avg_leverage", {"low": 1.0, "medium": 5.0, "high": 10.0},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("AvgTravelPercent", "Portfolio", "avg_travel_percent", {"low": 5, "medium": 15, "high": 30},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", {"low": 0.9, "medium": 1.2, "high": 1.5},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("TotalHeat", "Portfolio", "total_heat_index", {"low": 10, "medium": 35, "high": 70},
-         {"low": {}, "medium": {}, "high": {}}),
-        ("PriceThreshold", "Market", "current_price", {"low": 30000, "medium": 40000, "high": 50000},
-         {"low": {"sms": True}, "medium": {"sms": True, "email": True}, "high": {"sms": True, "email": True, "call": True}})
-    ]
-
-    for alert_type, alert_class, metric_key, ranges, notify_map in definitions:
-        threshold = {
-            "alert_type": alert_type,
-            "alert_class": alert_class,
-            "metric_key": metric_key,
-            "condition": "ABOVE",
-            "low": ranges["low"],
-            "medium": ranges["medium"],
-            "high": ranges["high"],
-            "enabled": True,
-            "last_modified": now,
-            "low_notify": notify_str(notify_map.get("low", {})),
-            "medium_notify": notify_str(notify_map.get("medium", {})),
-            "high_notify": notify_str(notify_map.get("high", {}))
-        }
-
-        upsert_threshold(cursor, threshold)
+    for name, ddl in tables.items():
+        try:
+            print(f"🧩 Ensuring table: {name}")
+            cursor.execute(ddl)
+        except Exception as e:
+            print(f"❌ Failed creating {name}: {e}")
 
     conn.commit()
     conn.close()
-    print("✅ Alert thresholds deduplicated and seeded successfully.")
+    print("✅ All tables ensured.")
 
 if __name__ == "__main__":
-    main()
+    ensure_tables(DB_PATH)
