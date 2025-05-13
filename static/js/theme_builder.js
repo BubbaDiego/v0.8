@@ -1,5 +1,13 @@
 console.log("🎨 theme_builder.js loaded");
 
+// 🚨 DEFAULTS — You can change these colors
+const DEFAULT_THEME = {
+  background: "#ffffff",
+  text: "#111111",
+  card: "#f0f0f0",
+  navbar: "#fafafa"
+};
+
 function applyThemePreview(config) {
   const preview = document.querySelector(".theme-preview-box");
   const card = document.querySelector(".theme-preview-card");
@@ -8,29 +16,25 @@ function applyThemePreview(config) {
 
   if (!config) return;
 
-  // Preview box + card
-  preview.style.backgroundColor = config.background || "#ffffff";
-  preview.style.color = config.text || "#111111";
+  preview.style.backgroundColor = config.background || DEFAULT_THEME.background;
+  preview.style.color = config.text || DEFAULT_THEME.text;
+  card.style.backgroundColor = config.card || DEFAULT_THEME.card;
+  card.style.color = config.text || DEFAULT_THEME.text;
 
-  card.style.backgroundColor = config.card || "#f0f0f0";
-  card.style.color = config.text || "#111111";
-
-  // Table
-  table.style.backgroundColor = config.background || "#ffffff";
-  table.style.color = config.text || "#111111";
+  table.style.backgroundColor = config.background || DEFAULT_THEME.background;
+  table.style.color = config.text || DEFAULT_THEME.text;
   table.querySelectorAll("th, td").forEach(cell => {
-    cell.style.borderColor = config.text || "#111111";
+    cell.style.borderColor = config.text || DEFAULT_THEME.text;
   });
 
-  // Chart
-  chart.style.background = `linear-gradient(90deg, ${config.navbar || "#fafafa"}, ${config.card || "#f0f0f0"})`;
+  chart.style.background = `linear-gradient(90deg, ${config.navbar || DEFAULT_THEME.navbar}, ${config.card || DEFAULT_THEME.card})`;
 }
 
 function setInputFields(config) {
-  document.getElementById("backgroundColor").value = config.background || "#ffffff";
-  document.getElementById("textColor").value = config.text || "#111111";
-  document.getElementById("cardBackground").value = config.card || "#f0f0f0";
-  document.getElementById("navbarBackground").value = config.navbar || "#fafafa";
+  document.getElementById("backgroundColor").value = config.background || DEFAULT_THEME.background;
+  document.getElementById("textColor").value = config.text || DEFAULT_THEME.text;
+  document.getElementById("cardBackground").value = config.card || DEFAULT_THEME.card;
+  document.getElementById("navbarBackground").value = config.navbar || DEFAULT_THEME.navbar;
 }
 
 function getThemeConfigFromUI() {
@@ -103,12 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!name) return alert("Preset name required.");
     const config = getThemeConfigFromUI();
 
-    // Merge with existing
+    // 🔁 Merge with existing
     fetch("/system/theme_config")
       .then(res => res.json())
       .then(existing => {
         existing = existing || {};
         existing[name] = config;
+
         return fetch("/system/theme_config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -151,4 +156,13 @@ document.addEventListener("DOMContentLoaded", () => {
         loadPresets();
       });
   });
+
+  // 🔁 Reset to default button
+  const resetBtn = document.getElementById("resetBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      setInputFields(DEFAULT_THEME);
+      applyThemePreview(DEFAULT_THEME);
+    });
+  }
 });

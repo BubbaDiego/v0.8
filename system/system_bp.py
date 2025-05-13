@@ -197,15 +197,30 @@ def theme_mode():
 
 # 🎨 Get/save theme config
 @system_bp.route("/theme_config", methods=["GET", "POST"])
-@system_bp.route("/theme_config", methods=["GET", "POST"])
+
 def theme_config():
     core = get_core()
-    if request.method == "POST":
-        config = request.get_json()
-        core.save_theme_config(config)
-        return jsonify(success=True)
-    else:
-        return jsonify(config=core.load_theme_config())
+
+    if request.method == "GET":
+        try:
+            profiles = core.get_all_profiles()
+            return jsonify(profiles)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    elif request.method == "POST":
+        try:
+            payload = request.get_json()
+            if not isinstance(payload, dict):
+                return jsonify({"error": "Invalid theme config"}), 400
+
+            for name, config in payload.items():
+                core.save_profile(name, config)
+
+            return jsonify({"success": True})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
 
 
 @system_bp.route("/seed_demo_thresholds", methods=["POST", "GET"])

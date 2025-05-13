@@ -83,3 +83,41 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
         """, updates)
         self.db.commit()
         cursor.close()
+
+# ✅ Theme Profile Storage — to be added inside DLSystemDataManager
+def get_theme_profiles(self) -> dict:
+    try:
+        cursor = self.db.get_cursor()
+        rows = cursor.execute("SELECT name, config FROM theme_profiles").fetchall()
+        return {row["name"]: json.loads(row["config"]) for row in rows}
+    except Exception as e:
+        log.error(f"Failed to fetch theme profiles: {e}", source="DLSystemDataManager")
+        return {}
+
+def insert_or_update_theme_profile(self, name: str, config: dict):
+    cursor = self.db.get_cursor()
+    cursor.execute("""
+        INSERT INTO theme_profiles (name, config)
+        VALUES (?, ?)
+        ON CONFLICT(name) DO UPDATE SET config = excluded.config
+    """, (name, json.dumps(config)))
+    self.db.commit()
+
+def delete_theme_profile(self, name: str):
+    cursor = self.db.get_cursor()
+    cursor.execute("DELETE FROM theme_profiles WHERE name = ?", (name,))
+    self.db.commit()
+
+def set_active_theme_profile(self, name: str):
+    cursor = self.db.get_cursor()
+    cursor.execute("UPDATE system_vars SET theme_active_profile = ? WHERE id = 1", (name,))
+    self.db.commit()
+
+def get_active_theme_profile(self) -> dict:
+    cursor = self.db.get_cursor()
+    row = cursor.execute("SELECT theme_active_profile FROM system_vars WHERE id = 1").fetchone()
+    if not row or not row["theme_active_profile"]:
+        return {}
+    active_name = row["theme_active_profile"]
+    all_profiles = self.get_theme_profiles()
+    return all_profiles.get(active_name, {})
