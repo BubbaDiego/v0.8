@@ -9,6 +9,7 @@ from utils.json_manager import JsonManager, JsonType
 from monitor.ledger_reader import get_ledger_status
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from system.system_core import SystemCore
 from utils.fuzzy_wuzzy import fuzzy_match_key
 from utils.calc_services import CalcServices
 from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
@@ -78,9 +79,8 @@ def get_dashboard_context(data_locker: DataLocker):
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name
 
-    jm = JsonManager()
-    alert_limits = jm.load(ALERT_LIMITS_PATH, JsonType.ALERT_LIMITS)
-    portfolio_limits = alert_limits.get("alert_limits", {}).get("total_portfolio_limits", {})
+    core = SystemCore(data_locker)
+    portfolio_limits = core.get_portfolio_thresholds()
 
     ledger_info = {
         "age_price": get_ledger_status('monitor/price_ledger.json').get("age_seconds", 9999),

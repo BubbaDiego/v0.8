@@ -1,5 +1,6 @@
 # 🧠 SystemCore — updated for theme profile support
 
+from alerts.threshold_service import ThresholdService
 from system.wallet_service import WalletService
 from system.theme_service import ThemeService
 from core.logging import log
@@ -23,6 +24,15 @@ class SystemCore:
         except Exception as e:
             self.log.error(f"Error generating system summary: {e}")
             return {}
+
+    def get_portfolio_thresholds(self):
+        svc = ThresholdService(self.theme.dl.db)
+        return {
+            "avg_leverage": svc.get_thresholds("AvgLeverage", "Portfolio", "ABOVE"),
+            "total_value": svc.get_thresholds("TotalValue", "Portfolio", "ABOVE"),
+            "total_size": svc.get_thresholds("TotalSize", "Portfolio", "ABOVE"),
+            # etc...
+        }
 
     def get_strategy_metadata(self):
         try:

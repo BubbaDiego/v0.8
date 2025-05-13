@@ -4,6 +4,9 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask import Blueprint, render_template, jsonify, request, current_app
+from typing import Optional
+from data.models import AlertThreshold
+
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
 from monitor.ledger_reader import get_ledger_status
@@ -86,43 +89,38 @@ def format_monsssssitor_time(iso_str):
         print(f"DEBUG: Exception occurred in format_monitor_time: {e}")
         return "N/A"
 
-def apply_color(metric_name, value, limits):
+def apply_color(metric_name: str, value: float, thresholds: Optional["AlertThreshold"]) -> str:
+    """
+    Given a value and its associated DB threshold object, return a UI color class.
+    """
     try:
-        # 🔍 Attempt direct match
-        thresholds = limits.get(metric_name.lower())
-
-        # 🧠 If no match, apply fuzzy logic
-        if thresholds is None:
-            matched_key = fuzzy_match_key(metric_name, limits, threshold=65.0)
-            thresholds = limits.get(matched_key)
-            print(f"[FuzzyMatch] Resolved '{metric_name}' to '{matched_key}'")
-
-        # 🚨 Still nothing? Fail safely
-        if thresholds is None or value is None:
-            return "red"
+        if not thresholds or value is None:
+            return "red"  # fallback
 
         val = float(value)
+        cond = thresholds.condition.upper()
 
-        if metric_name.lower() == "travel":
-            if val >= thresholds["low"]:
-                return "green"
-            elif val >= thresholds["medium"]:
+        # Directional logic
+        if cond == "ABOVE":
+            if val >= thresholds.high:
+                return "red"
+            elif val >= thresholds.medium:
                 return "yellow"
             else:
+                return "green"
+        elif cond == "BELOW":
+            if val <= thresholds.low:
                 return "red"
+            elif val <= thresholds.medium:
+                return "yellow"
+            else:
+                return "green"
         else:
-            if val <= thresholds["low"]:
-                return "green"
-            elif val <= thresholds["medium"]:
-                return "yellow"
-            else:
-                return "red"
+            return "green"
 
     except Exception as e:
         print(f"[apply_color ERROR] Metric: {metric_name}, Value: {value}, Error: {e}")
         return "red"
-
-
 
 
 @dashboard_bp.route('/alerts/alert_config_page', methods=['GET'])
