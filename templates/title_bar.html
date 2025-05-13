@@ -1,4 +1,4 @@
-<!-- templates/title_bar/title_bar.html -->
+<!-- templates/title_bar.html -->
 <nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
   <!-- Left Navigation -->
   <div class="left-buttons d-flex gap-2">
@@ -23,6 +23,9 @@
         <li>
           <a class="dropdown-item" href="{{ url_for('settings_bp.database_viewer') }}">🗃️ Database Viewer</a>
         </li>
+        <li>
+          <a class="dropdown-item" href="{{ url_for('system.list_alert_thresholds') }}">📏 Alert Thresholds</a>
+        </li>
         <li><hr class="dropdown-divider"></li>
         <li>
           <a class="dropdown-item" href="#" onclick="document.getElementById('themeToggleButton').click()">🌓 Toggle Theme</a>
@@ -31,13 +34,12 @@
     </div>
   </div>
 
-    <!-- 🔘 Title bar action buttons -->
-    <div class="title-bar-actions">
-      <button class="btn btn-outline-primary" data-action="sync">🪐 Sync</button>
-      <button class="btn btn-outline-success" data-action="market">💲 Market</button>
-      <button class="btn btn-outline-info" data-action="full">🌪️ Full Cycle</button>
-      <button class="btn btn-outline-danger" data-action="wipe">🗑️ Delete</button>
-      <button class="btn btn-outline-secondary" id="themeToggleButton">🌗 Toggle Theme</button>
-    </div>
-
+  <!-- Right Action Buttons -->
+  <div class="title-bar-actions">
+    <button class="btn btn-outline-primary" data-action="sync">🪐 Sync</button>
+    <button class="btn btn-outline-success" data-action="market">💲 Market</button>
+    <button class="btn btn-outline-info" data-action="full">🌪️ Full Cycle</button>
+    <button class="btn btn-outline-danger" data-action="wipe">🗑️ Delete</button>
+    <button class="btn btn-outline-secondary" id="themeToggleButton">🌗 Toggle Theme</button>
+  </div>
 </nav>
