@@ -162,17 +162,19 @@ class DataLocker:
             """,
             "system_vars": """
             CREATE TABLE IF NOT EXISTS system_vars (
-                id TEXT PRIMARY KEY DEFAULT 'main',
-                last_update_time_positions TEXT,
-                last_update_positions_source TEXT,
-                last_update_time_prices TEXT,
-                last_update_prices_source TEXT,
-                last_update_time_jupiter TEXT,
-                last_update_jupiter_source TEXT,
-                theme_mode TEXT,
-                strategy_start_value REAL,
-                strategy_description TEXT
-            )
+    id TEXT PRIMARY KEY DEFAULT 'main',
+    last_update_time_positions TEXT,
+    last_update_positions_source TEXT,
+    last_update_time_prices TEXT,
+    last_update_prices_source TEXT,
+    last_update_time_jupiter TEXT,
+    last_update_jupiter_source TEXT,  -- ✅ ADD THIS
+    theme_mode TEXT,
+    theme_active_profile TEXT,        -- ✅ ADD THIS TOO
+    strategy_start_value REAL,
+    strategy_description TEXT
+)
+    
         """
         }
 

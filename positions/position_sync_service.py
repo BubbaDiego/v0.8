@@ -147,6 +147,9 @@ class PositionSyncService:
             }
 
     def update_jupiter_positions(self):
+        from positions.position_enrichment_service import PositionEnrichmentService
+        from core.logging import log
+
         log.info("🔄 Updating positions from Jupiter...", source="PositionSyncService")
         try:
             log.info(f"📁 Writing to DB: {self.dl.db.db_path}", source="PositionSyncService")
@@ -198,7 +201,7 @@ class PositionSyncService:
                             "wallet_name": name,
                             "pnl_after_fees_usd": float(item.get("pnlAfterFeesUsd", 0.0)),
                             "travel_percent": float(item.get("pnlChangePctAfterFees", 0.0)),
-                            "current_price": float(item.get("markPrice", 0.0))  # <- captured as markPrice
+                            "current_price": float(item.get("markPrice", 0.0))
                         }
 
                         log.debug(f"🆕 Parsed Jupiter position: {raw_pos}", source="Parser")
@@ -210,9 +213,10 @@ class PositionSyncService:
 
             imported = 0
             errors = 0
-            self.enricher = PositionEnrichmentService(self.dl)
+            skipped = 0
+            enricher = PositionEnrichmentService(self.dl)
 
-            # Get DB schema to sanitize fields
+            # ✅ Fetch DB schema for safe field filtering
             try:
                 cursor = self.dl.db.get_cursor()
                 cursor.execute("PRAGMA table_info(positions);")
@@ -223,8 +227,6 @@ class PositionSyncService:
                 db_columns = None
 
             for pos in new_positions:
-                log.debug(f"🔍 Checking DB for position ID: {pos['id']}", source="InsertCheck")
-
                 try:
                     cursor = self.dl.db.get_cursor()
                     cursor.execute("SELECT COUNT(*) FROM positions WHERE id = ?", (pos["id"],))
@@ -237,19 +239,21 @@ class PositionSyncService:
 
                 if exists:
                     log.info(f"⏭️ Skipped (already exists): {pos['id']}", source="InsertCheck")
+                    skipped += 1
                     continue
 
                 try:
-                    log.debug(f"🧬 Enriching position {pos['id']}", source="Enrichment")
-                    enriched = self.enricher.enrich(pos)
-                    for key in ["alert_reference_id", "hedge_buddy_id"]:
-                        enriched.setdefault(key, None)
+                    enriched = enricher.enrich(pos)
+                    enriched.setdefault("alert_reference_id", None)
+                    enriched.setdefault("hedge_buddy_id", None)
 
-                    # Strip fields not in DB schema (protect insert)
+                    # ✅ Strip unknown fields
                     if db_columns:
+                        stripped_keys = set(enriched.keys()) - db_columns
+                        if stripped_keys:
+                            log.debug(f"🧹 Stripped non-schema keys: {stripped_keys}", source="InsertSanitizer")
                         enriched = {k: v for k, v in enriched.items() if k in db_columns}
 
-                    log.debug(f"✅ Enriched: {enriched}", source="Enrichment")
                 except Exception as e:
                     log.error(f"❌ Enrichment failed for {pos['id']}: {e}", source="Enrichment")
                     errors += 1
@@ -257,15 +261,16 @@ class PositionSyncService:
 
                 try:
                     self.dl.positions.create_position(enriched)
-                    log.success(f"✅ Inserted: {enriched['id']}", source="InsertVerify")
+                    log.success(f"✅ Inserted: {pos['id']}", source="InsertVerify")
                     imported += 1
                 except Exception as e:
-                    log.error(f"❌ Insert failed for {enriched['id']}: {e}", source="InsertVerify")
+                    log.error(f"❌ Insert failed for {pos['id']}: {e}", source="InsertVerify")
                     errors += 1
 
-            skipped = len(new_positions) - imported - errors
-            log.info(f"📦 Jupiter Sync Result → Imported: {imported}, Skipped: {skipped}, Errors: {errors}",
-                     source="SyncSummary")
+            log.info(
+                f"📦 Jupiter Sync Result → Imported: {imported}, Skipped: {skipped}, Errors: {errors}",
+                source="SyncSummary"
+            )
 
             return {
                 "message": "Jupiter sync complete",

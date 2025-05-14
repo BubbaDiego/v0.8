@@ -230,6 +230,49 @@ def theme_config():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+@system_bp.route("/seed_portfolio_thresholds", methods=["POST", "GET"])
+def seed_portfolio_thresholds():
+    from data.dl_thresholds import DLThresholdManager
+    from data.models import AlertThreshold
+    from datetime import datetime, timezone
+    from uuid import uuid4
+
+    try:
+        now = datetime.now(timezone.utc).isoformat()
+        locker = current_app.data_locker
+        dl_mgr = DLThresholdManager(locker.db)
+
+        entries = [
+            ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10),
+            ("TotalSize", "Portfolio", "total_size", 10000, 50000, 100000),
+            ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", 1.1, 1.5, 2.0),
+            ("AvgTravelPercent", "Portfolio", "avg_travel_percent", -10, -5, 0),
+            ("TotalHeat", "Portfolio", "total_heat_index", 30, 60, 90),
+        ]
+
+        created = 0
+        for alert_type, alert_class, metric_key, low, med, high in entries:
+            threshold = AlertThreshold(
+                id=str(uuid4()),
+                alert_type=alert_type,
+                alert_class=alert_class,
+                metric_key=metric_key,
+                condition="ABOVE",
+                low=low,
+                medium=med,
+                high=high,
+                enabled=True,
+                last_modified=now
+            )
+            dl_mgr.insert(threshold)
+            created += 1
+
+        return jsonify({"status": "ok", "seeded": created})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @system_bp.route("/database_viewer", methods=["GET"])
 def database_viewer():
     try:

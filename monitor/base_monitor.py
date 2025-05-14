@@ -1,44 +1,40 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-import json
-import logging
-from datetime import datetime, timezone
-
-from monitor.monitor_utils import TimerConfig
-
 class BaseMonitor:
-    """
-    Abstract base for monitors: handles timer config and run_cycle logic.
-    Concrete monitors must implement _do_work() and handle ledger writing.
-    """
-    def __init__(self, name: str, timer_config_path=None, ledger_filename=None):
+    def __init__(self, name: str, ledger_filename: str = None, timer_config_path: str = None):
         self.name = name
-        self.logger = logging.getLogger(name)
-        self.timer = TimerConfig(timer_config_path)
-        self.ledger_file = ledger_filename or f"{name}_ledger.json"
+        self.ledger_filename = ledger_filename
+        self.timer_config_path = timer_config_path
 
     def run_cycle(self):
+        from utils.console_logger import ConsoleLogger as log
+        from data.data_locker import DataLocker
+        from core.core_imports import DB_PATH
+
+        log.banner(f"🚀 Running {self.name}")
+        result = {}
         try:
-            metadata = self._do_work()
-            self._on_success(metadata)
+            result = self._do_work()
+            status = "Success" if result.get("errors", 0) == 0 else "Error"
+
+            # 🧾 Log to DB-backed ledger
+            locker = DataLocker(DB_PATH)
+            locker.ledger.insert_ledger_entry(
+                monitor_name=self.name,
+                status=status,
+                metadata=result
+            )
+
+            log.success(f"{self.name} completed successfully.", source=self.name)
+
         except Exception as e:
-            self._on_error(e)
-            raise
-        self.timer.set(f"{self.name}_last_run", datetime.now(timezone.utc).isoformat())
+            log.error(f"{self.name} failed: {e}", source=self.name)
 
-    def _on_success(self, metadata: dict):
-        """
-        Hook for success — monitor should override this if needed
-        """
-        pass
-
-    def _on_error(self, error: Exception):
-        """
-        Hook for failure — monitor should override this if needed
-        """
-        pass
+            # 🧾 Still write failure to DB ledger
+            locker = DataLocker(DB_PATH)
+            locker.ledger.insert_ledger_entry(
+                monitor_name=self.name,
+                status="Error",
+                metadata={"error": str(e)}
+            )
 
     def _do_work(self):
-        raise NotImplementedError("_do_work() must be implemented by subclass")
+        raise NotImplementedError("Monitors must implement `_do_work()`")
