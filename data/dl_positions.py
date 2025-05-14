@@ -31,7 +31,7 @@ class DLPositionManager:
         import traceback
 
         try:
-            # ✅ Full field protection — all required fields covered
+            # ✅ Default injection — retain logic
             position.setdefault("id", str(uuid4()))
             position.setdefault("asset_type", "UNKNOWN")
             position.setdefault("entry_price", 0.0)
@@ -50,36 +50,34 @@ class DLPositionManager:
             position.setdefault("liquidation_distance", 0.0)
             position.setdefault("status", "ACTIVE")
             position.setdefault("last_updated", datetime.now().isoformat())
-
-            # ✅ Optional references
             position.setdefault("alert_reference_id", None)
             position.setdefault("hedge_buddy_id", None)
             position.setdefault("profit", position["value"])
 
+            # ✅ Fetch DB schema and sanitize fields
             cursor = self.db.get_cursor()
+            cursor.execute("PRAGMA table_info(positions);")
+            db_columns = set(row[1] for row in cursor.fetchall())
+            valid_position = {k: v for k, v in position.items() if k in db_columns}
 
-            cursor.execute("""
+            # ⚠️ Warn about stripped fields
+            stripped_keys = set(position.keys()) - db_columns
+            if stripped_keys:
+                log.warning(f"🧹 Stripped non-schema keys: {stripped_keys}", source="DLPositionManager")
+
+            # ✅ Build dynamic SQL from allowed keys
+            fields = ", ".join(valid_position.keys())
+            placeholders = ", ".join(f":{k}" for k in valid_position.keys())
+
+            cursor.execute(f"""
                 INSERT INTO positions (
-                    id, asset_type, position_type, entry_price,
-                    current_price, liquidation_price, collateral,
-                    size, leverage, value, last_updated,
-                    wallet_name, alert_reference_id, hedge_buddy_id,
-                    pnl_after_fees_usd, travel_percent,
-                    profit, liquidation_distance,
-                    heat_index, current_heat_index, status
+                    {fields}
                 ) VALUES (
-                    :id, :asset_type, :position_type, :entry_price,
-                    :current_price, :liquidation_price, :collateral,
-                    :size, :leverage, :value, :last_updated,
-                    :wallet_name, :alert_reference_id, :hedge_buddy_id,
-                    :pnl_after_fees_usd, :travel_percent,
-                    :profit, :liquidation_distance,
-                    :heat_index, :current_heat_index, :status
+                    {placeholders}
                 )
-            """, position)
+            """, valid_position)
 
             self.db.commit()
-
             log.success(f"💾 Position INSERTED: {position['id']}", source="DLPositionManager")
 
         except Exception as e:
