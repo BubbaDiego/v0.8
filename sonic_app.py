@@ -219,17 +219,16 @@ def update_system_config():
     flash("Configuration updated successfully!", "success")
     return redirect(url_for("system_config_page"))
 
-
 @app.context_processor
-def update_theme_context():
-    config_path = current_app.config.get("CONFIG_PATH", CONFIG_PATH)
+def inject_theme_profile():
     try:
-        with open(config_path, 'r') as f:
-            conf = json.load(f)
-    except Exception:
-        conf = {}
-    theme_config = conf.get("theme_config", {})
-    return dict(theme=theme_config)
+        from system.system_core import SystemCore
+        core = SystemCore(current_app.data_locker)
+        active_theme = core.get_active_profile()
+        return {"active_theme_profile": active_theme or {}}
+    except Exception as e:
+        return {"active_theme_profile": {}}
+
 
 
 @app.route('/test_twilio', methods=["POST"])

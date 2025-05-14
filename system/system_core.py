@@ -85,3 +85,24 @@ class SystemCore:
 
     def get_active_profile(self) -> dict:
         return self.theme.get_active_profile()
+
+    def save_theme_profile(self, name: str, config: dict) -> bool:
+        """
+        Persist a theme profile into the system's theme storage.
+        """
+        try:
+            self.theme.dl.insert_or_update_theme_profile(name, config)
+            return True
+        except Exception as e:
+            self.log.error(f"❌ Failed to save theme profile '{name}': {e}", source="SystemCore")
+            return False
+
+    def get_theme_profile(self, name: str) -> dict:
+        """
+        Retrieve a saved theme profile by name (if implemented).
+        """
+        try:
+            return self.theme.dl.get_theme_profile(name)  # You can define this accessor in the DL
+        except Exception as e:
+            self.log.error(f"❌ Failed to fetch theme profile '{name}': {e}", source="SystemCore")
+            return {}

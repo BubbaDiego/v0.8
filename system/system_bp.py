@@ -181,6 +181,15 @@ def get_active_theme():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@system_bp.route("/themes/editor", methods=["GET"])
+def theme_editor_page():
+    try:
+        core = get_core()
+        profiles = core.get_all_profiles()
+        active = core.get_active_profile()
+        return render_template("system/theme_builder.html", profiles=profiles, active=active)
+    except Exception as e:
+        return render_template("system/theme_builder.html", profiles={}, active={})
 
 
 # 🌗 Get/set theme mode
@@ -221,7 +230,14 @@ def theme_config():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-
+@system_bp.route("/database_viewer", methods=["GET"])
+def database_viewer():
+    try:
+        datasets = current_app.data_locker.get_all_tables_as_dict()
+        return render_template("system/database_viewer.html", datasets=datasets)
+    except Exception as e:
+        flash(f"❌ Error loading DB viewer: {e}", "danger")
+        return render_template("system/database_viewer.html", datasets={})
 
 @system_bp.route("/seed_demo_thresholds", methods=["POST", "GET"])
 def seed_demo_thresholds():

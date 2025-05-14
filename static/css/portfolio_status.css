@@ -1,158 +1,216 @@
-/* === CONTAINER LAYOUTS FOR CARD GROUPS === */
-/* These wrap the status cards inside the portfolio/monitor panels */
-.portfolio-status-container,
-.monitor-status-container {
-  display: flex;
-  flex-wrap: wrap;         /* allows cards to wrap on small screens */
-  justify-content: space-evenly; /* center cards horizontally */
-  gap: 1.2rem;               /* spacing between individual cards */
-  padding: 1rem;           /* spacing inside the group */
-  background: transparent; /* panel background handled by wrapper */
-  border: none;
-  box-shadow: none;
+/* ============================================================================
+   DEBUG: Layout detection (will print visible hints in dev tools only)
+============================================================================ */
+@media (min-width: 769px) {
+  body::before {
+    content: "🧪 DEBUG: Layout = DESKTOP / side-by-side expected";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: limegreen;
+    padding: 2px 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  body::before {
+    content: "📱 DEBUG: Layout = MOBILE / wrapping enabled";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: orange;
+    padding: 2px 10px;
+  }
+}
+
+/* ============================================================================
+   GLOBAL WALLPAPER BACKGROUND
+============================================================================ */
+body {
+  background-image: url('/static/images/wally.png'); /* ✅ Your background */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center center;
 }
 
 
-/* === OUTER CONTAINERS FOR EACH PANEL (blue boxes) === */
-/* Controls how much space each side panel gets and how it stacks */
+/* ============================================================================
+   ROW THAT HOLDS PORTFOLIO + MONITOR PANELS
+============================================================================ */
 .balanced-status-row {
   display: flex;
-  flex-wrap: wrap;         /* enables stacking on small screens */
-  justify-content: center;
+  flex-wrap: nowrap;              /* ❗ Force single row */
+  justify-content: space-between;
   align-items: stretch;
-  gap: 2rem;               /* spacing between the two status sections */
+  gap: 2rem;
   margin-bottom: 1.5rem;
+  padding: 0 1rem;
 }
 
-/* === TITLE STYLING FOR MONITOR + PORTFOLIO HEADERS === */
-.status-wrapper.portfolio .section-title {
-  color: #f3f3ef; /* 💼 Yellow or gold for Portfolio */
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
-  margin-left: 0.5rem;
-}
-
-.status-wrapper.monitor .section-title {
-  color: #edede9; /* 💼 Yellow or gold for Portfolio */
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
-  margin-left: 0.5rem;
-}
-
-
-.status-wrapper {
-  flex: 0 0 48%;           /* each panel gets ~half the row on desktop */
-  max-width: 48%;
-  min-width: 320px;        /* won't shrink smaller than this */
-  border-radius: 0.75rem;  /* round outer corners */
-  padding: .6rem;           /* space around the cards 1 is good */
-  background-color: #d0e7ff; /* light blue panel background */
-  border: 2px solid #c0d7f5; /* panel border color */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* soft shadow */
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* === PORTFOLIO BACKGROUND IMAGE OVERRIDE === */
-.status-wrapper.portfolio {
-  background-image: url('/static/images/wallpaper5.jpg');  /* 🖼️ path to your image */
-  background-color: #d0e7ff;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-blend-mode: normal;  /* optional: blend for tone */
-}
-
-/* === MONITOR BACKGROUND IMAGE OVERRIDE === */
-.status-wrapper.monitor {
-  background-image: url('/static/images/wallpaper6.jpg');  /* 🖼️ path to your image */
-  background-size: cover;           /* Adjust to your image’s intent */
-  background-position: center;
-  background-repeat: no-repeat;
-  background-blend-mode: normal;   /* Optional: blend with bg color */
-}
-
-
-/* Dark mode version */
-body.dark-bg .status-wrapper {
-  background-color: #2a2a2a; /* default = 2a2a2a */
-  color: #ddd;
-  border: 2px solid #444; /* default = #444 */
-}
-
-/* 📱 Responsive tweak: stack panels vertically on mobile */
+/* 📱 Wrap panels on mobile */
 @media (max-width: 768px) {
-  .status-wrapper {
-    flex: 1 1 100%;
-    max-width: 100%;
+  .balanced-status-row {
+    flex-wrap: wrap;
   }
 }
 
 
-/* === INDIVIDUAL STATUS CARD STYLE === */
-/* Change `height` below to control how tall the cards appear */
+/* ============================================================================
+   EACH PANEL BOX (e.g. Portfolio, Monitor)
+============================================================================ */
+.status-wrapper {
+  flex: 1 1 0;
+  max-width: 50%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 0.75rem;
+  padding: 0.6rem;
+  background-color: #d0e7ff;
+  border: 2px solid #c0d7f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 🎨 Background images */
+.status-wrapper.portfolio {
+  background-image: url('/static/images/wallpaper5.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.status-wrapper.monitor {
+  background-image: url('/static/images/wallpaper6.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Headings */
+.status-wrapper.portfolio .section-title,
+.status-wrapper.monitor .section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+/* 📱 Full width on mobile */
+@media (max-width: 768px) {
+  .status-wrapper {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+
+/* ============================================================================
+   CARD ROW CONTAINERS INSIDE PANELS
+============================================================================ */
+.portfolio-status-container,
+.monitor-status-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 1.2rem;
+  padding: 1rem;
+  scroll-behavior: smooth;
+}
+
+/* Monitor: even spacing if fits */
+.monitor-status-container {
+  justify-content: space-between;
+}
+
+/* Scrollbars */
+.portfolio-status-container::-webkit-scrollbar,
+.monitor-status-container::-webkit-scrollbar {
+  height: 8px;
+}
+.portfolio-status-container::-webkit-scrollbar-thumb,
+.monitor-status-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+
+/* 📱 Enable wrapping instead of scroll */
+@media (max-width: 768px) {
+  .portfolio-status-container,
+  .monitor-status-container {
+    flex-wrap: wrap;
+    overflow-x: unset;
+    justify-content: center;
+  }
+}
+
+
+/* ============================================================================
+   STATUS CARDS
+============================================================================ */
 .status-card {
-  border-radius: 0.5rem;       /* rounded corners */
-  border: 3px solid #ffffff;   /* solid white border */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* soft lift */
-  padding: 0.70rem 0.5rem;     /* inner spacing */
-  width: 80px;                 /* card width — adjust this for wider cards 90 is good  */
-  height: 100px;               /* 🆕 card height — adjust this! 110 is good*/
+  border-radius: 0.5rem;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 0.70rem 0.5rem;
+  width: 90px;
+  height: 110px;
   text-align: center;
   transition: transform 0.2s ease-in-out;
 }
+
 .status-card:hover {
   transform: scale(1.03);
 }
 
-
-/* === TEXT + ICON SLOTS === */
+/* === ICON / VALUE / LABEL === */
 .status-card .icon {
-  font-size: 1.25rem;      /* change icon size here */
+  font-size: 1.25rem;
   margin-bottom: 0.3rem;
 }
-
 .status-card .value {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
-  color: #000000;  /* 🔧 You can change this to any desired color */
+  color: #000000;
 }
-
-
 .status-card .label {
   font-size: 0.75rem;
   opacity: 0.8;
   font-weight: bold;
-  color: #373535;  /* 🔧 Change this to any hex, rgb, or named color */
+  color: #373535;
 }
 
 
-/* === STATUS COLOR BACKGROUNDS === */
-/* 🔴 FULL CARD BACKGROUND COLOR PER STATUS */
+/* ============================================================================
+   CARD STATUS COLORS
+============================================================================ */
 .status-card.green {
-  background-color: #d4edda;  /* light green — change for custom themes */
+  background-color: #d4edda;
 }
 .status-card.yellow {
-  background-color: #fff3cd;  /* light yellow */
+  background-color: #fff3cd;
 }
 .status-card.red {
-  background-color: #f8d7da;  /* light red/pink */
+  background-color: #f8d7da;
 }
 
-/* === MONITOR VALUE STYLE OVERRIDE === */
-/* Smaller value text only for monitor cards */
+
+/* ============================================================================
+   MONITOR VALUE SMALL TEXT
+============================================================================ */
 .monitor-value {
-  font-size: 0.3rem;        /* 👈 smaller than the usual 1rem */
+  font-size: 0.3rem;
   font-weight: 600;
-  color: #d61616;           /* or customize as needed */
+  color: #d61616;
   opacity: 0.9;
 }
 
 
-/* 🧪 Optional darker tones:
-.status-card.green    { background-color: #c3e6cb; }
-.status-card.yellow   { background-color: #ffeeba; }
-.status-card.red      { background-color: #f5c6cb; }
-*/
+/* ============================================================================
+   DARK MODE
+============================================================================ */
+body.dark-bg .status-wrapper {
+  background-color: #2a2a2a;
+  color: #ddd;
+  border: 2px solid #444;
+}

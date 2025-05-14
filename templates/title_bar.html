@@ -18,10 +18,10 @@
       </button>
       <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
         <li>
-          <a class="dropdown-item" href="{{ url_for('settings_bp.theme_setup') }}">🎨 Theme Builder</a>
+          <a class="dropdown-item" href="{{ url_for('system.theme_editor_page') }}">🎨 Theme Builder</a>
         </li>
         <li>
-          <a class="dropdown-item" href="{{ url_for('settings_bp.database_viewer') }}">🗃️ Database Viewer</a>
+          <a class="dropdown-item" href="{{ url_for('system.database_viewer') }}">🗃️ Database Viewer</a>
         </li>
         <li>
           <a class="dropdown-item" href="{{ url_for('system.list_alert_thresholds') }}">📏 Alert Thresholds</a>

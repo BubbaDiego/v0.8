@@ -1,32 +1,28 @@
-
-
-
 # dl_system_data.py
 """
 Author: BubbaDiego
 Module: DLSystemDataManager
 Description:
-    Manages global system data including theme mode, last update timestamps,
+    Manages global system data including theme mode, update timestamps,
     total balances, and strategy performance metadata.
-
-Dependencies:
-    - DatabaseManager from database.py
-    - ConsoleLogger from console_logger.py
 """
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import json
 from datetime import datetime
 from core.core_imports import log
 from data.models import SystemVariables
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
+
+class DLSystemDataManager:
     def __init__(self, db):
         self.db = db
         log.info("DLSystemDataManager initialized.", source="DLSystemDataManager")
 
+    # === Theme Mode ===
     def get_theme_mode(self) -> str:
         try:
             cursor = self.db.get_cursor()
@@ -48,6 +44,7 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
         except Exception as e:
             log.error(f"Failed to update theme mode: {e}", source="DLSystemDataManager")
 
+    # === System Vars (timestamps etc) ===
     def get_last_update_times(self) -> SystemVariables:
         cursor = self.db.get_cursor()
         cursor.execute("""
@@ -61,10 +58,7 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
         """)
         row = cursor.fetchone()
         cursor.close()
-        if row:
-            return SystemVariables(**dict(row))
-        else:
-            return SystemVariables()
+        return SystemVariables(**dict(row)) if row else SystemVariables()
 
     def set_last_update_times(self, updates: dict):
         updates.setdefault("last_update_time_jupiter", datetime.now().isoformat())
@@ -84,40 +78,61 @@ class DLSystemDataManager:  # 🔥 Renamed from DLSystemVarsManager
         self.db.commit()
         cursor.close()
 
-# ✅ Theme Profile Storage — to be added inside DLSystemDataManager
-def get_theme_profiles(self) -> dict:
-    try:
-        cursor = self.db.get_cursor()
-        rows = cursor.execute("SELECT name, config FROM theme_profiles").fetchall()
-        return {row["name"]: json.loads(row["config"]) for row in rows}
-    except Exception as e:
-        log.error(f"Failed to fetch theme profiles: {e}", source="DLSystemDataManager")
-        return {}
+    # === Theme Profile Management ===
+    def insert_or_update_theme_profile(self, name: str, config: dict):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS theme_profiles (
+                    name TEXT PRIMARY KEY,
+                    config TEXT
+                )
+            """)
+            config_json = json.dumps(config)
+            cursor.execute("""
+                INSERT INTO theme_profiles (name, config)
+                VALUES (?, ?)
+                ON CONFLICT(name) DO UPDATE SET config = excluded.config
+            """, (name, config_json))
+            self.db.commit()
+            log.success(f"✅ Theme profile saved: {name}", source="DLSystemDataManager")
+        except Exception as e:
+            log.error(f"❌ Failed to save theme profile '{name}': {e}", source="DLSystemDataManager")
 
-def insert_or_update_theme_profile(self, name: str, config: dict):
-    cursor = self.db.get_cursor()
-    cursor.execute("""
-        INSERT INTO theme_profiles (name, config)
-        VALUES (?, ?)
-        ON CONFLICT(name) DO UPDATE SET config = excluded.config
-    """, (name, json.dumps(config)))
-    self.db.commit()
+    def get_theme_profiles(self) -> dict:
+        try:
+            cursor = self.db.get_cursor()
+            rows = cursor.execute("SELECT name, config FROM theme_profiles").fetchall()
+            return {row["name"]: json.loads(row["config"]) for row in rows}
+        except Exception as e:
+            log.error(f"Failed to fetch theme profiles: {e}", source="DLSystemDataManager")
+            return {}
 
-def delete_theme_profile(self, name: str):
-    cursor = self.db.get_cursor()
-    cursor.execute("DELETE FROM theme_profiles WHERE name = ?", (name,))
-    self.db.commit()
+    def delete_theme_profile(self, name: str):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("DELETE FROM theme_profiles WHERE name = ?", (name,))
+            self.db.commit()
+        except Exception as e:
+            log.error(f"❌ Failed to delete theme profile '{name}': {e}", source="DLSystemDataManager")
 
-def set_active_theme_profile(self, name: str):
-    cursor = self.db.get_cursor()
-    cursor.execute("UPDATE system_vars SET theme_active_profile = ? WHERE id = 1", (name,))
-    self.db.commit()
+    def set_active_theme_profile(self, name: str):
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("UPDATE system_vars SET theme_active_profile = ? WHERE id = 1", (name,))
+            self.db.commit()
+        except Exception as e:
+            log.error(f"❌ Failed to set active theme profile '{name}': {e}", source="DLSystemDataManager")
 
-def get_active_theme_profile(self) -> dict:
-    cursor = self.db.get_cursor()
-    row = cursor.execute("SELECT theme_active_profile FROM system_vars WHERE id = 1").fetchone()
-    if not row or not row["theme_active_profile"]:
-        return {}
-    active_name = row["theme_active_profile"]
-    all_profiles = self.get_theme_profiles()
-    return all_profiles.get(active_name, {})
+    def get_active_theme_profile(self) -> dict:
+        try:
+            cursor = self.db.get_cursor()
+            row = cursor.execute("SELECT theme_active_profile FROM system_vars WHERE id = 1").fetchone()
+            if not row or not row["theme_active_profile"]:
+                return {}
+            active_name = row["theme_active_profile"]
+            all_profiles = self.get_theme_profiles()
+            return all_profiles.get(active_name, {})
+        except Exception as e:
+            log.error(f"❌ Failed to retrieve active theme profile: {e}", source="DLSystemDataManager")
+            return {}
