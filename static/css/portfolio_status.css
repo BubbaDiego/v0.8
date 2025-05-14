@@ -24,10 +24,11 @@
 }
 
 /* ============================================================================
-   GLOBAL WALLPAPER BACKGROUND
+   GLOBAL BACKGROUND (Color-based with wallpaper preserved)
 ============================================================================ */
 body {
-  background-image: url('/static/images/wally.png'); /* ✅ Your background */
+  background-image: url('/static/images/wally.png'); /* 🔒 Preserved wallpaper */
+ /* background-color: #f0f2f5; /* ✅ Clean dashboard-neutral tone */
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -72,19 +73,23 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 🎨 Background images */
+/* 🎨 Backgrounds for panels */
 .status-wrapper.portfolio {
-  background-image: url('/static/images/wallpaper5.jpg');
+  /* background-image: url('/static/images/wallpaper5.jpg'); */  /* 🔒 Preserved */
+  background-color: #f0f2f5;  /* ✅ Match dashboard background */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
+
 .status-wrapper.monitor {
-  background-image: url('/static/images/wallpaper6.jpg');
+  /* background-image: url('/static/images/wallpaper6.jpg'); */  /* 🔒 Preserved */
+  background-color: #f0f2f5;  /* ✅ Match dashboard background */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
+
 
 /* Headings */
 .status-wrapper.portfolio .section-title,
