@@ -230,28 +230,39 @@ def theme_config():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-@system_bp.route("/seed_portfolio_thresholds", methods=["POST", "GET"])
-def seed_portfolio_thresholds():
+@system_bp.route("/seed_all_thresholds", methods=["POST", "GET"])
+def seed_all_thresholds():
     from data.dl_thresholds import DLThresholdManager
     from data.models import AlertThreshold
-    from datetime import datetime, timezone
     from uuid import uuid4
+    from datetime import datetime, timezone
 
     try:
         now = datetime.now(timezone.utc).isoformat()
         locker = current_app.data_locker
         dl_mgr = DLThresholdManager(locker.db)
 
-        entries = [
-            ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10),
+        definitions = [
+            # === Portfolio Metrics
+            ("TotalValue", "Portfolio", "total_value", 10000, 25000, 50000),
             ("TotalSize", "Portfolio", "total_size", 10000, 50000, 100000),
-            ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", 1.1, 1.5, 2.0),
+            ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10),
             ("AvgTravelPercent", "Portfolio", "avg_travel_percent", -10, -5, 0),
+            ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", 1.1, 1.5, 2.0),
             ("TotalHeat", "Portfolio", "total_heat_index", 30, 60, 90),
+
+            # === Position Metrics
+            ("Profit", "Position", "profit", 10, 25, 50),
+            ("HeatIndex", "Position", "heat_index", 30, 60, 90),
+            ("TravelPercentLiquid", "Position", "travel_percent_liquid", -20, -10, 0),
+            ("LiquidationDistance", "Position", "liquidation_distance", 10, 5, 2),
+
+            # === Market Metrics
+            ("PriceThreshold", "Market", "current_price", 20000, 30000, 40000),
         ]
 
         created = 0
-        for alert_type, alert_class, metric_key, low, med, high in entries:
+        for alert_type, alert_class, metric_key, low, med, high in definitions:
             threshold = AlertThreshold(
                 id=str(uuid4()),
                 alert_type=alert_type,
@@ -264,10 +275,10 @@ def seed_portfolio_thresholds():
                 enabled=True,
                 last_modified=now
             )
-            dl_mgr.insert(threshold)
-            created += 1
+            if dl_mgr.insert(threshold):
+                created += 1
 
-        return jsonify({"status": "ok", "seeded": created})
+        return jsonify({"status": "ok", "created": created})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
