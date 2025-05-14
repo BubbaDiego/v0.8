@@ -1,79 +1,51 @@
-#!/usr/bin/env python3
-"""
-===========================================================
-|    Sonic Monitor - The Unified Heartbeat of Our System |
-===========================================================
-
-This file orchestrates market updates, position syncs,
-price fetches, enrichment steps, alert creation, and
-hedge updates in a single always-on loop.
-
-"""
-import os
+# monitor/monitors/sonic_monitor.py
 import sys
-
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
-
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import time
-import asyncio
 import logging
+import asyncio
 from datetime import datetime, timezone
-
-import pytz
-from cyclone.cyclone_engine import Cyclone
 from monitor.monitor_utils import load_timer_config, update_timer_config
+from monitor.monitor_core import MonitorCore
+from monitor.monitor_registry import MonitorRegistry
+from monitor.price_monitor import PriceMonitor
+from monitor.operations_monitor import OperationsMonitor
 
-# ——— Setup logging in PST ———
-PST = pytz.timezone("America/Los_Angeles")
-logging.Formatter.converter = lambda *args: datetime.now(PST).timetuple()
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO)
 
 def heartbeat(loop_counter: int):
-    """
-    Record a heartbeat in timer_config for monitoring loops.
-    """
     timestamp = datetime.now(timezone.utc).isoformat()
     cfg = load_timer_config()
     cfg["sonic_loop_start_time"] = timestamp
     update_timer_config(cfg)
-    logging.info("Heartbeat #%d at %s", loop_counter, timestamp)
+    logging.info("❤️ SonicMonitor heartbeat #%d at %s", loop_counter, timestamp)
 
-async def run_cycle(loop_counter: int, cyclone: Cyclone):
-    """
-    Execute the full SonicMonitor cycle using Cyclone steps.
-    """
-    logging.info("🔄 Sonic Monitor Loop #%d starting", loop_counter)
-    await cyclone.run_cycle()
+async def run_cycle(loop_counter: int, core: MonitorCore):
+    logging.info("🔄 SonicMonitor cycle #%d starting", loop_counter)
+    core.run_all()
     heartbeat(loop_counter)
-    logging.info("✔️ Sonic Monitor Loop #%d completed", loop_counter)
-    print("❤️🦄" * 10)
-
+    logging.info("✅ SonicMonitor cycle #%d complete", loop_counter)
 
 def main():
-    # Ensure project root is in sys.path
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    sys.path.insert(0, BASE_DIR)
-
-    # Load loop interval from config (seconds)
-    interval = load_timer_config().get("sonic_loop_interval", 60)
-    cyclone = Cyclone(poll_interval=interval)
-    loop = asyncio.get_event_loop()
     loop_counter = 0
+    interval = load_timer_config().get("sonic_loop_interval", 60)
+
+    # Setup registry + monitors
+    registry = MonitorRegistry()
+    registry.register("price_monitor", PriceMonitor())
+    registry.register("operations_monitor", OperationsMonitor())
+    core = MonitorCore(registry)
+
+    loop = asyncio.get_event_loop()
 
     try:
         while True:
             loop_counter += 1
-            loop.run_until_complete(run_cycle(loop_counter, cyclone))
+            loop.run_until_complete(run_cycle(loop_counter, core))
             time.sleep(interval)
     except KeyboardInterrupt:
-        logging.info("Sonic Monitor stopped by user")
-
+        logging.info("SonicMonitor terminated by user.")
 
 if __name__ == "__main__":
     main()

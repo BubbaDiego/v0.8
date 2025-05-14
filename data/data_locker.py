@@ -25,6 +25,13 @@ from data.dl_wallets import DLWalletManager
 from data.dl_brokers import DLBrokerManager
 from data.dl_portfolio import DLPortfolioManager
 from data.dl_system_data import DLSystemDataManager
+from data.dl_monitor_ledger import DLMonitorLedgerManager
+
+class DataLocker:
+    def __init__(self, db_path):
+        ...
+        self.ledger = DLMonitorLedgerManager(self.db)
+
 from core.core_imports import log
 from datetime import datetime, timezone
 
@@ -40,6 +47,7 @@ class DataLocker:
         self.brokers = DLBrokerManager(self.db)
         self.portfolio = DLPortfolioManager(self.db)
         self.system = DLSystemDataManager(self.db)
+        self.ledger = DLMonitorLedgerManager(self.db)
 
         self.ensure_alert_threshold_table()
         self.seed_default_thresholds()
@@ -153,18 +161,19 @@ class DataLocker:
                 )
             """,
             "system_vars": """
-                CREATE TABLE IF NOT EXISTS system_vars (
-                    id TEXT PRIMARY KEY DEFAULT 'main',
-                    last_update_time_positions TEXT,
-                    last_update_positions_source TEXT,
-                    last_update_time_prices TEXT,
-                    last_update_prices_source TEXT,
-                    last_update_time_jupiter TEXT,
-                    theme_mode TEXT,
-                    strategy_start_value REAL,
-                    strategy_description TEXT
-                )
-            """
+            CREATE TABLE IF NOT EXISTS system_vars (
+                id TEXT PRIMARY KEY DEFAULT 'main',
+                last_update_time_positions TEXT,
+                last_update_positions_source TEXT,
+                last_update_time_prices TEXT,
+                last_update_prices_source TEXT,
+                last_update_time_jupiter TEXT,
+                last_update_jupiter_source TEXT,
+                theme_mode TEXT,
+                strategy_start_value REAL,
+                strategy_description TEXT
+            )
+        """
         }
 
         for name, ddl in table_defs.items():

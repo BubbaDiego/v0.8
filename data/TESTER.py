@@ -1,37 +1,75 @@
-import sqlite3
 import os
+import sqlite3
 
-DB_PATH = r"C:\v0.8\data\mother_brain.db"
+# === CONFIG ===
+DB_PATH = "mother_brain.db"
+TABLE_NAME = "system_vars"
+REQUIRED_COLUMNS = {
+    "id",
+    "last_update_time_positions",
+    "last_update_positions_source",
+    "last_update_time_prices",
+    "last_update_prices_source",
+    "last_update_time_jupiter",
+    "last_update_jupiter_source",  # ✅ critical one
+    "theme_mode",
+    "strategy_start_value",
+    "strategy_description"
+}
 
-def ensure_theme_tables(db_path):
-    if not os.path.exists(db_path):
-        print(f"❌ DB not found at {db_path}")
-        return
+def check_db_and_table():
+    if not os.path.exists(DB_PATH):
+        print(f"❌ Database not found: {DB_PATH}")
+        return False
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
-    # --- Create theme_profiles table if missing ---
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS theme_profiles (
-            name TEXT PRIMARY KEY,
-            config TEXT
-        )
-    """)
-    print("✅ Table ensured: theme_profiles")
+        # Check table exists
+        cursor.execute(f"""
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='{TABLE_NAME}'
+        """)
+        result = cursor.fetchone()
+        if not result:
+            print(f"❌ Table '{TABLE_NAME}' not found in {DB_PATH}")
+            return False
 
-    # --- Add theme_active_profile column if missing ---
-    cursor.execute("PRAGMA table_info(system_vars);")
-    columns = [row[1] for row in cursor.fetchall()]
-    if "theme_active_profile" not in columns:
-        cursor.execute("ALTER TABLE system_vars ADD COLUMN theme_active_profile TEXT")
-        print("✅ Column added: system_vars.theme_active_profile")
-    else:
-        print("✅ Column already exists: system_vars.theme_active_profile")
+        return True
 
-    conn.commit()
-    conn.close()
-    print("🎨 Theme migration complete.")
+    except Exception as e:
+        print(f"❌ DB connection error: {e}")
+        return False
+
+
+def validate_columns():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute(f"PRAGMA table_info({TABLE_NAME});")
+        actual_columns = {row[1] for row in cursor.fetchall()}
+
+        print(f"📋 Found columns in {TABLE_NAME}:\n", actual_columns)
+
+        missing = REQUIRED_COLUMNS - actual_columns
+        extra = actual_columns - REQUIRED_COLUMNS
+
+        if missing:
+            print(f"❌ MISSING COLUMNS:\n - " + "\n - ".join(missing))
+        else:
+            print("✅ All required columns are present.")
+
+        if extra:
+            print(f"⚠️ Extra columns found (not required):\n - " + "\n - ".join(extra))
+
+    except Exception as e:
+        print(f"❌ Failed to inspect columns: {e}")
+
 
 if __name__ == "__main__":
-    ensure_theme_tables(DB_PATH)
+    print("\n🧠 SCHEMA VALIDATION - mother_brain.db\n" + "="*40)
+    if check_db_and_table():
+        validate_columns()
+    print("="*40)

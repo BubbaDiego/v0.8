@@ -9,7 +9,15 @@ from data.models import AlertThreshold
 
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
-from monitor.ledger_reader import get_ledger_status
+
+
+from data.data_locker import DataLocker
+from core.core_imports import DB_PATH
+
+data_locker = DataLocker(DB_PATH)
+ls = data_locker.ledger
+
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dashboard.dashboard_service import get_dashboard_context
@@ -214,13 +222,16 @@ def api_collateral_composition():
         print(f"[Pie Chart Error] Collateral composition: {e}")
         return jsonify({"error": str(e)}), 500
 
+
 @dashboard_bp.route("/api/ledger_ages")
 def api_ledger_ages():
+    ls = data_locker.ledger
     return jsonify({
-        "age_price": get_ledger_status('monitor/price_ledger.json')["age_seconds"],
-        "last_price_time": get_ledger_status('monitor/price_ledger.json')["last_timestamp"],
-        "age_positions": get_ledger_status('monitor/position_ledger.json')["age_seconds"],
-        "last_positions_time": get_ledger_status('monitor/position_ledger.json')["last_timestamp"],
-        "age_cyclone": get_ledger_status('monitor/sonic_ledger.json')["age_seconds"],
-        "last_cyclone_time": get_ledger_status('monitor/sonic_ledger.json')["last_timestamp"]
+        "age_price": ls.get_status("price_monitor")["age_seconds"],
+        "last_price_time": ls.get_status("price_monitor")["last_timestamp"],
+        "age_positions": ls.get_status("position_monitor")["age_seconds"],
+        "last_positions_time": ls.get_status("position_monitor")["last_timestamp"],
+        "age_cyclone": ls.get_status("sonic_monitor")["age_seconds"],
+        "last_cyclone_time": ls.get_status("sonic_monitor")["last_timestamp"]
     })
+

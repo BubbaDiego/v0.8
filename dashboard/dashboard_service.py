@@ -1,12 +1,15 @@
-
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from core.logging import log
 from positions.position_core import PositionCore
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager, JsonType
-from monitor.ledger_reader import get_ledger_status
+#from monitor.ledger_service import LedgerService
+
+from data.data_locker import DataLocker
+from core.core_imports import DB_PATH
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from system.system_core import SystemCore
@@ -82,15 +85,21 @@ def get_dashboard_context(data_locker: DataLocker):
     core = SystemCore(data_locker)
     portfolio_limits = core.get_portfolio_thresholds()
 
+    # ✅ Use LedgerService instead of file-based get_ledger_status
+   # ls = LedgerService()
+    data_locker = DataLocker(DB_PATH)
+    ls = data_locker.ledger
+
+
     ledger_info = {
-        "age_price": get_ledger_status('monitor/price_ledger.json').get("age_seconds", 9999),
-        "last_price_time": get_ledger_status('monitor/price_ledger.json').get("last_timestamp"),
-        "age_positions": get_ledger_status('monitor/position_ledger.json').get("age_seconds", 9999),
-        "last_positions_time": get_ledger_status('monitor/position_ledger.json').get("last_timestamp"),
-        "age_operations": get_ledger_status('monitor/operations_ledger.json').get("age_seconds", 9999),
-        "last_operations_time": get_ledger_status('monitor/operations_ledger.json').get("last_timestamp"),
-        "age_xcom": get_ledger_status('monitor/xcom_ledger.json').get("age_seconds", 9999),
-        "last_xcom_time": get_ledger_status('monitor/xcom_ledger.json').get("last_timestamp"),
+        "age_price": ls.get_status("price_monitor").get("age_seconds", 9999),
+        "last_price_time": ls.get_status("price_monitor").get("last_timestamp"),
+        "age_positions": ls.get_status("position_monitor").get("age_seconds", 9999),
+        "last_positions_time": ls.get_status("position_monitor").get("last_timestamp"),
+        "age_operations": ls.get_status("operations_monitor").get("age_seconds", 9999),
+        "last_operations_time": ls.get_status("operations_monitor").get("last_timestamp"),
+        "age_xcom": ls.get_status("xcom_monitor").get("age_seconds", 9999),
+        "last_xcom_time": ls.get_status("xcom_monitor").get("last_timestamp"),
     }
 
     universal_items = [

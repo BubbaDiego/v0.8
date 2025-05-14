@@ -653,9 +653,9 @@ body.dark-bg .status-icon {
 
 /* ApexCharts tooltips override */
 .apexcharts-tooltip {
-  background: #333 !important;
-  border: 1px solid #555 !important;
-  color: #eee !important;
+  background: #333;
+  border: 1px solid #555;
+  color: #eee;
 }
 
 .section-title {

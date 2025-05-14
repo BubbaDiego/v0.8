@@ -1,24 +1,19 @@
-#!/usr/bin/env python3
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import os
-import asyncio
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
 import logging
 from datetime import datetime, timezone
-from typing import Dict
-
 import requests
-from monitor.monitor_utils import BaseMonitor
-from data.data_locker import DataLocker
-from core.core_imports import DB_PATH, log
 
+from monitor.base_monitor import BaseMonitor
+from data.data_locker import DataLocker
+from utils.console_logger import ConsoleLogger as log
+from core.core_imports import DB_PATH
 
 
 class PriceFetcher:
-    """
-    Lightweight CoinGecko price fetcher for BTC, ETH, SOL.
-    """
     COINGECKO_URL = "https://api.coingecko.com/api/v3/simple/price"
 
     def __init__(self):
@@ -27,7 +22,7 @@ class PriceFetcher:
             "vs_currencies": "usd"
         }
 
-    def get_prices(self) -> Dict[str, float]:
+    def get_prices(self):
         log.info("🔍 Fetching prices from CoinGecko...", source="PriceFetcher")
         try:
             resp = requests.get(self.COINGECKO_URL, params=self.params, timeout=10)
@@ -45,76 +40,59 @@ class PriceFetcher:
 
 
 class PriceMonitor(BaseMonitor):
-    """
-    Standalone price monitor service.
-    Periodically fetches market prices, stores in DB, logs to ledger, and logs to console.
-    """
-
-    def __init__(self, timer_config_path: str = None, ledger_filename: str = None):
+    def __init__(self, timer_config_path=None, ledger_filename=None):
         super().__init__(
-            name="price_monitor",
+            name="price_monitor",  # ✅ ensure lowercase snake_case
             timer_config_path=timer_config_path,
             ledger_filename=ledger_filename or "price_ledger.json"
         )
-        self.data_locker = DataLocker(str(DB_PATH))
+        self.data_locker = DataLocker(DB_PATH)
         self.fetcher = PriceFetcher()
 
-    def _do_work(self) -> dict:
-        """
-        Fetch prices, update database, log ledger and console.
-        Returns metadata.
-        """
+    def _do_work(self):
         log.banner("📈 Price Monitor Cycle Start")
+
         prices = self.fetcher.get_prices()
         count = 0
 
-        log.debug("Fetched raw price data", source="PriceMonitor", payload=prices)
+        log.debug("Fetched raw price data", source=self.name, payload=prices)
 
         for symbol, price in prices.items():
             if price is not None:
-                self.data_locker.insert_or_update_price(symbol, price, "Fetched")
-                log.info(f"💾 Saved {symbol} = ${price:.2f}", source="PriceMonitor")
+                self.data_locker.insert_or_update_price(symbol, price, "PriceMonitor")
+                log.info(f"💾 Saved {symbol} = ${price:.2f}", source=self.name)
                 count += 1
             else:
-                log.warning(f"⚠️ No price returned for {symbol}", source="PriceMonitor")
+                log.warning(f"⚠️ No price for {symbol}", source=self.name)
 
         now = datetime.now(timezone.utc)
+
         self.data_locker.set_last_update_times({
-            "last_update_time_prices": now.isoformat(),
-            "last_update_prices_source": "PriceMonitor",
             "last_update_time_positions": None,
             "last_update_positions_source": None,
-            "last_update_time_jupiter": None
+            "last_update_time_prices": now.isoformat(),
+            "last_update_prices_source": "PriceMonitor",
+            "last_update_time_jupiter": now.isoformat(),
+            "last_update_jupiter_source": "PriceMonitor"
         })
 
-        ledger_entry = {
-            "timestamp": now.isoformat(),
-            "component": self.name,
-            "operation": "price_update",
-            "status": "Success" if count > 0 else "NoPrices",
-            "metadata": {"fetched_count": count}
-        }
-        self.ledger_writer.write(self.ledger_file, ledger_entry)
+        # ✅ Confirm insertion and echo debug
+        log.debug("🧠 About to insert ledger entry...", source=self.name)
+        self.data_locker.ledger.insert_ledger_entry(
+            monitor_name=self.name,
+            status="Success" if count > 0 else "NoPrices",
+            metadata={"fetched_count": count}
+        )
 
-        log.success(f"✅ Price cycle complete — {count} prices updated", source="PriceMonitor")
-        return {"loop_counter": count}
-
-    async def update_prices(self, source: str = "Manual") -> dict:
-        """
-        Cyclone-compatible async price update trigger.
-        """
-        log.info(f"⏳ Async price update triggered by {source}", source="PriceMonitor")
-        loop = asyncio.get_event_loop()
-        metadata = await loop.run_in_executor(None, self._do_work)
-        log.info("✅ Async price update complete", source="PriceMonitor")
-        return metadata
+        log.success(f"✅ Price cycle complete — {count} prices updated", source=self.name)
+        return {"fetched_count": count}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    pm = PriceMonitor(timer_config_path=os.getenv("TIMER_CONFIG_PATH"))
+    pm = PriceMonitor()
     try:
         pm.run_cycle()
-        log.success("💥 PriceMonitor CLI cycle complete", source="PriceMonitor")
+        log.success("💥 PriceMonitor CLI run complete", source="PriceMonitor")
     except Exception as e:
         log.error(f"🔥 PriceMonitor error: {e}", source="PriceMonitor")
