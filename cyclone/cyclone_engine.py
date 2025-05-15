@@ -5,7 +5,7 @@ import asyncio
 import logging
 from datetime import datetime
 from uuid import uuid4
-from monitor.price_monitor import PriceMonitor
+
 from alerts.alert_core import AlertCore #alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
@@ -16,8 +16,10 @@ from config.config_loader import load_config
 # Cores and Services
 from alerts.alert_core import AlertCore
 from positions.position_core import PositionCore
+from prices.price_sync_service import PriceSyncService
 from cyclone.cyclone_maintenance_service import CycloneMaintenanceService
 from cyclone.cyclone_wallet_service import CycloneWalletService
+from data.dl_monitor_ledger import DLMonitorLedgerManager
 
 
 global_data_locker = DataLocker(str(DB_PATH))  # There can be only one
@@ -48,7 +50,7 @@ def configure_cyclone_console_log():
         "AlertEvaluator", "AlertController", "AlertServiceManager",
 
         # Data & Utility modules
-        "DataLocker", "PriceMonitor", "DBCore", "Logger", "AlertUtils",
+        "DataLocker", "PriceSyncService", "DBCore", "Logger", "AlertUtils",
         "CalcServices", "LockerFactory",
 
         # Experimental or custom
@@ -66,7 +68,7 @@ class Cyclone:
         self.logger.setLevel(logging.DEBUG)
 
         self.data_locker = global_data_locker
-        self.price_monitor = PriceMonitor()
+        self.price_sync = PriceSyncService(self.data_locker)
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
         self.position_core = PositionCore(self.data_locker)
@@ -79,10 +81,13 @@ class Cyclone:
     async def run_market_updates(self):
         log.info("Starting Market Updates", source="Cyclone")
         try:
-            await self.price_monitor.update_prices(source="Market Updates")
-            log.success("📈 Prices updated successfully ✅", source="Cyclone")
+            result = await asyncio.to_thread(self.price_sync.run_full_price_sync, source="Cyclone")
+            if result.get("success"):
+                log.success("📈 Prices updated successfully ✅", source="Cyclone")
+            else:
+                log.warning(f"⚠️ Price update failed: {result.get('error')}", source="Cyclone")
         except Exception as e:
-            log.error(f"📉Market Updates failed 💥💥💥💥💥💥: {e}", source="Cyclone")
+            log.error(f"📉 Market Updates crashed: {e}", source="Cyclone")
 
     async def run_composite_position_pipeline(self):
         await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
@@ -105,6 +110,7 @@ class Cyclone:
     async def run_cycle(self, steps=None):
         available_steps = {
            # "clear_all_data": self.run_clear_all_data,
+            "update_operations": self.run_operations_update,
             "market_updates": self.run_market_updates,
             "check_jupiter_for_updates": self.run_check_jupiter_for_updates,
             "enrich_positions": self.run_enrich_positions,
@@ -227,3 +233,31 @@ class Cyclone:
         log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()
         log.success("✅ Position enrichment complete.", "Cyclone")
+
+
+    async def run_operations_update(self):
+        log.banner("⚙️ Starting Operations Monitor")
+
+        try:
+            now = datetime.now(timezone.utc)
+
+            # Simulate operations logic here (placeholder for real ops)
+            # e.g. validate portfolio, sync wallets, recalculate risk
+            await asyncio.sleep(0.2)  # Simulate async task
+
+            result = {
+                "success": True,
+                "timestamp": now.isoformat(),
+                "post_success": True,
+                "skipped": True  # or real metrics
+            }
+
+            ledger = DLMonitorLedgerManager(self.data_locker.db)
+            ledger.insert_ledger_entry("operations_monitor", "Success", metadata=result)
+
+            log.success("✅ Operations monitor complete", source="Cyclone")
+
+        except Exception as e:
+            log.error(f"❌ Operations task failed: {e}", source="Cyclone")
+            ledger = DLMonitorLedgerManager(self.data_locker.db)
+            ledger.insert_ledger_entry("operations_monitor", "Error", metadata={"error": str(e)})
