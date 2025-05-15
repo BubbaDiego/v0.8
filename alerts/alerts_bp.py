@@ -1,4 +1,3 @@
-
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import logging
@@ -6,8 +5,8 @@ import asyncio
 from flask import current_app
 
 from flask import Blueprint, jsonify, render_template
-#from alerts.alert_service_manager import AlertServiceManager
-#from dashboard.dashboard_view_model import DashboardViewModel
+# from alerts.alert_service_manager import AlertServiceManager
+# from dashboard.dashboard_view_model import DashboardViewModel
 from data.data_locker import DataLocker
 
 # --- Blueprint Setup ---
@@ -65,7 +64,7 @@ def create_all_alerts():
     Create sample alerts for testing purposes.
     """
     try:
-        data_locker = get_locker()
+        data_locker = current_app.data_locker
         sample_alerts = [
             {
                 "id": "alert-sample-1",
@@ -91,7 +90,7 @@ def create_all_alerts():
         ]
 
         for alert in sample_alerts:
-            data_locker.create_alert(alert)  # ✅ Use create_alert (not save_alert!)
+            data_locker.alerts.create_alert(alert)  # ✅ Use create_alert (not save_alert!)
 
         log.success("Sample alerts created successfully.", source="AlertsBP")
         return jsonify({"success": True, "message": "Sample alerts created."})
@@ -106,8 +105,8 @@ def delete_all_alerts():
     Delete all alerts from the database.
     """
     try:
-        data_locker = get_locker()
-        data_locker.clear_alerts()
+        data_locker = current_app.data_locker
+        data_locker.alerts.clear_all_alerts()
         log.success("All alerts deleted successfully.", source="AlertsBP")
         return jsonify({"success": True, "message": "All alerts cleared."})
     except Exception as e:
@@ -115,11 +114,9 @@ def delete_all_alerts():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
-
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
     return "🚫 Alert Limits Page has been disabled.", 410
-
 
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
@@ -130,6 +127,20 @@ def monitor_page():
     print(f"🧪 EXISTS? {exists}")
     return render_template("alerts/alert_monitor.html")
 
+
+@alerts_bp.route('/monitor', methods=['GET'])
+def monitor_data():
+    """
+    API endpoint that returns all alerts for the monitor UI.
+    """
+    try:
+        data_locker = current_app.data_locker
+        alert_list = data_locker.alerts.get_all_alerts()
+        logger.info(f"Fetched {len(alert_list)} alerts for monitor", extra={"source": "AlertsBP"})
+        return jsonify({"alerts": alert_list})
+    except Exception as e:
+        logger.error(f"Failed to load alerts for monitor: {e}", exc_info=True)
+        return jsonify({"alerts": [], "error": str(e)}), 500
 
 # --- Internal helpers ---
 
