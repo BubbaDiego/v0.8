@@ -72,7 +72,7 @@ def apply_color(metric_name, value, limits):
 def get_dashboard_context(data_locker: DataLocker):
     log.info("📊 Assembling dashboard context", source="DashboardContext")
 
-    # 🧠 Pull + enrich live positions
+    # 🔍 Live Position Enrichment
     calc = CalcServices()
     positions = PositionCore(data_locker).get_all_positions() or []
     positions = calc.aggregator_positions(positions, DB_PATH)
@@ -85,12 +85,8 @@ def get_dashboard_context(data_locker: DataLocker):
     core = SystemCore(data_locker)
     portfolio_limits = core.get_portfolio_thresholds()
 
-    # ✅ Use LedgerService instead of file-based get_ledger_status
-   # ls = LedgerService()
-    data_locker = DataLocker(DB_PATH)
+    # 🧠 Ledger Timestamps
     ls = data_locker.ledger
-
-
     ledger_info = {
         "age_price": ls.get_status("price_monitor").get("age_seconds", 9999),
         "last_price_time": ls.get_status("price_monitor").get("last_timestamp"),
@@ -102,6 +98,7 @@ def get_dashboard_context(data_locker: DataLocker):
         "last_xcom_time": ls.get_status("xcom_monitor").get("last_timestamp"),
     }
 
+    # 🧱 Unified Status Cards
     universal_items = [
         {"title": "Price", "icon": "📈", "value": format_monitor_time(ledger_info["last_price_time"]),
          "color": determine_color(ledger_info["age_price"]), "raw_value": ledger_info["age_price"]},
@@ -109,8 +106,9 @@ def get_dashboard_context(data_locker: DataLocker):
          "color": determine_color(ledger_info["age_positions"]), "raw_value": ledger_info["age_positions"]},
         {"title": "Operations", "icon": "⚙️", "value": format_monitor_time(ledger_info["last_operations_time"]),
          "color": determine_color(ledger_info["age_operations"]), "raw_value": ledger_info["age_operations"]},
-        {"title": "Xcom", "icon": "🛁", "value": format_monitor_time(ledger_info["last_xcom_time"]),
+        {"title": "Xcom", "icon": "🛰️", "value": format_monitor_time(ledger_info["last_xcom_time"]),
          "color": determine_color(ledger_info["age_xcom"]), "raw_value": ledger_info["age_xcom"]},
+
         {"title": "Value", "icon": "💰", "value": "${:,.0f}".format(totals["total_value"]),
          "color": apply_color("total_value", totals["total_value"], portfolio_limits),
          "raw_value": totals["total_value"]},
@@ -120,7 +118,7 @@ def get_dashboard_context(data_locker: DataLocker):
         {"title": "Size", "icon": "📊", "value": "${:,.0f}".format(totals["total_size"]),
          "color": apply_color("total_size", totals["total_size"], portfolio_limits),
          "raw_value": totals["total_size"]},
-        {"title": "Ratio", "icon": "⚖️",
+        {"title": "Ratio", "icon": "📐",
          "value": "{:.2f}".format(totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else "N/A",
          "color": apply_color("value_to_collateral_ratio",
                               (totals["total_value"] / totals["total_collateral"]) if totals["total_collateral"] > 0 else None,
@@ -135,6 +133,7 @@ def get_dashboard_context(data_locker: DataLocker):
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
+    # 📊 Graph + Composition
     portfolio_history = data_locker.portfolio.get_snapshots() or []
     graph_data = {
         "timestamps": [entry.get("snapshot_time") for entry in portfolio_history],
@@ -145,7 +144,6 @@ def get_dashboard_context(data_locker: DataLocker):
     long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
     short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
     total = long_total + short_total
-
     size_composition = (
         {"series": [round(long_total / total * 100), round(short_total / total * 100)]}
         if total > 0 else {"series": [0, 0], "label": "No position data"}
@@ -154,7 +152,6 @@ def get_dashboard_context(data_locker: DataLocker):
     long_collat = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
     short_collat = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
     total_collat = long_collat + short_collat
-
     collateral_composition = (
         {"series": [round(long_collat / total_collat * 100), round(short_collat / total_collat * 100)]}
         if total_collat > 0 else {"series": [0, 0], "label": "No collateral data"}

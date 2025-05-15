@@ -128,7 +128,7 @@ def menu_data():
         elif choice == "2":
             for p in dl.positions.get_all_positions(): print(p)
         elif choice == "3":
-            for w in dl.wallets.get_all_wallets(): print(w)
+            for w in dl.wallets.get_wallets(): print(w)
         elif choice == "4":
             dl.alerts.clear_all_alerts()
             log.success("All alerts cleared")

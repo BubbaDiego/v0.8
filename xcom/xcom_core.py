@@ -21,15 +21,23 @@ class XComCore:
 
         results = {"email": False, "sms": False, "voice": False, "sound": False}
 
-        if level == "HIGH":
-            results["sms"] = SMSService(sms_cfg).send(recipient, body)
-            results["voice"] = VoiceService(voice_cfg).call(recipient, body)
-            results["sound"] = SoundService().play()
-        elif level == "MEDIUM":
-            results["sms"] = SMSService(sms_cfg).send(recipient, body)
-        else:
-            results["email"] = EmailService(email_cfg).send(recipient, subject, body)
+        try:
+            if level == "HIGH":
+                results["sms"] = SMSService(sms_cfg).send(recipient, body)
+                results["voice"] = VoiceService(voice_cfg).call(recipient, body)
+                results["sound"] = SoundService().play()
+            elif level == "MEDIUM":
+                results["sms"] = SMSService(sms_cfg).send(recipient, body)
+            else:
+                results["email"] = EmailService(email_cfg).send(recipient, subject, body)
 
+            log.success(f"✅ Notification dispatched [{level}]", source="XComCore", payload=results)
+
+        except Exception as e:
+            log.error(f"❌ Failed to send XCom notification: {e}", source="XComCore")
+            results["error"] = str(e)
+
+        # 📋 Add to log history
         self.log.append({
             "level": level,
             "recipient": recipient,
@@ -38,5 +46,23 @@ class XComCore:
             "results": results
         })
 
-        log.info("Notification dispatched", source="XComCore", payload=results)
+        # 🧾 Ledger Write
+        try:
+            from data_locker import DataLocker
+            from core.constants import DB_PATH
+            from data.dl_monitor_ledger import DLMonitorLedgerManager
+
+            dl = DataLocker(DB_PATH)
+            ledger = DLMonitorLedgerManager(dl.db)
+            status = "Success" if any(results.values()) else "Error"
+            ledger.insert_ledger_entry("xcom_monitor", status, {
+                "subject": subject,
+                "recipient": recipient,
+                "channel_results": results
+            })
+
+        except Exception as e:
+            log.error(f"🧨 Failed to write xcom_monitor ledger: {e}", source="XComCore")
+
         return results
+

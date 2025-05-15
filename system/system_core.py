@@ -106,3 +106,12 @@ class SystemCore:
         except Exception as e:
             self.log.error(f"❌ Failed to fetch theme profile '{name}': {e}", source="SystemCore")
             return {}
+
+    def get_active_profile_name(self) -> str:
+        try:
+            cursor = self.theme.dl.db.get_cursor()
+            row = cursor.execute("SELECT theme_active_profile FROM system_vars WHERE id = 1").fetchone()
+            return row["theme_active_profile"] if row else ""
+        except Exception as e:
+            self.log.error(f"Failed to get active profile name: {e}", source="SystemCore")
+            return ""

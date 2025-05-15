@@ -21,6 +21,34 @@ system_bp = Blueprint("system", __name__, url_prefix="/system")
 def get_core():
     return SystemCore(current_app.data_locker)
 
+@system_bp.route("/test_xcom", methods=["POST"])
+def test_xcom():
+    try:
+        from xcom.xcom_core import XComCore
+        from xcom.sound_service import SoundService
+
+        mode = request.form.get("mode")
+        dl = current_app.data_locker
+        xcom = XComCore(dl.system)
+
+        msg = "📡 Live test from XCom Settings page."
+
+        if mode == "sms":
+            xcom.send_notification("MEDIUM", "Test SMS", msg)
+        elif mode == "email":
+            xcom.send_notification("LOW", "Test Email", msg)
+        elif mode == "voice":
+            xcom.send_notification("HIGH", "Test Voice", msg)
+        elif mode == "system":
+            SoundService().play()
+
+        flash(f"✅ XCom test ({mode}) dispatched.", "success")
+    except Exception as e:
+        flash(f"❌ Failed to send XCom test: {e}", "danger")
+
+    return redirect(url_for("system.xcom_config_page"))
+
+
 # 🌐 List meta data
 @system_bp.route("/metadata", methods=["GET"])
 def system_metadata():
@@ -293,77 +321,67 @@ def database_viewer():
         flash(f"❌ Error loading DB viewer: {e}", "danger")
         return render_template("system/database_viewer.html", datasets={})
 
-@system_bp.route("/seed_demo_thresholds", methods=["POST", "GET"])
-def seed_demo_thresholds():
-    from datetime import datetime, timezone
-    from uuid import uuid4
-    from data.models import AlertThreshold
+@system_bp.route("/xcom_config", methods=["GET"])
+def xcom_config_page():
+    dl = current_app.data_locker
+    config = dl.system.get_active_theme_profile().get("communication", {}).get("providers", {})
+    return render_template("system/xcom_config.html", xcom_config=config)
 
-    db = current_app.data_locker.db
-    dl_mgr = DLThresholdManager(db)
+@system_bp.route("/xcom_config/save", methods=["POST"])
+def save_xcom_config():
+    try:
+        dl = current_app.data_locker
+        form = request.form
+        core = get_core()
 
-    def notify_str(n):  # takes {"call": T, "sms": F, ...} and returns "SMS,Voice"
-        mapping = {"call": "Voice", "sms": "SMS", "email": "Email"}
-        return ",".join(name for key, name in mapping.items() if n.get(key))
+        # 🧠 Extract form values
+        def extract(field):
+            return form.get(field, "").strip()
 
-    now = datetime.now(timezone.utc).isoformat()
+        new_config = {
+            "communication": {
+                "providers": {
+                    "twilio": {
+                        "account_sid": extract("twilio[account_sid]"),
+                        "auth_token": extract("twilio[auth_token]"),
+                        "flow_sid": extract("twilio[flow_sid]"),
+                        "default_to_phone": extract("twilio[default_to_phone]"),
+                        "default_from_phone": extract("twilio[default_from_phone]"),
+                    },
+                    "email": {
+                        "enabled": True,
+                        "smtp": {
+                            "server": extract("email[smtp][server]"),
+                            "port": int(extract("email[smtp][port]") or 0),
+                            "username": extract("email[smtp][username]"),
+                            "password": extract("email[smtp][password]"),
+                            "default_recipient": extract("email[smtp][default_recipient]")
+                        }
+                    },
+                    "sms": {
+                        "enabled": True,
+                        "carrier_gateway": extract("sms[carrier_gateway]"),
+                        "default_recipient": extract("sms[default_recipient]")
+                    }
+                }
+            }
+        }
 
-    definitions = [
-        # Position alerts
-        ("Profit", "Position", "profit", "profit_ranges"),
-        ("HeatIndex", "Position", "heat_index", "heat_index_ranges"),
-        ("TravelPercentLiquid", "Position", "travel_percent_liquid", "travel_percent_liquid_ranges"),
-        ("LiquidationDistance", "Position", "liquidation_distance", "liquidation_distance_ranges"),
+        # ✅ Get active profile name safely
+        profile_name = core.get_active_profile_name()
+        if not profile_name:
+            flash("❌ No active profile set — cannot save XCom config.", "danger")
+            return redirect(url_for("system.xcom_config_page"))
 
-        # Portfolio alerts
-        ("TotalValue", "Portfolio", "total_value", "portfolio"),
-        ("TotalSize", "Portfolio", "total_size", "portfolio"),
-        ("AvgLeverage", "Portfolio", "avg_leverage", "portfolio"),
-        ("AvgTravelPercent", "Portfolio", "avg_travel_percent", "portfolio"),
-        ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", "portfolio"),
-        ("TotalHeat", "Portfolio", "total_heat_index", "portfolio"),
+        # 💾 Save using SystemCore → ThemeService
+        core.save_profile(profile_name, new_config)
+        flash(f"✅ XCom config saved to profile '{profile_name}'.", "success")
 
-        # Market
-        ("PriceThreshold", "Market", "current_price", "price_alerts"),
-    ]
+    except Exception as e:
+        flash(f"❌ Failed to save XCom config: {e}", "danger")
 
+    return redirect(url_for("system.xcom_config_page"))
 
-
-    created = 0
-    for alert_type, alert_class, metric_key, legacy_key in definitions:
-        if alert_class == "Market":
-            low, med, high = 30000, 40000, 50000
-        elif legacy_key in legacy_alert_limits:
-            raw = legacy_alert_limits[legacy_key]
-            low, med, high = raw["low"], raw["medium"], raw["high"]
-        else:
-            low, med, high = 10, 25, 50  # fallback
-
-        def level_notify(level):
-            if legacy_key not in legacy_alert_limits.get("notifications", {}):
-                return ""
-            return notify_str(legacy_alert_limits["notifications"][legacy_key].get(level, {}).get("notify_by", {}))
-
-        threshold = AlertThreshold(
-            id=str(uuid4()),
-            alert_type=alert_type,
-            alert_class=alert_class,
-            metric_key=metric_key,
-            condition="ABOVE",
-            low=low,
-            medium=med,
-            high=high,
-            enabled=True,
-            low_notify=level_notify("low"),
-            medium_notify=level_notify("medium"),
-            high_notify=level_notify("high"),
-            last_modified=now
-        )
-
-        dl_mgr.insert(threshold)
-        created += 1
-
-    return jsonify({"status": "seeded", "count": created})
 
 
 @system_bp.route("/alert_thresholds", methods=["GET"])

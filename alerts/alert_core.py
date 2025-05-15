@@ -6,7 +6,7 @@ from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService
 from alerts.threshold_service import ThresholdService
 from alerts.alert_store import AlertStore
-from xcom.notification_service import NotificationService
+#from xcom.notification_service import NotificationService
 from core.core_imports import log
 
 class AlertCore:
