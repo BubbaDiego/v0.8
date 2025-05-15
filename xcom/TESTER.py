@@ -1,22 +1,26 @@
-# dump_active_profile.py
+# find_notification_service.py
 
-import sys
 import os
-import json
 
-# Path adjust (if needed)
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+TARGET = "NotificationService"
+ROOT = "."  # 🔧 Set to your project root if needed
 
-from data.data_locker import DataLocker
+matches = []
 
-DB_PATH = "sonic.sqlite"  # ⚠️ Update if needed
+for root, dirs, files in os.walk(ROOT):
+    for file in files:
+        if file.endswith(".py"):
+            path = os.path.join(root, file)
+            with open(path, encoding="utf-8", errors="ignore") as f:
+                for i, line in enumerate(f, 1):
+                    if TARGET in line:
+                        matches.append((path, i, line.strip()))
 
-def dump_profile():
-    dl = DataLocker(DB_PATH)
-    profile = dl.system.get_active_theme_profile()
-
-    print("\n🎯 Active Theme Profile:")
-    print(json.dumps(profile, indent=4))
-
-if __name__ == "__main__":
-    dump_profile()
+# 📦 Report
+if matches:
+    print(f"🔍 Found {len(matches)} matches for '{TARGET}':\n")
+    for path, line_no, content in matches:
+        print(f"📄 {path} :: Line {line_no}")
+        print(f"    {content}")
+else:
+    print(f"✅ No references to '{TARGET}' found.")

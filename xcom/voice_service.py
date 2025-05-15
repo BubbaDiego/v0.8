@@ -10,9 +10,9 @@ class VoiceService:
         self.config = config
 
     def call(self, to: str, message: str):
-        if not self.config.get("enabled"):
-            log.warning("Voice provider disabled", source="VoiceService")
-            return False
+       # if not self.config.get("enabled"):
+     #       log.warning("Voice provider disabled", source="VoiceService")
+    #        return False
 
         sid, token, flow = map(self.config.get, ["account_sid", "auth_token", "flow_sid"])
         from_num = self.config.get("default_from_phone")

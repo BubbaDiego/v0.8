@@ -1,11 +1,11 @@
 /* ========== CSS VAR ROOT SETUP ========== */
 :root {
   /* Light Mode (default) */
-  --bg: #ffffff;
+  --bg: #a1aee6;
   --text: #111111;
   --card-bg: #f4f4f4;
   --card-border: #cccccc;
-  --navbar-bg: #fafafa;
+  --navbar-bg: #b3c0fa;
   --primary: #007bff;
   --primary-hover: #0056b3;
   --accent: #f0f0f0;
