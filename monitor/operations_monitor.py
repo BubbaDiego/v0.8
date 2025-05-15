@@ -72,3 +72,12 @@ class OperationsMonitor(BaseMonitor):
             log.success("Startup POST tests passed.", source=self.name)
 
         return {"post_success": success, "duration_seconds": duration}
+
+if __name__ == "__main__":
+    log.banner("🚀 SELF-RUN: OperationsMonitor")
+
+    monitor = OperationsMonitor()
+    result = monitor._do_work()
+
+    log.success("🧾 OperationsMonitor Run Complete", source="SelfTest", payload=result)
+    log.banner("✅ Operations POST Finished")

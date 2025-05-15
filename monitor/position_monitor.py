@@ -1,14 +1,12 @@
-# monitor/monitors/position_monitor.py
-
-
-
-
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
 from core.core_imports import DB_PATH
 from datetime import datetime, timezone
-
+from utils.console_logger import ConsoleLogger as log
 
 class PositionMonitor(BaseMonitor):
     """
@@ -20,17 +18,10 @@ class PositionMonitor(BaseMonitor):
         self.core = PositionCore(self.dl)
 
     def _do_work(self):
-        # 🔄 Sync from Jupiter
+        log.info("🔄 Starting position sync", source="PositionMonitor")
         sync_result = self.core.update_positions_from_jupiter(source="position_monitor")
 
-        # 🧾 Write to monitor_ledger table
-        self.dl.ledger.insert_ledger_entry(
-            monitor_name=self.name,
-            status="Success" if result["errors"] == 0 else "Error",
-            metadata=result
-        )
-
-        # 📦 Extract key metrics for ledger
+        # 📦 Return key sync info for display/logging
         return {
             "imported": sync_result.get("imported", 0),
             "skipped": sync_result.get("skipped", 0),
@@ -38,3 +29,11 @@ class PositionMonitor(BaseMonitor):
             "hedges": sync_result.get("hedges", 0),
             "timestamp": sync_result.get("timestamp", datetime.now(timezone.utc).isoformat())
         }
+
+# ✅ Self-execute entrypoint
+if __name__ == "__main__":
+    log.banner("🚀 SELF-RUN: PositionMonitor")
+    monitor = PositionMonitor()
+    result = monitor._do_work()
+    log.success("🧾 PositionMonitor Run Complete", source="SelfTest", payload=result)
+    log.banner("✅ Position Sync Finished")

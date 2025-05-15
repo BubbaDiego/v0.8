@@ -24,6 +24,7 @@ from routes.theme_routes import theme_bp
 from positions.positions_bp import positions_bp
 from alerts.alerts_bp import alerts_bp
 from prices.prices_bp import prices_bp
+from prices.price_sync_service import PriceSyncService
 from dashboard.dashboard_bp import dashboard_bp
 from portfolio.portfolio_bp import portfolio_bp
 from sonic_labs.sonic_labs_bp import sonic_labs_bp
