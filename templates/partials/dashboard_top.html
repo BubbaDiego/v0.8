@@ -1,0 +1,86 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_top.css') }}">
+
+<div class="dashboard-top-wrapper">
+
+  {% set alias_map = {
+    "value": "total_value",
+    "leverage": "avg_leverage",
+    "size": "total_size",
+    "ratio": "value_to_collateral_ratio",
+    "travel": "avg_travel_percent",
+    "heat": "total_heat",
+    "price": "price",
+    "positions": "positions",
+    "operations": "operations",
+    "xcom": "xcom"
+  } %}
+
+  {% set available_keys = portfolio_limits.keys() %}
+
+  <!-- Portfolio Section -->
+  <div class="dashboard-section">
+    <h5 class="section-title">Portfolio</h5>
+    <div class="card-flex">
+      {% for item in status_items %}
+      {% set raw = item.title.lower().replace(' ', '_') %}
+      {% set key = alias_map.get(raw, raw) %}
+      {% set thresholds = portfolio_limits.get(key) %}
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front status-card {{ item.color }}">
+            <div class="icon">{{ item.icon }}</div>
+            <div class="value">{{ item.value }}</div>
+            <div class="label">{{ item.title }}</div>
+          </div>
+          <div class="flip-card-back">
+            {% if thresholds %}
+            <div class="thresholds">
+              <div><span class="dot green"></span> Low: {{ thresholds.low }}</div>
+              <div><span class="dot yellow"></span> Med: {{ thresholds.medium }}</div>
+              <div><span class="dot red"></span> High: {{ thresholds.high }}</div>
+            </div>
+            {% else %}
+            <div class="text-muted">❌ No thresholds for <code>{{ key }}</code></div>
+            <div class="text-muted">Available keys: {{ available_keys | join(', ') }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Monitor Section -->
+  <div class="dashboard-section">
+    <h5 class="section-title">Monitor</h5>
+    <div class="card-flex">
+      {% for item in monitor_items %}
+      {% set raw = item.title.lower().replace(' ', '_') %}
+      {% set key = alias_map.get(raw, raw) %}
+      {% set thresholds = portfolio_limits.get(key) %}
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front status-card monitor-style {{ item.color }}">
+            <div class="icon">{{ item.icon }}</div>
+            <div class="value">{{ item.value }}</div>
+            <div class="label">{{ item.title }}</div>
+            <div class="led-dot {{ item.color }}"></div>
+          </div>
+          <div class="flip-card-back">
+            {% if thresholds %}
+            <div class="thresholds">
+              <div><span class="dot green"></span> Low: {{ thresholds.low }}</div>
+              <div><span class="dot yellow"></span> Med: {{ thresholds.medium }}</div>
+              <div><span class="dot red"></span> High: {{ thresholds.high }}</div>
+            </div>
+            {% else %}
+            <div class="text-muted">❌ No thresholds for <code>{{ key }}</code></div>
+            <div class="text-muted">Available keys: {{ available_keys | join(', ') }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

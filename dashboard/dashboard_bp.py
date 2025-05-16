@@ -40,16 +40,16 @@ WALLET_IMAGE_MAP = {
 DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
 
-@dashboard_bp.route("/dash")
-@route_log_alert
-def dash_page():
-    from dashboard.dashboard_service import get_dashboard_context
-    context = get_dashboard_context(current_app.data_locker)
-    dl = current_app.data_locker
+#@dashboard_bp.route("/dash")
+#@route_log_alert
+#def dash_page():
+  #  from dashboard.dashboard_service import get_dashboard_context
+  #  context = get_dashboard_context(current_app.data_locker)
+ #   dl = current_app.data_locker
 
     # 🧠 Log snapshot to console
-    log_dashboard_full(context)
-    return render_template("dashboard.html", **context)
+  #  log_dashboard_full(context)
+ #   return render_template("dashboard.html", **context)
 
 @dashboard_bp.route("/database_viewer")
 @route_log_alert
@@ -234,4 +234,40 @@ def api_ledger_ages():
         "age_cyclone": ls.get_status("sonic_monitor")["age_seconds"],
         "last_cyclone_time": ls.get_status("sonic_monitor")["last_timestamp"]
     })
+
+@dashboard_bp.route("/test/desktop")
+def test_desktop_dashboard():
+    mock_context = {
+        "monitor_items": [
+            {"title": "Price", "icon": "📈", "value": "3:45 PM", "color": "green", "raw_value": 100},
+            {"title": "Positions", "icon": "📊", "value": "3:41 PM", "color": "yellow", "raw_value": 500},
+            {"title": "Operations", "icon": "⚙️", "value": "3:39 PM", "color": "red", "raw_value": 1000},
+            {"title": "Xcom", "icon": "🛰️", "value": "3:20 PM", "color": "red", "raw_value": 5000},
+        ],
+        "status_items": [
+            {"title": "Value", "icon": "💰", "value": "$23,450", "color": "yellow", "raw_value": 23450},
+            {"title": "Leverage", "icon": "⚖️", "value": "3.5", "color": "green", "raw_value": 3.5},
+            {"title": "Size", "icon": "📊", "value": "$12,000", "color": "green", "raw_value": 12000},
+            {"title": "Ratio", "icon": "📐", "value": "1.4", "color": "green", "raw_value": 1.4},
+            {"title": "Travel", "icon": "✈️", "value": "-4.5%", "color": "yellow", "raw_value": -4.5},
+        ],
+        "portfolio_limits": {
+            "price": {"low": 300, "medium": 600, "high": 900},
+            "positions": {"low": 300, "medium": 600, "high": 900},
+            "operations": {"low": 300, "medium": 600, "high": 900},
+            "xcom": {"low": 300, "medium": 600, "high": 900},
+            "value": {"low": 10000, "medium": 25000, "high": 50000},
+            "leverage": {"low": 2.0, "medium": 5.0, "high": 10.0},
+            "size": {"low": 1000, "medium": 5000, "high": 10000},
+            "ratio": {"low": 1.1, "medium": 1.5, "high": 2.0},
+            "travel": {"low": -10.0, "medium": -5.0, "high": 0.0},
+        }
+    }
+    return render_template("dashboard.html", **mock_context)
+
+@dashboard_bp.route("/dash")
+@route_log_alert
+def dash_page():
+    context = get_dashboard_context(current_app.data_locker)
+    return render_template("dashboard.html", **context)
 

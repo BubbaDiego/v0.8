@@ -1,0 +1,150 @@
+.dashboard-top-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.dashboard-section {
+  flex: 1 1 48%;
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  min-width: 320px;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.card-flex {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+.flip-card {
+  flex: 1 1 0;
+  max-width: 160px;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative;
+}
+
+.flip-card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.flip-card-front {
+  background-color: #f8f9fa;
+}
+
+.flip-card-back {
+  background-color: #e9ecef;
+  transform: rotateY(180deg);
+  font-size: 0.75rem;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+.value {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 0.3rem;
+}
+.label {
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  color: #666;
+}
+
+.thresholds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.25rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5em;
+}
+.dot.green { background-color: #28a745; }
+.dot.yellow { background-color: #ffc107; }
+.dot.red { background-color: #dc3545; }
+
+/* ✅ LED Dot */
+.led-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+.led-dot.green { background-color: #28a745; box-shadow: 0 0 4px #28a745; }
+.led-dot.yellow { background-color: #ffc107; box-shadow: 0 0 4px #ffc107; }
+.led-dot.red { background-color: #dc3545; box-shadow: 0 0 4px #dc3545; }
+
+/* ✅ Monitor Card Backgrounds */
+.status-card.monitor-style.green {
+  background-color: #e6f4ea;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+.status-card.monitor-style.yellow {
+  background-color: #fff9e6;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+.status-card.monitor-style.red {
+  background-color: #ffe6e6;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
