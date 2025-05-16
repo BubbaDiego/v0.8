@@ -72,3 +72,22 @@
 .ledger-container {
   padding-top: 1.5rem;
 }
+
+.mini-list {
+  list-style: none;
+  padding-left: 0.2em;
+  margin: 0.6em 0 0.5em 0;
+}
+.mini-list li {
+  font-family: "JetBrains Mono", "Menlo", monospace;
+  font-size: 1em;
+  margin-bottom: 2px;
+  color: #283c52;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+}
+.text-muted { color: #8d98b1 !important; }
+.text-success { color: #1da63a !important; }
+.text-danger  { color: #d72d36 !important; }
+.text-warning { color: #ffc107 !important; }

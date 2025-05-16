@@ -70,31 +70,52 @@
 .flip-card-back {
   background-color: #e9ecef;
   transform: rotateY(180deg);
-  font-size: 0.75rem;
+  font-size: 0.95rem;
+  text-align: left;
+  padding-left: 1.1em;
+  padding-right: 1.1em;
 }
 
-.icon {
-  font-size: 1.5rem;
+/* ===== Monitor Card Back Custom Styles ===== */
+.mini-list {
+  list-style: none;
+  padding-left: 0.2em;
+  margin: 0.6em 0 0.5em 0;
 }
-.value {
-  font-size: 1rem;
+.mini-list li {
+  font-family: "JetBrains Mono", "Menlo", monospace;
+  font-size: 1.09em;
+  margin-bottom: 6px;
+  color: #283c52;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.text-muted { color: #8d98b1 !important; }
+.text-success { color: #1da63a !important; }
+.text-danger  { color: #d72d36 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-bold    { font-weight: 600 !important; }
+.status-label {
+  font-size: 1.05em;
   font-weight: bold;
-  margin-top: 0.3rem;
+  letter-spacing: 0.02em;
 }
-.label {
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
-  color: #666;
+.flip-card-back strong {
+  font-weight: 600;
+}
+.flip-card-back ul {
+  margin-bottom: 0.5em;
 }
 
+/* Dots and thresholds for non-price cards */
 .thresholds {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.3rem;
-  padding: 0.25rem;
+  padding: 0.25rem 0;
 }
-
 .dot {
   width: 10px;
   height: 10px;
@@ -106,7 +127,7 @@
 .dot.yellow { background-color: #ffc107; }
 .dot.red { background-color: #dc3545; }
 
-/* ✅ LED Dot */
+/* LED Dot */
 .led-dot {
   width: 10px;
   height: 10px;
@@ -117,7 +138,7 @@
 .led-dot.yellow { background-color: #ffc107; box-shadow: 0 0 4px #ffc107; }
 .led-dot.red { background-color: #dc3545; box-shadow: 0 0 4px #dc3545; }
 
-/* ✅ Monitor Card Backgrounds */
+/* Monitor Card BGs */
 .status-card.monitor-style.green {
   background-color: #e6f4ea;
   background-image: repeating-linear-gradient(
@@ -148,3 +169,35 @@
     transparent 20px
   );
 }
+
+.icon {
+  font-size: 1.5rem;
+}
+.value {
+  font-size: 1.17rem;
+  font-weight: bold;
+  margin-top: 0.3rem;
+}
+.label {
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .dashboard-section {
+    padding: 1.1rem 0.5rem;
+    min-width: 210px;
+  }
+  .card-flex {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .flip-card {
+    max-width: 95vw;
+    min-width: 0;
+    margin-bottom: 1rem;
+  }
+}
+

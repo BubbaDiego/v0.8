@@ -1,0 +1,218 @@
+/* ===== Dashboard Middle Layout ===== */
+.dashboard-middle-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 2.2rem;
+  width: 100%;
+  align-items: stretch;
+  justify-content: center;
+}
+.dashboard-middle-half {
+  flex: 1 1 0;
+  min-width: 320px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+@media (max-width: 950px) {
+  .dashboard-middle-flex { flex-direction: column; gap: 1.3rem; }
+}
+
+/* ===== Modern Card/Table Box ===== */
+.common-box, .mini-table-box, .liquidation-box {
+  background: #d0e7ff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 1.3rem 1.2rem 1.1rem 1.2rem;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.chart-label {
+  font-weight: bold;
+  font-size: 1.13rem;
+  margin-bottom: 1rem;
+  color: #222;
+  letter-spacing: 0.03em;
+}
+
+/* ===== Table Styles (from tables.css) ===== */
+.mini-table-box {
+  background-color: #d0e7ff;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.mini-table-box table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #000;
+  background: transparent;
+}
+.mini-table-box thead th {
+  position: sticky;
+  top: 0;
+  background-color: rgba(255,255,255,0.25);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+.mini-table-box th {
+  text-transform: uppercase;
+  font-size: 0.92rem;
+  letter-spacing: 0.05em;
+  padding: 0.75rem;
+  border-bottom: 2px solid #c0d7f5;
+  font-weight: 700;
+  background: transparent;
+}
+.mini-table-box td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #c0d7f5;
+  font-size: 1rem;
+}
+.mini-table-box tbody tr {
+  transition: background-color 0.3s, transform 0.3s;
+}
+.mini-table-box tbody tr:hover {
+  background-color: #e3ecfa;
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+.positions-container {
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 1rem;
+}
+.positions-container::-webkit-scrollbar {
+  height: 8px;
+}
+.positions-container::-webkit-scrollbar-thumb {
+  background: #b0d3fc;
+  border-radius: 6px;
+}
+.positions-container::-webkit-scrollbar-track {
+  background: #e8f1fa;
+}
+body.light-bg .mini-table-box table,
+body.light-bg .mini-table-box thead th {
+  background-color: #e6f0ff;
+  color: #000;
+}
+body.dark-bg .mini-table-box table,
+body.dark-bg .mini-table-box thead th {
+  background-color: #3a3a3a;
+  color: #ddd;
+}
+.mini-table-box th,
+.mini-table-box td {
+  padding: 0.75rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+/* ===== Wallet Icon Consistency ===== */
+.wallet-icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+/* ===== Liquidation Bar Styles (from liquidation.css) ===== */
+.liq-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 44px;
+  margin-bottom: 1.1rem;
+}
+.liq-bar-container {
+  position: relative;
+  flex-grow: 1;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.liq-midline {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: #333;
+  z-index: 2;
+}
+.liq-bar-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  padding: 0 4px;
+  min-width: 3.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s;
+}
+.liq-bar-fill.positive {
+  left: 50%;
+  background: repeating-linear-gradient(
+    45deg, #28a745, #28a745 10px, #2ecc71 10px, #2ecc71 20px
+  );
+}
+.liq-bar-fill.negative {
+  right: 50%;
+  background: repeating-linear-gradient(
+    45deg, #dc3545, #dc3545 10px, #e74c3c 10px, #e74c3c 20px
+  );
+}
+.travel-text {
+  z-index: 10;
+  white-space: nowrap;
+  font-weight: bold;
+  text-shadow: 0 0 2px #333, 0 1px 2px #0004;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.liq-flame-container {
+  min-width: 30px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff5722;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+  font-size: 1.05rem;
+  position: relative;
+}
+.heat-index-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.88rem;
+}
+
+/* ========== Responsive / Mobile ========== */
+@media (max-width: 900px) {
+  .dashboard-middle-wrapper {
+    gap: 0.9rem;
+    padding: 0.5rem;
+  }
+  .common-box, .mini-table-box, .liquidation-box {
+    padding: 0.7rem 0.4rem;
+    border-radius: 9px;
+  }
+  .liq-row { gap: 0.5rem; min-height: 36px; }
+  .wallet-icon { width: 22px !important; height: 22px !important; }
+}

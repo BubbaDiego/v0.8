@@ -1,0 +1,79 @@
+/* ===============================
+   Light Theme Colors
+   =============================== */
+:root[data-theme="light"] {
+  --bg: #e7ecfa;                /* Main page background */
+  --text: #222;                 /* Standard text */
+  --card-bg: #f8fafc;           /* Card/panel background */
+  --card-border: #b7c5e0;       /* Card/panel border */
+  --navbar: #fafafa;            /* Top navbar/titlebar */
+  --primary: #4678d8;           /* Primary buttons */
+  --primary-hover: #3659a5;     /* Primary button hover */
+  --accent: #ecf0fc;            /* Accent/highlight */
+}
+
+/* ===============================
+   Dark Theme Colors
+   =============================== */
+:root[data-theme="dark"] {
+  --bg: #181b22;                /* Main background */
+  --text: #eee;                 /* Light text for contrast */
+  --card-bg: #23272f;           /* Dark card background */
+  --card-border: #39404e;       /* Card border */
+  --navbar: #191c22;            /* Navbar background */
+  --primary: #4678d8;           /* Reuse blue accent */
+  --primary-hover: #27408b;     /* Deeper blue for hover */
+  --accent: #1a2639;            /* Subtle accent */
+}
+
+/* ===============================
+   Funky Theme Colors
+   =============================== */
+:root[data-theme="funky"] {
+  --bg: #1e1e40;                /* Purpley deep background */
+  --text: #ffec99;              /* Funky bright text */
+  --card-bg: #3a2f5d;           /* Funky card background */
+  --card-border: #ffb3fd;       /* Funky accent border */
+  --navbar: #8d3dae;            /* Funky navbar */
+  --primary: #fd5cd6;           /* Funky button pink */
+  --primary-hover: #a30085;     /* Intense pink for hover */
+  --accent: #ffb3fd;            /* Bright accent */
+}
+
+/* ===============================
+   Generic Styling using Variables
+   =============================== */
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+.navbar, .title-bar {
+  background: var(--navbar);
+}
+.common-box,
+.status-card,
+.theme-preview-card,
+.mini-table-box,
+.ledger-box {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1.5px solid var(--card-border);
+}
+button, .btn {
+  background: var(--primary);
+  color: #fff;
+}
+button:hover, .btn:hover {
+  background: var(--primary-hover);
+}
+a {
+  color: var(--primary);
+}
+a:hover {
+  color: var(--primary-hover);
+}
+/* Accent utility */
+.accent-bg {
+  background: var(--accent) !important;
+}

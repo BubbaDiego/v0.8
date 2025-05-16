@@ -4,11 +4,11 @@ import shutil
 import subprocess
 
 def play_sound():
-    # 🎯 Anchor path to script location, not CWD
+    # 🎯 Anchor to script directory
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    sound_path = os.path.join(script_dir, "static", "sounds", "death_nail.mp3")
+    sound_path = os.path.join(script_dir, "static", "sounds", "death_spiral.mp3")
 
-    print(f"🔍 Looking for: {sound_path}")  # Debug path being used
+    print(f"🔍 Looking for: {sound_path}")  # Trace the resolved path
 
     if not os.path.isfile(sound_path):
         print(f"❌ File not found: {sound_path}")

@@ -44,9 +44,12 @@ app.debug = False
 app.secret_key = "i-like-lamp"
 socketio = SocketIO(app)
 
-
+# CORE INITIALIZATION !IMPORTANT
+from system.system_core import SystemCore
 global_data_locker = DataLocker(str(DB_PATH))  # SINGLE SOURCE OF TRUTH
 app.data_locker = global_data_locker
+app.system_core = SystemCore(app.data_locker)
+
 
 log.banner("SONIC DASHBOARD STARTUP")
 

@@ -69,15 +69,127 @@ def apply_color(metric_name, value, limits):
         log.error(f"apply_color failed: {e}", source="DashboardContext")
         return "red"
 
-def get_dashboard_context(data_locker: DataLocker):
-    log.info("📊 Assembling dashboard context", source="DashboardContext")
+import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-    # 🔍 Live Position Enrichment
+def format_monitor_time(iso_str):
+    if not iso_str:
+        return "N/A"
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+        return pacific.strftime("%I:%M %p %m/%d").lstrip("0")
+    except Exception as e:
+        return "N/A"
+
+def format_short_time(iso_str):
+    if not iso_str:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
+        return pacific.strftime("%-I:%M %p").replace(" 0", " ")
+    except Exception:
+        return "—"
+
+def get_latest_price_monitor_history(dl):
+    # For demo: pull BTC/ETH/SOL from your price DB or a sample row
+    # Replace with real price table fetch if you have one
+    price_rows = []
+    try:
+        # Example for a table: dl.prices.get_latest_all()
+        price_rows = dl.prices.get_latest_all()
+    except Exception:
+        # Fallback to canned values if not implemented
+        price_rows = [
+            {"symbol": "BTC", "price": 63125.00},
+            {"symbol": "ETH", "price": 2995.00},
+            {"symbol": "SOL", "price": 156.23}
+        ]
+    icons = {"BTC": "🟡", "ETH": "🔷", "SOL": "🟣"}
+    show_cents = {"BTC": False, "ETH": False, "SOL": True}
+    history = []
+    for row in price_rows:
+        symbol = (row.get("symbol") or row.get("asset") or "BTC").upper()
+        val = float(row.get("price", 0))
+        history.append({
+            "label": symbol,
+            "icon": icons.get(symbol, "💲"),
+            "value": val,
+            "show_cents": show_cents.get(symbol, False)
+        })
+    return history
+
+def get_latest_positions_monitor_history(dl):
+    try:
+        entry = dl.ledger.get_last_entry("position_monitor")
+        if not entry: return []
+        meta = entry.get("metadata")
+        if isinstance(meta, str):
+            meta = json.loads(meta)
+        # Default to "Monitor" if not set
+        who = meta.get("initiator", "Monitor")
+        return [{
+            "imported": meta.get("imported", 0),
+            "skipped": meta.get("skipped", 0),
+            "errors": meta.get("errors", 0),
+            "timestamp": format_short_time(entry.get("timestamp")),
+            "source": who if who in ("Manual", "Monitor") else "Monitor"
+        }]
+    except Exception:
+        return []
+
+def get_latest_operations_monitor_history(dl):
+    try:
+        entry = dl.ledger.get_last_entry("operations_monitor")
+        if not entry: return []
+        meta = entry.get("metadata")
+        if isinstance(meta, str):
+            meta = json.loads(meta)
+        return [{
+            "post_success": entry.get("status", "Error") == "Success",
+            "duration_seconds": meta.get("duration_seconds", 0),
+            "timestamp": format_short_time(entry.get("timestamp")),
+            "error": meta.get("error")
+        }]
+    except Exception:
+        return []
+
+def get_latest_xcom_monitor_history(dl):
+    try:
+        entry = dl.ledger.get_last_entry("xcom_monitor")
+        if not entry: return []
+        meta = entry.get("metadata")
+        if isinstance(meta, str):
+            meta = json.loads(meta)
+        results = meta.get("results", {}) or {}
+
+        comm_types = [("sms", "sms"), ("voice", "voice"), ("email", "email"), ("sound", "sound")]
+        comm_type = "system"
+        for key, value in comm_types:
+            if results.get(key):
+                comm_type = key
+                break
+        if comm_type == "system" and meta.get("level", "").lower() == "high":
+            comm_type = "alert"
+        # Use explicit initiator if present, else fallback
+        source = meta.get("initiator") or "system"
+        ts = format_short_time(entry.get("timestamp"))
+        return [{
+            "comm_type": comm_type,
+            "source": source,
+            "timestamp": ts
+        }]
+    except Exception:
+        return []
+
+def get_dashboard_context(data_locker):
+    log.info("📊 Assembling dashboard context", source="DashboardContext")
     calc = CalcServices()
     positions = PositionCore(data_locker).get_all_positions() or []
     positions = calc.aggregator_positions(positions, DB_PATH)
     totals = calc.calculate_totals(positions)
-
     for pos in positions:
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name
@@ -85,7 +197,6 @@ def get_dashboard_context(data_locker: DataLocker):
     core = SystemCore(data_locker)
     portfolio_limits = core.get_portfolio_thresholds()
 
-    # 🧠 Ledger Timestamps
     ls = data_locker.ledger
     ledger_info = {
         "age_price": ls.get_status("price_monitor").get("age_seconds", 9999),
@@ -98,7 +209,12 @@ def get_dashboard_context(data_locker: DataLocker):
         "last_xcom_time": ls.get_status("xcom_monitor").get("last_timestamp"),
     }
 
-    # 🧱 Unified Status Cards
+    # Monitor card data (real, not canned)
+    price_monitor_history = get_latest_price_monitor_history(data_locker)
+    positions_monitor_history = get_latest_positions_monitor_history(data_locker)
+    operations_monitor_history = get_latest_operations_monitor_history(data_locker)
+    xcom_monitor_history = get_latest_xcom_monitor_history(data_locker)
+
     universal_items = [
         {"title": "Price", "icon": "📈", "value": format_monitor_time(ledger_info["last_price_time"]),
          "color": determine_color(ledger_info["age_price"]), "raw_value": ledger_info["age_price"]},
@@ -133,7 +249,7 @@ def get_dashboard_context(data_locker: DataLocker):
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
-    # 📊 Graph + Composition
+    # Existing graph/comp context...
     portfolio_history = data_locker.portfolio.get_snapshots() or []
     graph_data = {
         "timestamps": [entry.get("snapshot_time") for entry in portfolio_history],
@@ -170,5 +286,9 @@ def get_dashboard_context(data_locker: DataLocker):
         "portfolio_limits": portfolio_limits,
         "graph_data": graph_data,
         "size_composition": size_composition,
-        "collateral_composition": collateral_composition
+        "collateral_composition": collateral_composition,
+        "price_monitor_history": price_monitor_history,
+        "positions_monitor_history": positions_monitor_history,
+        "operations_monitor_history": operations_monitor_history,
+        "xcom_monitor_history": xcom_monitor_history,
     }

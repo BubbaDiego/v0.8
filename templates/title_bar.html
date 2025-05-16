@@ -1,17 +1,12 @@
 <!-- templates/title_bar.html -->
+<script src="../static/js/title_bar.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
   <!-- Left Navigation -->
   <div class="left-buttons d-flex gap-2">
-    <!-- Home -->
     <a class="btn btn-light" href="{{ url_for('dashboard.dash_page') }}" title="Home">🏠</a>
-
-    <!-- Positions -->
     <a class="btn btn-light" href="{{ url_for('positions.positions_table') }}" title="Positions">📊</a>
-
-    <!-- Alerts -->
     <a class="btn btn-light" href="{{ url_for('alerts_bp.monitor_page') }}" title="Alerts">🔔</a>
-
-    <!-- Settings Dropdown -->
     <div class="dropdown">
       <button class="btn btn-light dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         ⚙️
@@ -30,19 +25,21 @@
           <a class="dropdown-item" href="{{ url_for('system.xcom_config_page') }}">🔌 XCom Config</a>
         </li>
         <li><hr class="dropdown-divider"></li>
-        <li>
-          <a class="dropdown-item" href="#" onclick="document.getElementById('themeToggleButton').click()">🌓 Toggle Theme</a>
-        </li>
       </ul>
     </div>
   </div>
 
   <!-- Right Action Buttons -->
-  <div class="title-bar-actions">
-    <button class="btn btn-outline-primary" data-action="sync">🪐</button>
-    <button class="btn btn-outline-success" data-action="market">💲</button>
-    <button class="btn btn-outline-info" data-action="full">🌪️</button>
-    <button class="btn btn-outline-danger" data-action="wipe">🗑️</button>
-    <button class="btn btn-outline-secondary" id="themeToggleButton">🌗</button>
+  <div class="title-bar-actions d-flex align-items-center gap-2">
+    <button class="btn btn-outline-primary" data-action="sync"   title="Jupiter Sync">🪐</button>
+    <button class="btn btn-outline-success" data-action="market" title="Market Update">💲</button>
+    <button class="btn btn-outline-info"    data-action="full"   title="Full Cycle">🌪️</button>
+    <button class="btn btn-outline-danger"  data-action="wipe"   title="Wipe All">🗑️</button>
+    <!-- Theme Toggle: 3-way -->
+    <div class="theme-toggle-group" id="themeToggleGroup">
+      <button class="btn btn-outline-secondary theme-btn" data-theme="light" title="Light Theme">☀️</button>
+      <button class="btn btn-outline-secondary theme-btn" data-theme="dark" title="Dark Theme">🌙</button>
+      <button class="btn btn-outline-secondary theme-btn" data-theme="funky" title="Funky Theme">🎨</button>
+    </div>
   </div>
 </nav>

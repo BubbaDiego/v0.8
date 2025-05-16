@@ -136,3 +136,15 @@ class DLSystemDataManager:
         except Exception as e:
             log.error(f"❌ Failed to retrieve active theme profile: {e}", source="DLSystemDataManager")
             return {}
+
+    def get_var(self, key: str) -> dict:
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("SELECT value FROM global_config WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            if row:
+                return json.loads(row["value"])
+            return {}
+        except Exception as e:
+            log.error(f"❌ Failed to read system var '{key}': {e}", source="DLSystemDataManager")
+            return {}

@@ -8,11 +8,14 @@
   <!-- 🧱 Top Cards: Portfolio + Monitor -->
   {% include "partials/dashboard_top.html" %}
 
-  <!-- 🧩 Future dashboard sections go here... -->
+  {# <!-- 🧱 Middle Section: Positions + Liquidation Bars -->
+  {% include "partials/dashboard_middle.html" %} #}
+  <!-- Removed the middle section for now -->
+
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 {{ super() }}
-<script src="{{ url_for('static', filename='js/dashboard_top.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
 {% endblock %}

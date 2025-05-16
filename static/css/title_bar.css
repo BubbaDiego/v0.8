@@ -1,21 +1,43 @@
 /* static/css/title_bar.css */
 .title-bar {
-  background-color: var(--light-page-bg-color);
-  color: var(--light-page-text-color);
+  background-color: var(--card-bg, #e9ecfa);
+  color: var(--text, #232946);
   border-bottom: 1px solid #ccc;
+  min-height: 56px;
 }
-
-body.dark-bg .title-bar {
-  background-color: var(--dark-page-bg-color);
-  color: var(--dark-page-text-color);
+body[data-theme="dark"] .title-bar {
+  background-color: var(--card-bg, #232946);
+  color: var(--text, #f1f1f1);
   border-bottom: 1px solid #444;
 }
-
+body[data-theme="funky"] .title-bar {
+  background-color: var(--card-bg, #e4bad4);
+  color: var(--text, #540d6e);
+  border-bottom: 1px solid #ff80aa;
+}
 .title-bar .btn {
   font-size: 1.2rem;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s, color 0.2s, border 0.2s;
 }
-
 .title-bar .btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0,0,0,0.08);
+}
+.theme-toggle-group {
+  display: inline-flex;
+  gap: 0.15rem;
+  margin-left: 0.5rem;
+}
+.theme-btn.active,
+.theme-btn:focus {
+  background-color: var(--primary, #4678d8) !important;
+  color: #fff !important;
+  border-color: var(--primary, #4678d8) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary, #4678d8, 0.15);
+}
+.theme-btn {
+  border-width: 2px;
+  border-radius: 50%;
+  padding: 0.15rem 0.45rem;
+  font-size: 1.28em;
 }

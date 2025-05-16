@@ -458,3 +458,88 @@ def import_alert_thresholds():
         return jsonify({"success": True, "updated": count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@system_bp.route("/xcom_config/export", methods=["GET"])
+def export_xcom_config():
+    try:
+        config = current_app.data_locker.system.get_var("xcom_providers") or {}
+        return jsonify(config)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@system_bp.route("/xcom_config/import", methods=["POST"])
+def import_xcom_config():
+    try:
+        payload = request.get_json()
+        if not isinstance(payload, dict):
+            return jsonify({"success": False, "error": "Expected JSON object"}), 400
+
+        current_app.data_locker.system.set_var("xcom_providers", payload)
+        return jsonify({"success": True, "message": "XCom config imported."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@system_bp.route("/xcom_config/validate_twilio", methods=["POST"])
+def validate_twilio():
+    try:
+        from flask import current_app
+        import requests
+
+        dl = current_app.data_locker
+        twilio = dl.system.get_var("xcom_providers").get("twilio", {})
+
+        sid = twilio.get("account_sid")
+        token = twilio.get("auth_token")
+
+        if not sid or not token:
+            return jsonify({"status": "fail", "reason": "Missing SID or token"}), 400
+
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{sid}.json"
+        response = requests.get(url, auth=(sid, token))
+
+        if response.status_code == 200:
+            return jsonify({"status": "ok", "message": "✅ Twilio credentials are valid."})
+        elif response.status_code == 401:
+            return jsonify({
+                "status": "fail",
+                "message": "❌ Invalid Account SID or Auth Token.",
+                "details": response.json()
+            }), 401
+        else:
+            return jsonify({
+                "status": "fail",
+                "message": f"❌ Unexpected response from Twilio: {response.status_code}",
+                "details": response.text
+            }), response.status_code
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@classmethod
+def death(cls, message: str, source: str = None, payload: dict = None):
+    cls._print("death", message, source, payload)
+
+
+
+@system_bp.route("/test_death", methods=["GET"])
+def test_death_nail():
+    try:
+        system_core = current_app.system_core
+
+        system_core.death({
+            "message": "💀 Manual death spiral test triggered via /test_death",
+            "payload": {
+                "status": 401,
+                "source": "manual_test",
+                "user": "tester",
+                "reason": "Triggered by /test_death"
+            },
+            "level": "HIGH"
+        })
+
+        return "<h2 style='color:red'>💀 DEATH NAIL TRIGGERED</h2><p>Sound, log, and escalation executed.</p>"
+
+    except Exception as e:
+        return f"<h2>❌ Death Nail Failed</h2><pre>{str(e)}</pre>", 500
+
