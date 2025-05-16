@@ -1,24 +1,46 @@
-console.log("✅ theme_toggle.js loaded");
+// === theme_toggle.js ===
+// Handles user theme switching and persists selection
 
-(function () {
-  const root = document.documentElement;
-  const current = localStorage.getItem("themeMode") || "light";
-  root.setAttribute("data-theme", current);
+// Key names
+const THEME_KEY = "themeMode"; // Cookie/localStorage key
 
-  const toggle = document.getElementById("themeToggleButton");
-  if (!toggle) return;
+// Set theme on <html data-theme="...">
+function setTheme(mode) {
+  document.documentElement.setAttribute("data-theme", mode);
+  localStorage.setItem(THEME_KEY, mode); // Save for reloads
 
-  toggle.addEventListener("click", () => {
-    const mode = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", mode);
-    localStorage.setItem("themeMode", mode);
-    document.cookie = `themeMode=${mode}; path=/; max-age=31536000`;
+  // Optional: set a cookie for server-side detection (if you want)
+  document.cookie = THEME_KEY + "=" + mode + ";path=/;max-age=31536000"; // 1 year
+}
 
-    // Optional: Call backend
-    fetch("/system/theme_mode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme_mode: mode }),
+// Read persisted theme from localStorage or cookie
+function getPersistedTheme() {
+  let mode = localStorage.getItem(THEME_KEY);
+  if (!mode) {
+    // fallback to cookie if needed
+    const cookie = document.cookie.split('; ').find(r => r.startsWith(THEME_KEY + '='));
+    if (cookie) mode = cookie.split('=')[1];
+  }
+  return mode || "light";
+}
+
+// Bind events to the theme toggle buttons in title bar
+function bindThemeButtons() {
+  const buttons = document.querySelectorAll('.theme-btn[data-theme]');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', e => {
+      const mode = btn.getAttribute('data-theme');
+      setTheme(mode);
+
+      // Optional: give feedback
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
     });
   });
-})();
+}
+
+// On page load, initialize theme from saved preference or default
+document.addEventListener("DOMContentLoaded", () => {
+  setTheme(getPersistedTheme());
+  bindThemeButtons();
+});
