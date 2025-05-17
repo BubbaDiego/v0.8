@@ -1,0 +1,35 @@
+<!-- _liquidation_bars.html -->
+<div class="common-box liquidation-box">
+  <div class="chart-label">Liquidation Bar</div>
+  {% if liquidation_positions %}
+    {% for pos in liquidation_positions %}
+      {% if pos.travel_percent is defined and pos.travel_percent is not none %}
+        <div class="liq-row">
+          <span style="min-width:40px; text-align:center; font-weight:bold; color:#888;">N/A</span>
+          <div class="liq-bar-container">
+            <div class="liq-midline"></div>
+            {% set pct = pos.travel_percent|float %}
+            {% if pct >= 0 %}
+              <div class="liq-bar-fill positive" style="left:50%; width:{{ pct }}%;">
+                <div class="travel-text">{{ pct|round(1) }}%</div>
+              </div>
+            {% else %}
+              <div class="liq-bar-fill negative" style="right:50%; width:{{ pct|abs }}%;">
+                <div class="travel-text">{{ pct|round(1) }}%</div>
+              </div>
+            {% endif %}
+          </div>
+          <div class="liq-flame-container">
+            <span class="heat-index-number">
+              {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+            </span>
+          </div>
+        </div>
+      {% else %}
+        <p style="color:red;">⚠️ Skipping a position missing travel_percent</p>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p style="color:orange;">⚠️ No liquidation positions to display.</p>
+  {% endif %}
+</div>

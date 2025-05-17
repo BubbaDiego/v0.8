@@ -3,20 +3,18 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import asyncio
 from flask import Blueprint, render_template, jsonify, request, current_app
 from typing import Optional
 from data.models import AlertThreshold
-
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
-
-
-from data.data_locker import DataLocker
 from core.core_imports import DB_PATH
+from cyclone.cyclone_engine import Cyclone
 
+cyclone = Cyclone()
 data_locker = DataLocker(DB_PATH)
 ls = data_locker.ledger
-
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -271,3 +269,42 @@ def dash_page():
     context = get_dashboard_context(current_app.data_locker)
     return render_template("dashboard.html", **context)
 
+@dashboard_bp.route("/api/dashboard_cards", methods=["GET"])
+def api_dashboard_cards():
+    # Use your normal dashboard context
+    context = get_dashboard_context(current_app.data_locker)
+    # Make sure you have the correct partial path:
+    rendered_cards = render_template("partials/dashboard_top.html", **context)
+    return jsonify({"success": True, "html": rendered_cards})
+
+@dashboard_bp.route('/cyclone_market_update', methods=['POST'])
+def cyclone_market_update():
+    try:
+        asyncio.run(cyclone.run_market_updates())
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@dashboard_bp.route('/cyclone_sync', methods=['POST'])
+def cyclone_sync():
+    try:
+        asyncio.run(cyclone.run_composite_position_pipeline())
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@dashboard_bp.route('/cyclone_full_cycle', methods=['POST'])
+def cyclone_full_cycle():
+    try:
+        asyncio.run(cyclone.run_cycle())
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@dashboard_bp.route('/cyclone_wipe_all', methods=['POST'])
+def cyclone_wipe_all():
+    try:
+        asyncio.run(cyclone.run_clear_all_data())
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})

@@ -1,0 +1,76 @@
+<!-- === HEADER ROW (only first row) === -->
+{% if is_first %}
+<div class="liq-header-row">
+  <div class="pos-header">
+    <div class="pos-col-label">Asset</div>
+    <div class="pos-col-label">Wallet</div>
+    <div class="pos-col-label">Heat</div>
+    <div class="pos-col-label">Travel %</div>
+    <div class="pos-col-label">Lev</div>
+  </div>
+  <div class="liq-header">
+    <div class="liq-col-label">Liquidation</div>
+    <div class="heat-label-wrapper"><div class="heat-icon">🔥</div></div>
+  </div>
+</div>
+{% endif %}
+
+<!-- === ROW CONTENT === -->
+<div class="row-pair">
+  <!-- 🔹 LEFT SIDE (Position Info) -->
+  <div class="pos-col">
+    <!-- Asset icon -->
+    <div class="pos-cell asset">
+      {{ pos.asset_type }}
+      <img class="asset-icon" src="{{ url_for('static', filename='images/' + pos.asset_type|lower + '_logo.png') }}" alt="{{ pos.asset_type }}">
+    </div>
+
+    <!-- Wallet info -->
+    <div class="pos-cell wallet">
+      {% if pos.wallet %}
+        <img class="wallet-icon mb-1" src="{{ pos.wallet.image_path }}" alt="{{ pos.wallet.name }}">
+        <div class="small">{{ pos.wallet.name }}</div>
+        <div class="text-muted small">{{ pos.wallet.type|capitalize }}</div>
+      {% else %}
+        <span class="text-muted">No Wallet</span>
+      {% endif %}
+    </div>
+
+    <!-- Heat -->
+    <div class="pos-cell heat">
+      {{ pos.heat_index|int }}
+    </div>
+
+    <!-- Travel -->
+    <div class="pos-cell travel">
+      {{ pos.travel_percent|round(2) }}%
+    </div>
+
+    <!-- Leverage -->
+    <div class="pos-cell leverage">
+      {{ pos.leverage|round(2) }}
+    </div>
+  </div>
+
+  <!-- 🔸 RIGHT SIDE (Liquidation bar + badge) -->
+  <div class="liq-col">
+    <div class="liq-bar-container">
+      <div class="liq-midline"></div>
+      {% set pct = pos.travel_percent|float %}
+      {% if pct >= 0 %}
+        <div class="liq-bar-fill positive" style="left: 50%; width: {{ pct }}%;">
+          <div class="travel-text">{{ pct|round(1) }}%</div>
+        </div>
+      {% else %}
+        <div class="liq-bar-fill negative" style="right: 50%; width: {{ pct|abs }}%;">
+          <div class="travel-text">{{ pct|round(1) }}%</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Heat badge -->
+    <div class="liq-heat-badge">
+      {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+    </div>
+  </div>
+</div>
