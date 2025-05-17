@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from data.alert import AlertLevel, Condition, AlertType
 from utils.fuzzy_wuzzy import fuzzy_match_enum
 from core.logging import log
-from alerts.threshold_service import ThresholdService
+from alert_core.threshold_service import ThresholdService
 from data.models import AlertThreshold
 
 

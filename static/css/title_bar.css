@@ -19,17 +19,15 @@ body[data-theme="funky"] .title-bar {
 }
 
 /* ==== TITLE BAR ACTION BUTTONS: SMALLER BOXES, BIGGER ICONS ==== */
-/* ↓↓↓↓ THIS SECTION CONTROLS BOX SIZE AND ICON SIZE ↓↓↓↓ */
 .title-bar .btn {
-  padding: 0.15rem 0.50rem;     /* ↓ Shrink this for smaller box (horizontal) ↓ */
-  font-size: 1.2rem;            /* ↑↑ Make this LARGER for a bigger icon ↑↑ */
+  padding: 0.15rem 0.50rem;
+  font-size: 1.2rem;
   line-height: 1;
   min-width: 36px;
   min-height: 36px;
   border-radius: 10px;
   transition: background-color 0.2s, color 0.2s, border 0.2s;
 }
-/* ↑↑↑ ADJUST ONLY padding and font-size above for your look ↑↑↑ */
 
 .title-bar .btn:hover {
   background-color: rgba(0,0,0,0.08);
@@ -41,7 +39,6 @@ body[data-theme="funky"] .title-bar {
   gap: 0.15rem;
   margin-left: 0.5rem;
 }
-/* Bigger icons for theme toggles as well */
 .theme-btn.active,
 .theme-btn:focus {
   background-color: var(--primary, #4678d8) !important;
@@ -54,21 +51,16 @@ body[data-theme="funky"] .title-bar {
   border-width: 2px;
   border-radius: 50%;
   padding: 0.18rem 0.42rem;
-  font-size: 1.7em; /* Controls sun/moon/paint icon size */
+  font-size: 1.7em;
 }
 
 /* --- Icon Set Swapper: Show only the selected set --- */
-/* Default: Emoji only */
 .icon-set-fa,
 .icon-set-material { display: none; }
 .icon-set-emoji { display: inline-flex; }
-
-/* Show FA if icon set is 'fa' */
 body[data-icon-set="fa"] .icon-set-fa { display: inline-flex !important; }
 body[data-icon-set="fa"] .icon-set-emoji,
 body[data-icon-set="fa"] .icon-set-material { display: none !important; }
-
-/* Show Material if icon set is 'material' */
 body[data-icon-set="material"] .icon-set-material { display: inline-flex !important; }
 body[data-icon-set="material"] .icon-set-emoji,
 body[data-icon-set="material"] .icon-set-fa { display: none !important; }
@@ -95,29 +87,148 @@ body[data-icon-set="material"] .icon-set-fa { display: none !important; }
   display: inline-flex;
 }
 
-/* Make Material icon match size */
 .material-symbols-rounded {
   font-size: 2.1rem !important;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
 }
 
-/* Optional: some fun for each set */
-body[data-icon-set="fa"] .nav-icon-btn {
-  color: #3e67b2;
-}
-body[data-icon-set="material"] .nav-icon-btn {
-  color: #43b46b;
+/* Optional: some fun for each set (won't override dark mode) */
+body[data-icon-set="fa"] .nav-icon-btn { color: #3e67b2; }
+body[data-icon-set="material"] .nav-icon-btn { color: #43b46b; }
+
+/* ---- DARK MODE: FORCE ICONS WHITE, PERIOD ---- */
+body[data-theme="dark"] .title-bar .nav-icon-btn,
+body[data-theme="dark"] .title-bar .nav-icon-btn > span,
+body[data-theme="dark"] .title-bar .fa-solid,
+body[data-theme="dark"] .title-bar .fa,
+body[data-theme="dark"] .title-bar .material-symbols-rounded,
+body[data-theme="dark"] .title-bar .icon-set-emoji {
+  color: #fff !important;
+  fill: #fff !important;
 }
 
-body[data-theme="dark"] .nav-icon-btn,
-body[data-theme="dark"] .nav-icon-btn > span {
-  color: #ffffff !important;
+body[data-theme="dark"] .title-bar .nav-icon-btn {
+  background: transparent !important;
+  border: none !important;
 }
 
-/* === Fix for dark mode icon color override (FA and Material icon sets) === */
-body[data-theme="dark"][data-icon-set="fa"] .nav-icon-btn,
-body[data-theme="dark"][data-icon-set="fa"] .nav-icon-btn > span,
-body[data-theme="dark"][data-icon-set="material"] .nav-icon-btn,
-body[data-theme="dark"][data-icon-set="material"] .nav-icon-btn > span {
-  color: #ffffff !important;
+/* ==== COUNTDOWN BAR (title bar timer style) ==== */
+.countdown-bar {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.09rem;
+  letter-spacing: 0.03em;
+  background: rgba(50, 55, 80, 0.10);
+  border-radius: 6px;
+  padding: 4px 18px 4px 10px;
+  margin-left: 24px;
+  color: var(--text, #232946);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  min-height: 36px;
+  height: 36px;
+  line-height: 36px;
+  transition: background 0.3s, color 0.3s;
+}
+body[data-theme="dark"] .countdown-bar {
+  background: rgba(48, 58, 110, 0.25);
+  color: #fff;
+}
+.countdown-timer {
+  margin-left: 7px;
+  padding: 0 4px;
+  background: rgba(170,170,255,0.08);
+  border-radius: 5px;
+  min-width: 40px;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-family: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+  font-size: 1.12em;
+  color: inherit;
+  transition: background 0.3s;
+}
+.countdown-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Blinking/red when time is low (optional) */
+.countdown-timer[data-blink="true"] {
+  background: rgba(255,100,100,0.18) !important;
+  color: #fff !important;
+  animation: countdown-blink 1s steps(2, start) infinite;
+}
+@keyframes countdown-blink {
+  to { opacity: .3; }
+}
+
+.title-bar-center {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Make the centered countdown-bar look great and scale on all screens */
+.countdown-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.16rem;
+  letter-spacing: 0.03em;
+  background: rgba(50, 55, 80, 0.10);
+  border-radius: 10px;
+  padding: 4px 22px 4px 15px;
+  color: var(--text, #232946);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.10);
+  min-height: 38px;
+  max-width: 340px;
+  margin: 0 auto;
+  transition: background 0.3s, color 0.3s;
+}
+
+body[data-theme="dark"] .countdown-bar {
+  background: rgba(48, 58, 110, 0.28);
+  color: #fff;
+}
+
+.countdown-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05em;
+}
+
+.countdown-label .countdown-icon {
+  font-size: 1.4em;
+  margin-right: 5px;
+}
+
+.countdown-timer {
+  margin-left: 7px;
+  padding: 1px 10px;
+  background: rgba(170,170,255,0.13);
+  border-radius: 6px;
+  min-width: 56px;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-family: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+  font-size: 1.19em;
+  color: inherit;
+  transition: background 0.3s;
+  text-align: center;
+}
+
+.countdown-timer[data-blink="true"] {
+  background: rgba(255,100,100,0.18) !important;
+  color: #fff !important;
+  animation: countdown-blink 1s steps(2, start) infinite;
+}
+@keyframes countdown-blink {
+  to { opacity: .3; }
 }

@@ -1,41 +1,24 @@
-import json
 import sqlite3
 
-DB_PATH = "mother_brain.db"  # Adjust if needed
-JSON_FILE = "com_config.json"
-KEY = "xcom_providers"
+DB_PATH = "mother_brain.db"
+MONITOR_NAME = "sonic_monitor"
+NEW_INTERVAL = 111
 
-# Load config
-with open(JSON_FILE, "r") as f:
-    full_config = json.load(f)
+def set_sonic_interval():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    # Ensure the row exists (insert if not)
+    cursor.execute("""
+        INSERT INTO monitor_heartbeat (monitor_name, last_run, interval_seconds)
+        VALUES (?, datetime('now'), ?)
+        ON CONFLICT(monitor_name) DO UPDATE SET interval_seconds = excluded.interval_seconds
+    """, (MONITOR_NAME, NEW_INTERVAL))
+    conn.commit()
+    print(f"✅ Set interval_seconds for {MONITOR_NAME} to {NEW_INTERVAL}.")
+    # Show the updated row
+    cursor.execute("SELECT * FROM monitor_heartbeat WHERE monitor_name = ?", (MONITOR_NAME,))
+    print(cursor.fetchone())
+    conn.close()
 
-# Isolate the communication.providers block
-provider_config = full_config.get("communication", {}).get("providers", {})
-
-if not provider_config:
-    print("❌ No providers config found in the JSON")
-    exit(1)
-
-# Connect to SQLite
-conn = sqlite3.connect(DB_PATH)
-cursor = conn.cursor()
-
-# Ensure table exists
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS global_config (
-        key TEXT PRIMARY KEY,
-        value TEXT
-    )
-""")
-
-# Insert or update
-cursor.execute("""
-    INSERT INTO global_config (key, value)
-    VALUES (?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = excluded.value
-""", (KEY, json.dumps(provider_config)))
-
-conn.commit()
-conn.close()
-
-print("✅ xcom_providers inserted into global_config")
+if __name__ == "__main__":
+    set_sonic_interval()

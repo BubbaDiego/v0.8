@@ -6,8 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
 
-<nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
-  <!-- Left Navigation -->
+<nav class="title-bar d-flex align-items-center px-3 py-2">
   <div class="left-buttons d-flex gap-2">
     <a class="btn btn-light nav-icon-btn" href="{{ url_for('dashboard.dash_page') }}" title="Home">
       <span class="icon-set-emoji">🏠</span>
@@ -67,8 +66,10 @@
       </ul>
     </div>
   </div>
-
-  <!-- Right Action Buttons -->
+  <!-- CENTERED COUNTDOWN BAR WITH FLAIR -->
+  <div class="title-bar-center flex-grow-1 d-flex justify-content-center align-items-center">
+    <div id="countdown-bar" class="countdown-bar"></div>
+  </div>
   <div class="title-bar-actions d-flex align-items-center gap-2">
     <button class="btn btn-outline-primary" data-action="sync"   title="Jupiter Sync">🪐</button>
     <button class="btn btn-outline-success" data-action="market" title="Market Update">💲</button>

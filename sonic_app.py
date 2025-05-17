@@ -8,7 +8,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from flask import Flask, redirect, url_for, current_app
+from flask import Flask, redirect, url_for, current_app, jsonify
 from flask_socketio import SocketIO
 
 from core.core_imports import log, configure_console_log, DB_PATH, BASE_DIR, retry_on_locked
@@ -39,7 +39,7 @@ configure_console_log()
 
 # --- Blueprints ---
 from positions.positions_bp import positions_bp
-from alerts.alerts_bp import alerts_bp
+from alert_core.alerts_bp import alerts_bp
 from prices.prices_bp import prices_bp
 from dashboard.dashboard_bp import dashboard_bp
 from portfolio.portfolio_bp import portfolio_bp
@@ -77,7 +77,21 @@ with app.app_context():
     app.data_locker.system.set_var("xcom_providers", providers)
     print("✅ Default email provider set in xcom_providers")
 
-
+# --- Heartbeat API Route for Countdown ---
+@app.route("/api/heartbeat")
+def api_heartbeat():
+    dl = app.data_locker
+    cursor = dl.db.get_cursor()
+    cursor.execute("SELECT monitor_name, last_run, interval_seconds FROM monitor_heartbeat")
+    rows = cursor.fetchall()
+    result = []
+    for row in rows:
+        result.append({
+            "name": row["monitor_name"],
+            "last_run": row["last_run"],
+            "interval_seconds": row["interval_seconds"],
+        })
+    return jsonify({"monitors": result})
 
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])

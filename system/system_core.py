@@ -1,6 +1,6 @@
 # 🧠 SystemCore — updated for theme profile support
 
-from alerts.threshold_service import ThresholdService
+from alert_core.threshold_service import ThresholdService
 from system.wallet_service import WalletService
 from system.theme_service import ThemeService
 from xcom.xcom_core import XComCore

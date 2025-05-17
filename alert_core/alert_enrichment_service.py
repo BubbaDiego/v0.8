@@ -11,7 +11,7 @@ import re
 from dashboard.dashboard_service import get_dashboard_context
 from utils.travel_percent_logger import log_travel_percent_comparison
 from calc_core.calculation_core import CalculationCore
-from alerts.alert_utils import normalize_alert_fields
+from alert_core.alert_utils import normalize_alert_fields
 from data.alert import AlertType
 from core.logging import log
 

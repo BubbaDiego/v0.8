@@ -3,7 +3,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from alerts.alert_utils import normalize_alert_type, normalize_condition, normalize_notification_type
+from alert_core.alert_utils import normalize_alert_type, normalize_condition, normalize_notification_type
 from data.alert import AlertType, Condition
 from data.models import AlertClass
 
@@ -15,7 +15,7 @@ from data.models import (
 )
 
 
-from alerts.alert_utils import log_alert_summary
+from alert_core.alert_utils import log_alert_summary
 from uuid import uuid4
 from core.logging import log
 from datetime import datetime

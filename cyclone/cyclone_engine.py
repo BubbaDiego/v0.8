@@ -7,7 +7,7 @@ from datetime import datetime
 from uuid import uuid4
 import traceback  # PATCH: for full stack info
 
-from alerts.alert_core import AlertCore #alert_service_manager import AlertServiceManager
+from alert_core.alert_core import AlertCore #alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
 from core.logging import log
@@ -18,7 +18,7 @@ from config.config_loader import load_config
 from system.system_core import SystemCore
 
 # Cores and Services
-from alerts.alert_core import AlertCore
+from alert_core.alert_core import AlertCore
 from monitor.monitor_core import MonitorCore
 from positions.position_core import PositionCore
 from prices.price_sync_service import PriceSyncService

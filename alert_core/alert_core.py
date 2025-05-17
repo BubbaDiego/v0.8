@@ -2,10 +2,10 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from alerts.alert_enrichment_service import AlertEnrichmentService
-from alerts.alert_evaluation_service import AlertEvaluationService
-from alerts.threshold_service import ThresholdService
-from alerts.alert_store import AlertStore
+from alert_core.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_evaluation_service import AlertEvaluationService
+from alert_core.threshold_service import ThresholdService
+from alert_core.alert_store import AlertStore
 from core.core_imports import log
 
 class AlertCore:

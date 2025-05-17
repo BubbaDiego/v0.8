@@ -1,4 +1,7 @@
-// Show toast messages (uses your existing #toastContainer)
+// =============================
+// Designer-Proud Title Bar JS - SONIC ONLY, CENTERED WITH FLAIR
+// =============================
+
 function showToast(message, type = "info") {
   const toastContainer = document.getElementById("toastContainer");
   if (!toastContainer) return;
@@ -30,14 +33,14 @@ function showToast(message, type = "info") {
   }, 3200);
 }
 
-// Fetch new cards and swap in live (AJAX)
+// ---- Dashboard AJAX actions (unchanged) ----
 function refreshDashboardCards() {
   fetch('/api/dashboard_cards')
     .then(resp => resp.json())
     .then(data => {
       if (data.success && data.html) {
         document.getElementById('dashboardCardsContainer').innerHTML = data.html;
-        if (typeof bindFlipCards === "function") bindFlipCards(); // Rebind flip cards if you use this!
+        if (typeof bindFlipCards === "function") bindFlipCards();
         showToast('Dashboard updated!', 'success');
       } else {
         showToast('Dashboard update failed.', 'error');
@@ -46,14 +49,13 @@ function refreshDashboardCards() {
     .catch(() => showToast('Dashboard update error.', 'error'));
 }
 
-// After a successful backend action, call refreshDashboardCards()
 function handleAction(apiUrl, method = "POST", friendlyName = "Action") {
   fetch(apiUrl, { method })
     .then((r) => r.json())
     .then((resp) => {
       if (resp.success) {
         showToast(`${friendlyName} complete!`, "success");
-        setTimeout(refreshDashboardCards, 600); // Let the toast be visible
+        setTimeout(refreshDashboardCards, 600);
       } else {
         let msg =
           resp.message ||
@@ -70,29 +72,74 @@ function handleAction(apiUrl, method = "POST", friendlyName = "Action") {
     });
 }
 
+// --------- COUNTDOWN BAR LOGIC (SONIC ONLY) ----------
+function pad(n) { return n < 10 ? "0" + n : n; }
+
+function renderCountdowns(monitors) {
+  const container = document.getElementById("countdown-bar");
+  if (!container) return;
+  const sonic = monitors.find(m => m.name === "sonic_monitor");
+  if (!sonic) { container.innerHTML = ""; return; }
+  container.innerHTML = `
+    <span class="countdown-label">
+      <span class="countdown-icon" title="Sonic Monitor Backend">🌀</span>
+      Sonic Monitor
+      <span class="countdown-timer"
+        data-last="${sonic.last_run}"
+        data-interval="${sonic.interval_seconds}"
+        id="countdown-timer-sonic"
+      >--:--</span>
+    </span>`;
+}
+
+function updateCountdownTimers() {
+  const now = Date.now();
+  const el = document.getElementById('countdown-timer-sonic');
+  if (!el) return;
+  const last = Date.parse(el.getAttribute("data-last"));
+  const interval = parseInt(el.getAttribute("data-interval"));
+  if (!last || !interval) { el.textContent = "--:--"; return; }
+  let next = last + interval * 1000;
+  let diff = Math.max(0, Math.floor((next - now) / 1000));
+  let mm = Math.floor(diff / 60), ss = diff % 60;
+  el.textContent = `${pad(mm)}:${pad(ss)}`;
+  if (diff < 10) {
+    el.setAttribute('data-blink', 'true');
+    el.title = "Next update in " + diff + " seconds";
+  } else {
+    el.removeAttribute('data-blink');
+    el.title = "";
+  }
+}
+
+function startCountdowns() {
+  function poll() {
+    fetch('/api/heartbeat').then(r => r.json()).then(data => {
+      if (data && data.monitors) renderCountdowns(data.monitors);
+    });
+  }
+  poll();
+  setInterval(poll, 15_000); // re-fetch heartbeat every 15 seconds
+  setInterval(updateCountdownTimers, 1000);
+}
+
+// --------- MAIN BINDINGS ----------
 document.addEventListener("DOMContentLoaded", function () {
-  // Jupiter Sync Button
   document
     .querySelector('[data-action="sync"]')
     ?.addEventListener("click", function () {
       handleAction("/cyclone_sync", "POST", "Jupiter Sync");
     });
-
-  // Market Update Button
   document
     .querySelector('[data-action="market"]')
     ?.addEventListener("click", function () {
       handleAction("/cyclone_market_update", "POST", "Market Update");
     });
-
-  // Full Cycle Button
   document
     .querySelector('[data-action="full"]')
     ?.addEventListener("click", function () {
       handleAction("/cyclone_full_cycle", "POST", "Full Cycle");
     });
-
-  // Wipe All Button
   document
     .querySelector('[data-action="wipe"]')
     ?.addEventListener("click", function () {
@@ -104,4 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
         handleAction("/cyclone_wipe_all", "POST", "Wipe All");
       }
     });
+
+  // Start live, centered Sonic countdown
+  startCountdowns();
 });
