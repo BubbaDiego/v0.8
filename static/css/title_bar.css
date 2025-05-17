@@ -232,3 +232,4 @@ body[data-theme="dark"] .countdown-bar {
 @keyframes countdown-blink {
   to { opacity: .3; }
 }
+

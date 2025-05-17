@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Sonic{% endblock %}
 
+{% block extra_styles %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid pt-2">
-
 
   <!-- 🧱 Top Cards: Portfolio + Monitor (side by side in dashboard_top.html) -->
   <div id="dashboardCardsContainer">
@@ -16,6 +20,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-{{ super() }}
-<script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
 {% endblock %}

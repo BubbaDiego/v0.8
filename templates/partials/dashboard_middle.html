@@ -1,5 +1,15 @@
-<link rel="stylesheet" href="../../static/css/dashboard_middle.css">
-<div class="dashboard-section">
-  <h5 class="section-title">Positions</h5>
-  {% include "partials/positions_table.html" %}
+
+<div class="dashboard-middle-flex">
+  <!-- Left: Positions Table -->
+  <div class="dashboard-middle-half">
+    <div class="dashboard-section">
+      <h5 class="section-title">Positions</h5>
+      {% include "partials/positions_table.html" %}
+    </div>
+  </div>
+
+  <!-- Right: Liquidation Bars -->
+  <div class="dashboard-middle-half">
+    {% include "partials/liquidation_bars.html" %}
+  </div>
 </div>
