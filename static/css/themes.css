@@ -6,7 +6,7 @@
   --text: #222;
   --card-bg: #f8fafc;
   --card-border: #b7c5e0;
-  --navbar: #fafafa;
+  --navbar: #8fbbef;
   --primary: #4678d8;
   --primary-hover: #3659a5;
   --accent: #ecf0fc;
@@ -17,7 +17,7 @@
    Dark Theme Colors
    =============================== */
 :root[data-theme="dark"] {
-  --bg: #181b22;
+  --bg: #2a2a2c;
   --text: #eee;
   --card-bg: #23272f;
   --card-border: #39404e;
@@ -25,7 +25,7 @@
   --primary: #4678d8;
   --primary-hover: #27408b;
   --accent: #1a2639;
-  --container-bg: #23272f;           /* Card containers */
+  --container-bg: #14161c;           /* Card containers */
 }
 
 /* ===============================
@@ -35,11 +35,11 @@
   --bg: #1e1e40;
   --text: #ffec99;
   --card-bg: #3a2f5d;
-  --card-border: #ffb3fd;
-  --navbar: #8d3dae;
-  --primary: #fd5cd6;
-  --primary-hover: #a30085;
-  --accent: #ffb3fd;
+  --card-border: #e5eff3;
+  --navbar: #8db5e1;
+  --primary: #e4e7f1;
+  --primary-hover: #4e87f0;
+  --accent: #f4eef4;
   --container-bg: #ffffff;
   --body-bg-image: url('/static/images/wally.png');
   --section-bg-image: url('/static/images/wally2.png');
