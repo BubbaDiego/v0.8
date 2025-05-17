@@ -17,7 +17,7 @@
    Dark Theme Colors
    =============================== */
 :root[data-theme="dark"] {
-  --bg: #2a2a2c;
+  --bg: #3a3a3c;
   --text: #eee;
   --card-bg: #23272f;
   --card-border: #39404e;

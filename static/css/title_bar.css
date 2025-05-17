@@ -1,4 +1,6 @@
 /* static/css/title_bar.css */
+
+/* ==== Title Bar (top navbar) ==== */
 .title-bar {
   background-color: var(--card-bg, #e9ecfa);
   color: var(--text, #232946);
@@ -15,18 +17,31 @@ body[data-theme="funky"] .title-bar {
   color: var(--text, #540d6e);
   border-bottom: 1px solid #ff80aa;
 }
+
+/* ==== TITLE BAR ACTION BUTTONS: SMALLER BOXES, BIGGER ICONS ==== */
+/* ↓↓↓↓ THIS SECTION CONTROLS BOX SIZE AND ICON SIZE ↓↓↓↓ */
 .title-bar .btn {
-  font-size: 1.2rem;
+  padding: 0.15rem 0.50rem;     /* ↓ Shrink this for smaller box (horizontal) ↓ */
+  font-size: 1.2rem;            /* ↑↑ Make this LARGER for a bigger icon ↑↑ */
+  line-height: 1;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 10px;
   transition: background-color 0.2s, color 0.2s, border 0.2s;
 }
+/* ↑↑↑ ADJUST ONLY padding and font-size above for your look ↑↑↑ */
+
 .title-bar .btn:hover {
   background-color: rgba(0,0,0,0.08);
 }
+
+/* ==== Theme Toggle Buttons ==== */
 .theme-toggle-group {
   display: inline-flex;
   gap: 0.15rem;
   margin-left: 0.5rem;
 }
+/* Bigger icons for theme toggles as well */
 .theme-btn.active,
 .theme-btn:focus {
   background-color: var(--primary, #4678d8) !important;
@@ -38,6 +53,58 @@ body[data-theme="funky"] .title-bar {
 .theme-btn {
   border-width: 2px;
   border-radius: 50%;
-  padding: 0.15rem 0.45rem;
-  font-size: 1.28em;
+  padding: 0.18rem 0.42rem;
+  font-size: 1.7em; /* Controls sun/moon/paint icon size */
+}
+
+/* --- Icon Set Swapper: Show only the selected set --- */
+/* Default: Emoji only */
+.icon-set-fa,
+.icon-set-material { display: none; }
+.icon-set-emoji { display: inline-flex; }
+
+/* Show FA if icon set is 'fa' */
+body[data-icon-set="fa"] .icon-set-fa { display: inline-flex !important; }
+body[data-icon-set="fa"] .icon-set-emoji,
+body[data-icon-set="fa"] .icon-set-material { display: none !important; }
+
+/* Show Material if icon set is 'material' */
+body[data-icon-set="material"] .icon-set-material { display: inline-flex !important; }
+body[data-icon-set="material"] .icon-set-emoji,
+body[data-icon-set="material"] .icon-set-fa { display: none !important; }
+
+/* --- Centering and sizing for nav buttons and icons --- */
+.nav-icon-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.55rem;
+  font-size: 2.1rem;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 10px;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-icon-btn > span {
+  line-height: 1;
+  font-size: inherit;
+  align-items: center;
+  justify-content: center;
+  display: inline-flex;
+}
+
+/* Make Material icon match size */
+.material-symbols-rounded {
+  font-size: 2.1rem !important;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+}
+
+/* Optional: some fun for each set */
+body[data-icon-set="fa"] .nav-icon-btn {
+  color: #3e67b2;
+}
+body[data-icon-set="material"] .nav-icon-btn {
+  color: #43b46b;
 }
