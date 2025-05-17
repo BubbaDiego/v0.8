@@ -2,42 +2,47 @@
    Light Theme Colors
    =============================== */
 :root[data-theme="light"] {
-  --bg: #e7ecfa;                /* Main page background */
-  --text: #222;                 /* Standard text */
-  --card-bg: #f8fafc;           /* Card/panel background */
-  --card-border: #b7c5e0;       /* Card/panel border */
-  --navbar: #fafafa;            /* Top navbar/titlebar */
-  --primary: #4678d8;           /* Primary buttons */
-  --primary-hover: #3659a5;     /* Primary button hover */
-  --accent: #ecf0fc;            /* Accent/highlight */
+  --bg: #e7ecfa;
+  --text: #222;
+  --card-bg: #f8fafc;
+  --card-border: #b7c5e0;
+  --navbar: #fafafa;
+  --primary: #4678d8;
+  --primary-hover: #3659a5;
+  --accent: #ecf0fc;
+  --container-bg: #fff;              /* Card containers */
 }
 
 /* ===============================
    Dark Theme Colors
    =============================== */
 :root[data-theme="dark"] {
-  --bg: #181b22;                /* Main background */
-  --text: #eee;                 /* Light text for contrast */
-  --card-bg: #23272f;           /* Dark card background */
-  --card-border: #39404e;       /* Card border */
-  --navbar: #191c22;            /* Navbar background */
-  --primary: #4678d8;           /* Reuse blue accent */
-  --primary-hover: #27408b;     /* Deeper blue for hover */
-  --accent: #1a2639;            /* Subtle accent */
+  --bg: #181b22;
+  --text: #eee;
+  --card-bg: #23272f;
+  --card-border: #39404e;
+  --navbar: #191c22;
+  --primary: #4678d8;
+  --primary-hover: #27408b;
+  --accent: #1a2639;
+  --container-bg: #23272f;           /* Card containers */
 }
 
 /* ===============================
-   Funky Theme Colors
+   Funky Theme Colors & Patterns
    =============================== */
 :root[data-theme="funky"] {
-  --bg: #1e1e40;                /* Purpley deep background */
-  --text: #ffec99;              /* Funky bright text */
-  --card-bg: #3a2f5d;           /* Funky card background */
-  --card-border: #ffb3fd;       /* Funky accent border */
-  --navbar: #8d3dae;            /* Funky navbar */
-  --primary: #fd5cd6;           /* Funky button pink */
-  --primary-hover: #a30085;     /* Intense pink for hover */
-  --accent: #ffb3fd;            /* Bright accent */
+  --bg: #1e1e40;
+  --text: #ffec99;
+  --card-bg: #3a2f5d;
+  --card-border: #ffb3fd;
+  --navbar: #8d3dae;
+  --primary: #fd5cd6;
+  --primary-hover: #a30085;
+  --accent: #ffb3fd;
+  --container-bg: #ffffff;
+  --body-bg-image: url('/static/images/wally.png');
+  --section-bg-image: url('/static/images/wally2.png');
 }
 
 /* ===============================
@@ -48,9 +53,37 @@ body {
   color: var(--text);
   transition: background 0.3s, color 0.3s;
 }
-.navbar, .title-bar {
-  background: var(--navbar);
+
+/* === Funky theme: ALIVE main background === */
+:root[data-theme="funky"] body {
+  background-color: var(--bg);
+  background-image: var(--body-bg-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
 }
+
+/* === Card Containers: dashboard-section === */
+.dashboard-section {
+  background: var(--container-bg);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  min-width: 320px;
+  border: 1.5px solid var(--card-border);
+  transition: background 0.3s, color 0.3s;
+}
+
+/* === Funky theme: card containers with ALIVE effect === */
+:root[data-theme="funky"] .dashboard-section {
+  background-color: var(--container-bg);
+  background-image: var(--section-bg-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
 .common-box,
 .status-card,
 .theme-preview-card,
@@ -59,20 +92,14 @@ body {
   background: var(--card-bg);
   color: var(--text);
   border: 1.5px solid var(--card-border);
+  transition: background 0.3s, color 0.3s;
 }
-button, .btn {
-  background: var(--primary);
-  color: #fff;
+
+.navbar,
+.title-bar {
+  background: var(--navbar);
 }
-button:hover, .btn:hover {
-  background: var(--primary-hover);
-}
-a {
-  color: var(--primary);
-}
-a:hover {
-  color: var(--primary-hover);
-}
+
 /* Accent utility */
 .accent-bg {
   background: var(--accent) !important;
