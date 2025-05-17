@@ -108,3 +108,16 @@ body[data-icon-set="fa"] .nav-icon-btn {
 body[data-icon-set="material"] .nav-icon-btn {
   color: #43b46b;
 }
+
+body[data-theme="dark"] .nav-icon-btn,
+body[data-theme="dark"] .nav-icon-btn > span {
+  color: #ffffff !important;
+}
+
+/* === Fix for dark mode icon color override (FA and Material icon sets) === */
+body[data-theme="dark"][data-icon-set="fa"] .nav-icon-btn,
+body[data-theme="dark"][data-icon-set="fa"] .nav-icon-btn > span,
+body[data-theme="dark"][data-icon-set="material"] .nav-icon-btn,
+body[data-theme="dark"][data-icon-set="material"] .nav-icon-btn > span {
+  color: #ffffff !important;
+}

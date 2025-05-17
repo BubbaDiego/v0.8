@@ -10,7 +10,7 @@ import asyncio
 import re
 from dashboard.dashboard_service import get_dashboard_context
 from utils.travel_percent_logger import log_travel_percent_comparison
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 from alerts.alert_utils import normalize_alert_fields
 from data.alert import AlertType
 from core.logging import log
@@ -20,7 +20,7 @@ from core.logging import log
 class AlertEnrichmentService:
     def __init__(self, data_locker):
         self.data_locker = data_locker
-        self.calc_services = CalcServices()
+        self.core = CalculationCore(data_locker)
 
     async def enrich(self, alert):
         """

@@ -2,22 +2,22 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 from core.logging import log
 from core.constants import DB_PATH
 from data.data_locker import DataLocker
 from utils.fuzzy_wuzzy import fuzzy_match_key
+from calc_core.calculation_core import CalculationCore
 
 class PositionEnrichmentService:
     def __init__(self, data_locker=None):
         self.dl = data_locker
+        self.calc_core = CalculationCore(data_locker)
 
     def enrich(self, position):
-        from utils.calc_services import CalcServices
         from core.logging import log
         from utils.fuzzy_wuzzy import fuzzy_match_key
 
-        calc = CalcServices()
         pos_id = position.get('id', 'UNKNOWN')
         asset = position.get('asset_type', '??')
 
@@ -47,7 +47,6 @@ class PositionEnrichmentService:
 
             # 🔍 Step 2: Position Type Normalization
             raw_type = str(position.get("position_type", "")).strip().lower()
-
             if raw_type in ["long", "l"]:
                 position["position_type"] = "LONG"
             elif raw_type in ["short", "s"]:
@@ -74,20 +73,20 @@ class PositionEnrichmentService:
                     log.error(f"❌ Failed to coerce field [{field}] for [{pos_id}]: {e}", source="Enrichment")
                     position[field] = 0.0
 
-            # Step 5: Derived field enrichment
+            # Step 5: Derived field enrichment (through CalculationCore)
             position['value'] = position['size'] * position['current_price']
-            position['leverage'] = calc.calculate_leverage(position['size'], position['collateral']) if position[
-                                                                                                            'collateral'] > 0 else 0.0
-            position['travel_percent'] = calc.calculate_travel_percent(
+            position['leverage'] = self.calc_core.calc_services.calculate_leverage(position['size'],
+                                                                                   position['collateral']) if position[
+                                                                                                                  'collateral'] > 0 else 0.0
+            position['travel_percent'] = self.calc_core.get_travel_percent(
                 position['position_type'],
                 position['entry_price'], position['current_price'], position['liquidation_price']
             )
-            position['liquidation_distance'] = calc.calculate_liquid_distance(
+            position['liquidation_distance'] = self.calc_core.calc_services.calculate_liquid_distance(
                 position['current_price'], position['liquidation_price']
             )
-
             try:
-                risk = calc.calculate_composite_risk_index(position)
+                risk = self.calc_core.get_heat_index(position)
             except Exception as e:
                 log.error(f"❌ Risk index calculation failed: {e}", source="calculate_composite_risk_index",
                           payload=position)

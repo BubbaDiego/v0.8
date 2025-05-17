@@ -7,7 +7,7 @@ import requests
 from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 
 class PositionSyncService:
     def __init__(self, data_locker):

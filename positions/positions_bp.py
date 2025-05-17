@@ -11,7 +11,7 @@ from flask import (
 )
 from core.logging import log
 from positions.position_core import PositionCore
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 from utils.route_decorators import route_log_alert
 
 

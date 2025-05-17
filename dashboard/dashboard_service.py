@@ -14,7 +14,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from system.system_core import SystemCore
 from utils.fuzzy_wuzzy import fuzzy_match_key
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
 
 
@@ -185,11 +185,13 @@ def get_latest_xcom_monitor_history(dl):
         return []
 
 def get_dashboard_context(data_locker):
+
     log.info("📊 Assembling dashboard context", source="DashboardContext")
-    calc = CalcServices()
+    core = CalculationCore(data_locker)
     positions = PositionCore(data_locker).get_all_positions() or []
-    positions = calc.aggregator_positions(positions, DB_PATH)
-    totals = calc.calculate_totals(positions)
+    positions = core.aggregate_positions_and_update(positions, DB_PATH)
+    totals = core.calc_services.calculate_totals(positions)
+
     for pos in positions:
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = wallet_name

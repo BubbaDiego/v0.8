@@ -5,6 +5,7 @@ import asyncio
 import logging
 from datetime import datetime
 from uuid import uuid4
+import traceback  # PATCH: for full stack info
 
 from alerts.alert_core import AlertCore #alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
@@ -12,6 +13,9 @@ from core.constants import DB_PATH
 from core.logging import log
 from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from config.config_loader import load_config
+
+# PATCH: Import SystemCore for death screams
+from system.system_core import SystemCore
 
 # Cores and Services
 from alerts.alert_core import AlertCore
@@ -74,10 +78,13 @@ class Cyclone:
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
         self.position_core = PositionCore(self.data_locker)
-        self.alert_core = AlertCore(self.data_locker, lambda: self.config)
+        self.alert_core = AlertCore(self.data_locker, config_loader=lambda: {})
         self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
+
+        # PATCH: Create a system_core instance for death screams
+        self.system_core = SystemCore(self.data_locker)
 
         log.banner("🌀  🌪️ CYCLONE ENGINE STARTUP 🌪️ 🌀")
 
@@ -110,6 +117,7 @@ class Cyclone:
         print("💡 DEBUG: calling CyclonePositionService.update_positions_from_jupiter()")
         self.position_core.update_positions_from_jupiter()
 
+    # PATCH: Wrap each run step in try/except and call death on terminal error
     async def run_cycle(self, steps=None):
         available_steps = {
            # "clear_all_data": self.run_clear_all_data,
@@ -125,7 +133,6 @@ class Cyclone:
             "evaluate_alerts": self.run_alert_evaluation,
             "cleanse_ids": self.run_cleanse_ids,
             "link_hedges": self.run_link_hedges,
-
         }
 
         steps = steps or list(available_steps.keys())
@@ -135,7 +142,20 @@ class Cyclone:
                 log.warning(f"⚠️ Unknown step: '{step}'", source="Cyclone")
                 continue
             log.info(f"▶️ Running step: {step}", source="Cyclone")
-            await available_steps[step]()
+            try:
+                await available_steps[step]()
+            except Exception as e:
+                log.error(f"💀 Terminal failure during step '{step}': {e}", source="Cyclone")
+                self.system_core.death({
+                    "message": f"💀 Cyclone terminal failure during step '{step}'",
+                    "level": "HIGH",
+                    "payload": {
+                        "step": step,
+                        "error": str(e),
+                        "traceback": traceback.format_exc()
+                    }
+                })
+                raise  # Optionally re-raise if you want to halt further steps
 
     def run_delete_all_data(self):
         log.warning("⚠️ Deletion requested via legacy method (run_delete_all_data)", source="Cyclone")
@@ -234,4 +254,3 @@ class Cyclone:
         log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()
         log.success("✅ Position enrichment complete.", "Cyclone")
-
