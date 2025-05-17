@@ -1,19 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Sonic{% endblock %}
 
 {% block content %}
-<div class="container-fluid pt-4">
-  <h1 class="mb-4">📊 Full Dashboard</h1>
+<div class="container-fluid pt-2">
 
-  <!-- 🧱 Top Cards: Portfolio + Monitor -->
+
+  <!-- 🧱 Top Cards: Portfolio + Monitor (side by side in dashboard_top.html) -->
   <div id="dashboardCardsContainer">
     {% include "partials/dashboard_top.html" %}
   </div>
 
-  {# <!-- 🧱 Middle Section: Positions + Liquidation Bars -->
-  {% include "partials/dashboard_middle.html" %} #}
-  <!-- Removed the middle section for now -->
-
+  <!-- 🧱 Middle Section: Positions Table or Positions + Liquidation Bars -->
+  {% include "partials/dashboard_middle.html" %}
 </div>
 {% endblock %}
 

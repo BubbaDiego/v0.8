@@ -1,6 +1,4 @@
-/* ===============================
-   Light Theme Colors
-   =============================== */
+/* === Theme Variables === */
 :root[data-theme="light"] {
   --bg: #e7ecfa;
   --text: #222;
@@ -10,12 +8,10 @@
   --primary: #4678d8;
   --primary-hover: #3659a5;
   --accent: #ecf0fc;
-  --container-bg: #fff;              /* Card containers */
+  --container-bg: #fff;
+  --body-bg-image: none;
 }
 
-/* ===============================
-   Dark Theme Colors
-   =============================== */
 :root[data-theme="dark"] {
   --bg: #3a3a3c;
   --text: #eee;
@@ -25,12 +21,10 @@
   --primary: #4678d8;
   --primary-hover: #27408b;
   --accent: #1a2639;
-  --container-bg: #14161c;           /* Card containers */
+  --container-bg: #14161c;
+  --body-bg-image: none;
 }
 
-/* ===============================
-   Funky Theme Colors & Patterns
-   =============================== */
 :root[data-theme="funky"] {
   --bg: #1e1e40;
   --text: #ffec99;
@@ -42,57 +36,31 @@
   --accent: #f4eef4;
   --container-bg: #ffffff;
   --body-bg-image: url('/static/images/wally.png');
-  --section-bg-image: url('/static/images/wally2.png');
 }
 
-/* ===============================
-   Generic Styling using Variables
-   =============================== */
+/* === Main Background Styling === */
 body {
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.3s, color 0.3s;
-}
-
-/* === Funky theme: ALIVE main background === */
-:root[data-theme="funky"] body {
   background-color: var(--bg);
   background-image: var(--body-bg-image);
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
   background-attachment: fixed;
+  color: var(--text);
+  transition: background-color 0.6s ease, background-image 0.6s ease, color 0.4s ease;
 }
 
-/* === Card Containers: dashboard-section === */
-.dashboard-section {
-  background: var(--container-bg);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  min-width: 320px;
-  border: 1.5px solid var(--card-border);
-  transition: background 0.3s, color 0.3s;
-}
-
-/* === Funky theme: card containers with ALIVE effect === */
-:root[data-theme="funky"] .dashboard-section {
-  background-color: var(--container-bg);
-  background-image: var(--section-bg-image);
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
-  background-attachment: fixed;
-}
-
+/* === Card Container Styling === */
+.dashboard-section,
 .common-box,
 .status-card,
 .theme-preview-card,
 .mini-table-box,
 .ledger-box {
   background: var(--card-bg);
-  color: var(--text);
   border: 1.5px solid var(--card-border);
-  transition: background 0.3s, color 0.3s;
+  color: var(--text);
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 .navbar,
@@ -103,4 +71,35 @@ body {
 /* Accent utility */
 .accent-bg {
   background: var(--accent) !important;
+}
+
+/* === Card Background Image Overlay (Funky Only) === */
+.dashboard-section {
+  position: relative;
+  z-index: 1;
+  background-color: var(--container-bg);
+  overflow: hidden;
+}
+
+.dashboard-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: var(--section-bg-image);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+:root[data-theme="funky"] {
+  --section-bg-image: url('/static/images/wally2.png');
+}
+
+:root[data-theme="funky"] .dashboard-section::before {
+  opacity: 1;
 }

@@ -1,0 +1,61 @@
+/* =======================
+   LAYOUT.CSS — Grid, Flexbox, Containers, Rows 🧱
+   ======================= */
+
+/* --- 🧊 Global Row Wrapper for Horizontal Layouts --- */
+.box-row {
+  display: flex;
+  gap: 1rem;            /* 🔧 Adjust spacing between items */
+  margin-bottom: 1rem;  /* 🔧 Space below the row */
+  flex-wrap: wrap;      /* ✅ Makes it responsive */
+}
+
+/* --- 📦 Box inside a row --- */
+.box-row > .common-box {
+  flex: 1 1 0;           /* 🌐 Grow/shrink basis */
+  min-width: 250px;      /* 🔧 Minimum width for responsiveness */
+}
+
+/* 🧮 Mode: Wide layout tweaks */
+body.wide-mode .box-row > .common-box {
+  min-width: 0;          /* ➖ Removes min-width restriction */
+}
+
+/* 🧯 Mode: Fitted layout tweaks */
+body.fitted-mode .box-row > .common-box {
+  flex: 0 1 300px;       /* 🔧 Shrinks box to fixed width if needed */
+}
+
+/* =======================
+   Shared Wrappers and Utility Layouts 🛠️
+   ======================= */
+
+/* 🔄 Used for containers that wrap components (like mini tables or ledgers) */
+.wrapper,
+.content-wrapper {
+  padding: 1rem;
+}
+
+/* 📊 Pie and Graph Boxes (Charts Section) */
+.graph-box,
+.pie-box {
+  min-height: 300px;    /* 🔧 Default fallback height */
+}
+
+/* 📈 Pie Layout Columns */
+.pie-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pie-col {
+  width: 48%;           /* 🔧 Make responsive if needed */
+  text-align: center;
+}
+
+/* 🏷️ Label Above Charts */
+.chart-label {
+  margin-bottom: 1rem;
+  font-weight: bold;
+}

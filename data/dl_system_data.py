@@ -148,3 +148,20 @@ class DLSystemDataManager:
         except Exception as e:
             log.error(f"❌ Failed to read system var '{key}': {e}", source="DLSystemDataManager")
             return {}
+
+    def set_var(self, key: str, value: dict):
+        """
+        Sets or updates a system-wide variable in the global_config table.
+        """
+        try:
+            cursor = self.db.get_cursor()
+            cursor.execute("""
+                INSERT INTO global_config (key, value)
+                VALUES (?, ?)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value
+            """, (key, json.dumps(value)))
+            self.db.commit()
+            log.success(f"✅ System var set: {key}", source="DLSystemDataManager")
+        except Exception as e:
+            log.error(f"❌ Failed to set system var '{key}': {e}", source="DLSystemDataManager")
+

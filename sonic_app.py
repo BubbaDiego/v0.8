@@ -61,6 +61,24 @@ app.register_blueprint(theme_bp)
 app.register_blueprint(system_bp)
 app.register_blueprint(settings_bp)
 
+# --- Set Default Email Provider for XCom ---
+with app.app_context():
+    providers = app.data_locker.system.get_var("xcom_providers") or {}
+    providers["email"] = {
+        "enabled": False, #True,
+        "smtp": {
+            "server": "smtp.gmail.com",
+            "port": 587,
+            "username": "bubba.diego@gmail.com",
+            "password": "pzix taan afbe igxb",
+            "default_recipient": "bubba.diego@gmail.com"
+        }
+    }
+    app.data_locker.system.set_var("xcom_providers", providers)
+    print("✅ Default email provider set in xcom_providers")
+
+
+
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 

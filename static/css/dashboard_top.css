@@ -1,30 +1,40 @@
-.dashboard-top-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: space-between;
+/* ===== Dashboard Top Layout and Card Styling ===== */
+@media (min-width: 951px) {
+  .dashboard-top-wrapper {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+
+  .dashboard-top-wrapper > .dashboard-section {
+    flex: 1 1 48%;
+    max-width: 48%;
+  }
 }
 
 .dashboard-section {
-  flex: 1 1 48%;
-  background: var(--container-bg);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  min-width: 320px;
+  flex: 1 1 0;
+  min-width: 340px;
+  max-width: 100%;
+  margin-bottom: 0;
+  background: var(--card-bg, #fff);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.section-title {
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
+/* Card container for flip-cards inside Portfolio/Monitor */
 .card-flex {
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: nowrap;
-  justify-content: space-between;
+  flex-direction: row;
+  gap: 1.1rem;
+  flex-wrap: wrap;
 }
 
+/* Flip card (summary cards) */
 .flip-card {
   flex: 1 1 0;
   max-width: 160px;
@@ -33,6 +43,7 @@
   perspective: 1000px;
   cursor: pointer;
   position: relative;
+  margin-bottom: 0.6rem;
 }
 
 .flip-card-inner {
@@ -64,11 +75,11 @@
 }
 
 .flip-card-front {
-  background-color: var(--card-bg);
+  background-color: var(--card-bg, #fff);
 }
 
 .flip-card-back {
-  background-color: var(--card-bg);
+  background-color: var(--card-bg, #fff);
   transform: rotateY(180deg);
   font-size: 0.95rem;
   text-align: left;
@@ -76,7 +87,30 @@
   padding-right: 1.1em;
 }
 
-/* ===== Monitor Card Back Custom Styles ===== */
+/* Card icons, labels, and value styles */
+.icon {
+  font-size: 1.5rem;
+}
+.value {
+  font-size: 1.17rem;
+  font-weight: bold;
+  margin-top: 0.3rem;
+}
+.label {
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+  color: #666;
+}
+
+.section-title {
+  font-size: 1.13rem;
+  font-weight: bold;
+  margin-bottom: 1.1rem;
+  color: var(--text, #222);
+  letter-spacing: 0.04em;
+}
+
+/* Mini-list on card backs */
 .mini-list {
   list-style: none;
   padding-left: 0.2em;
@@ -96,38 +130,7 @@
 .text-danger  { color: #d72d36 !important; }
 .text-warning { color: #ffc107 !important; }
 .text-bold    { font-weight: 600 !important; }
-.status-label {
-  font-size: 1.05em;
-  font-weight: bold;
-  letter-spacing: 0.02em;
-}
-.flip-card-back strong {
-  font-weight: 600;
-}
-.flip-card-back ul {
-  margin-bottom: 0.5em;
-}
 
-/* Dots and thresholds for non-price cards */
-.thresholds {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  padding: 0.25rem 0;
-}
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 0.5em;
-}
-.dot.green { background-color: #28a745; }
-.dot.yellow { background-color: #ffc107; }
-.dot.red { background-color: #dc3545; }
-
-/* LED Dot */
 .led-dot {
   width: 10px;
   height: 10px;
@@ -138,7 +141,7 @@
 .led-dot.yellow { background-color: #ffc107; box-shadow: 0 0 4px #ffc107; }
 .led-dot.red { background-color: #dc3545; box-shadow: 0 0 4px #dc3545; }
 
-/* Monitor Card BGs */
+/* Status card backgrounds */
 .status-card.monitor-style.green {
   background-color: #e6f4ea;
   background-image: repeating-linear-gradient(
@@ -170,29 +173,40 @@
   );
 }
 
-.icon {
-  font-size: 1.5rem;
+/* Threshold dots */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5em;
 }
-.value {
-  font-size: 1.17rem;
-  font-weight: bold;
-  margin-top: 0.3rem;
-}
-.label {
-  font-size: 0.92rem;
-  margin-top: 0.2rem;
-  color: #666;
+.dot.green { background-color: #28a745; }
+.dot.yellow { background-color: #ffc107; }
+.dot.red { background-color: #dc3545; }
+
+.thresholds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.25rem 0;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* Responsive: stack on mobile/tablet */
+@media (max-width: 950px) {
+  .dashboard-top-wrapper {
+    flex-direction: column;
+    gap: 1.3rem;
+  }
   .dashboard-section {
-    padding: 1.1rem 0.5rem;
-    min-width: 210px;
+    min-width: 0;
+    width: 100%;
+    border-radius: 9px;
+    padding: 0.7rem 0.6rem;
   }
   .card-flex {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.8rem;
   }
   .flip-card {
     max-width: 95vw;
