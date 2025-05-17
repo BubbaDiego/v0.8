@@ -15,6 +15,7 @@ from config.config_loader import load_config
 
 # Cores and Services
 from alerts.alert_core import AlertCore
+from monitor.monitor_core import MonitorCore
 from positions.position_core import PositionCore
 from prices.price_sync_service import PriceSyncService
 from cyclone.cyclone_maintenance_service import CycloneMaintenanceService
@@ -62,10 +63,11 @@ def configure_cyclone_console_log():
 
 
 class Cyclone:
-    def __init__(self, poll_interval=60):
+    def __init__(self, monitor_core, poll_interval=60):
         self.logger = logging.getLogger("Cyclone")
         self.poll_interval = poll_interval
         self.logger.setLevel(logging.DEBUG)
+        self.monitor_core = monitor_core
 
         self.data_locker = global_data_locker
         self.price_sync = PriceSyncService(self.data_locker)
@@ -73,6 +75,7 @@ class Cyclone:
 
         self.position_core = PositionCore(self.data_locker)
         self.alert_core = AlertCore(self.data_locker, lambda: self.config)
+        self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
 
@@ -215,49 +218,20 @@ class Cyclone:
     def _clear_all_data_core(self):
         self.maintenance_service.clear_all_tables()
 
-    async def run_position_updates(self):
-        await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
+    async def run_market_updates(self):
+        log.info("Starting Market Updates via MonitorCore", source="Cyclone")
+        await asyncio.to_thread(self.monitor_core.run_by_name, "price_monitor")
 
-    # -------------------------------
-        # 🔹 Step 1: Check Jupiter Updates
-        # -------------------------------
     async def run_check_jupiter_for_updates(self):
-        log.info("🚀 Checking Jupiter for Position Updates...", "Cyclone")
-        self.position_core.update_positions_from_jupiter()
-        log.success("✅ Jupiter sync complete.", "Cyclone")
+        log.info("Checking Jupiter/Positions via MonitorCore", source="Cyclone")
+        await asyncio.to_thread(self.monitor_core.run_by_name, "position_monitor")
 
-    # -------------------------------
-    # 🔹 Step 2: Enrich Positions
-    # -------------------------------
+    async def run_operations_update(self):
+        log.info("Starting Operations Monitor via MonitorCore", source="Cyclone")
+        await asyncio.to_thread(self.monitor_core.run_by_name, "operations_monitor")
+
     async def enrich_positions(self):
         log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()
         log.success("✅ Position enrichment complete.", "Cyclone")
 
-
-    async def run_operations_update(self):
-        log.banner("⚙️ Starting Operations Monitor")
-
-        try:
-            now = datetime.now(timezone.utc)
-
-            # Simulate operations logic here (placeholder for real ops)
-            # e.g. validate portfolio, sync wallets, recalculate risk
-            await asyncio.sleep(0.2)  # Simulate async task
-
-            result = {
-                "success": True,
-                "timestamp": now.isoformat(),
-                "post_success": True,
-                "skipped": True  # or real metrics
-            }
-
-            ledger = DLMonitorLedgerManager(self.data_locker.db)
-            ledger.insert_ledger_entry("operations_monitor", "Success", metadata=result)
-
-            log.success("✅ Operations monitor complete", source="Cyclone")
-
-        except Exception as e:
-            log.error(f"❌ Operations task failed: {e}", source="Cyclone")
-            ledger = DLMonitorLedgerManager(self.data_locker.db)
-            ledger.insert_ledger_entry("operations_monitor", "Error", metadata={"error": str(e)})

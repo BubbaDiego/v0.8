@@ -9,7 +9,7 @@ import subprocess
 import threading
 import time
 
-from base_monitor import BaseMonitor
+from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from utils.console_logger import ConsoleLogger as log
 
