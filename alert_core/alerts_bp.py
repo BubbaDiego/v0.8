@@ -4,13 +4,26 @@ import logging
 import asyncio
 from flask import current_app
 
-from flask import Blueprint, jsonify, render_template
-# from alerts.alert_service_manager import AlertServiceManager
-# from dashboard.dashboard_view_model import DashboardViewModel
+from flask import Blueprint, jsonify, render_template, render_template_string
 from data.data_locker import DataLocker
 
-# --- Blueprint Setup ---
-alerts_bp = Blueprint('alerts_bp', __name__, url_prefix='/alerts', template_folder='.')
+APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app'))
+ALERT_MONITOR_DIR = os.path.join(APP_DIR, 'alert_monitor')
+TEMPLATE_PATH = os.path.join(ALERT_MONITOR_DIR, 'alert_monitor.html')
+
+
+
+alerts_bp = Blueprint(
+    'alerts_bp',
+    __name__,
+    url_prefix='/alerts',
+    template_folder=ALERT_MONITOR_DIR,
+    static_folder=ALERT_MONITOR_DIR,
+    static_url_path='/alerts/static'
+)
+
+
+
 
 # --- Logger Setup ---
 logger = logging.getLogger("AlertsBPLogger")
@@ -121,11 +134,13 @@ def alert_config_page():
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
 def monitor_page():
-    path = os.path.join(current_app.template_folder, 'alert_monitor.html')
-    print(f"🧪 CHECKING TEMPLATE PATH: {path}")
-    exists = os.path.exists(path)
-    print(f"🧪 EXISTS? {exists}")
-    return render_template("alerts/alert_monitor.html")
+    print("🧪 Rendering from:", TEMPLATE_PATH)
+    if not os.path.exists(TEMPLATE_PATH):
+        return "Template file not found", 404
+    with open(TEMPLATE_PATH, encoding='utf-8') as f:
+        html = f.read()
+    return render_template("alert_monitor.html")
+
 
 
 @alerts_bp.route('/monitor', methods=['GET'])
