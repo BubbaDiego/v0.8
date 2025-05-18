@@ -57,9 +57,9 @@ class PositionSyncService:
                 "last_update_prices_source": source
             })
 
-            self.dl.portfolio.record_snapshot(
-                CalcServices().calculate_totals(positions)
-            )
+            calc_core = CalculationCore(self.dl)
+            totals = calc_core.calculate_totals(positions)
+            self.dl.portfolio.record_snapshot(totals)
 
             # Step 4: HTML Report
             try:

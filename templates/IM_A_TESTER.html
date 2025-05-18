@@ -1,77 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Flip Card Test</title>
-  <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
+// alert_monitor.js
 
-    .flip-card {
-      width: 160px;
-      aspect-ratio: 1 / 1;
-      perspective: 1000px;
-      cursor: pointer;
-      position: relative;
+const alerts = [
+  {
+    asset: 'BTC',
+    starting_value: 40000,
+    trigger_value: 60000,
+    evaluated_value: 52000,
+    level: 'Medium',
+    condition: 'ABOVE',
+    thresholds: { low: 10000, medium: 25000, high: 50000 },
+    last_triggered: '2024-12-01T12:34:56Z'
+  },
+  {
+    asset: 'ETH',
+    starting_value: 1800,
+    trigger_value: 2200,
+    evaluated_value: 2000,
+    level: 'Low',
+    condition: 'ABOVE',
+    thresholds: { low: 1200, medium: 1600, high: 2100 },
+    last_triggered: '2024-12-02T10:20:30Z'
+  }
+];
+
+function loadAlerts(alertList) {
+  alerts.forEach(alert => {
+    const start = alert.starting_value ?? 0;
+    const trigger = alert.trigger_value ?? 0;
+    const current = alert.evaluated_value ?? 0;
+
+    let travelPercent = 0;
+    if (trigger !== start) {
+      travelPercent = ((current - start) / (trigger - start)) * 100;
+      travelPercent = Math.min(Math.max(travelPercent, -100), 100);
     }
 
-    .flip-card-inner {
-      width: 100%;
-      height: 100%;
-      transition: transform 0.6s ease;
-      transform-style: preserve-3d;
-      position: relative;
-    }
+    const row = document.createElement('div');
+    row.className = 'alert-row';
 
-    .flip-card.flipped .flip-card-inner {
-      transform: rotateY(180deg);
-    }
+    const flipCard = document.createElement('div');
+    flipCard.className = 'flip-card';
+    flipCard.innerHTML = `
+      <div class="flip-card-front">
+        <img src="/static/images/${alert.asset.toLowerCase()}_logo.png" class="asset-icon" onerror="this.src='/static/images/unknown.png'">
+        <div class="alert-info">
+          <strong>${alert.asset}</strong><br>${alert.level}
+        </div>
+        <div class="progress-bar-container">
+          <div class="midline"></div>
+          <div class="bar-fill ${travelPercent >= 0 ? 'positive' : 'negative'}"
+               style="${travelPercent >= 0
+                 ? `left:50%;width:${travelPercent}%` : `right:50%;width:${Math.abs(travelPercent)}%`}">
+            ${travelPercent.toFixed(1)}%
+          </div>
+        </div>
+        <div class="level-badge level-${alert.level}">${alert.level.charAt(0)}</div>
+      </div>
+      <div class="flip-card-back">
+        <div class="flip-details">
+          <div><strong>Evaluated:</strong> ${alert.evaluated_value}</div>
+          <div><strong>Trigger:</strong> ${alert.trigger_value}</div>
+          <div><strong>Starting:</strong> ${alert.starting_value}</div>
+          <div><strong>Condition:</strong> ${alert.condition}</div>
+          <div><strong>Thresholds:</strong> Low ${alert.thresholds.low}, Medium ${alert.thresholds.medium}, High ${alert.thresholds.high}</div>
+          <div><strong>Last Triggered:</strong> ${new Date(alert.last_triggered).toLocaleString()}</div>
+        </div>
+      </div>
+    `;
 
-    .flip-card-front,
-    .flip-card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-    }
-
-    .flip-card-front {
-      background-color: #f8f9fa;
-    }
-
-    .flip-card-back {
-      background-color: #dfe6e9;
-      transform: rotateY(180deg);
-    }
-  </style>
-</head>
-<body>
-
-<h2>🧪 Flip Card Test</h2>
-
-<div class="flip-card">
-  <div class="flip-card-inner">
-    <div class="flip-card-front">Front Side</div>
-    <div class="flip-card-back">Back Side</div>
-  </div>
-</div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.flip-card').forEach(card => {
-      card.addEventListener('click', () => {
-        card.classList.toggle('flipped');
-        console.log('[TEST] Flip toggled');
-      });
+    flipCard.addEventListener('click', () => {
+      flipCard.classList.toggle('flipped');
     });
-  });
-</script>
 
-</body>
-</html>
+    row.appendChild(flipCard);
+    alertList.appendChild(row);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const alertList = document.getElementById('alertList');
+  loadAlerts(alertList);
+});

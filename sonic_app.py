@@ -6,10 +6,12 @@ Main Flask app for Sonic Dashboard.
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'app')))
+# This ensures you can import anything from c:\v0.8\app\ easily
 
 from flask import Flask, redirect, url_for, current_app, jsonify
 from flask_socketio import SocketIO
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 from core.core_imports import log, configure_console_log, DB_PATH, BASE_DIR, retry_on_locked
 from data.data_locker import DataLocker
@@ -25,6 +27,14 @@ app.debug = False
 app.secret_key = "i-like-lamp"
 socketio = SocketIO(app)
 
+# Template folder support (new structure!)
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader('templates'),
+    FileSystemLoader('app/dashboard'),
+    FileSystemLoader('app/positions'),
+    # Add more as needed!
+])
+
 # --- SINGLETON BACKEND ---
 app.data_locker = DataLocker(str(DB_PATH))
 app.system_core = SystemCore(app.data_locker)
@@ -38,34 +48,34 @@ log.init_status()
 configure_console_log()
 
 # --- Blueprints ---
-from positions.positions_bp import positions_bp
-from alert_core.alerts_bp import alerts_bp
-from prices.prices_bp import prices_bp
-from dashboard.dashboard_bp import dashboard_bp
-from portfolio.portfolio_bp import portfolio_bp
-from sonic_labs.sonic_labs_bp import sonic_labs_bp
+from positions_bp import positions_bp
+from alerts_bp import alerts_bp
+from prices_bp import prices_bp
+from dashboard_bp import dashboard_bp
+# from portfolio_bp import portfolio_bp
+# from sonic_labs_bp import sonic_labs_bp
 from cyclone.cyclone_bp import cyclone_bp
-from routes.theme_routes import theme_bp
-from system.system_bp import system_bp
-from settings.settings_bp import settings_bp
+# from theme_routes import theme_bp
+from system_bp import system_bp
+# from settings_bp import settings_bp
 
 log.info("Registering blueprints...", source="Startup")
 app.register_blueprint(positions_bp, url_prefix="/positions")
 app.register_blueprint(alerts_bp, url_prefix="/alerts")
 app.register_blueprint(prices_bp, url_prefix="/prices")
 app.register_blueprint(dashboard_bp)
-app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
-app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
+# app.register_blueprint(portfolio_bp, url_prefix="/portfolio")
+# app.register_blueprint(sonic_labs_bp, url_prefix="/sonic_labs")
 app.register_blueprint(cyclone_bp)
-app.register_blueprint(theme_bp)
+# app.register_blueprint(theme_bp)
 app.register_blueprint(system_bp)
-app.register_blueprint(settings_bp)
+# app.register_blueprint(settings_bp)
 
 # --- Set Default Email Provider for XCom ---
 with app.app_context():
     providers = app.data_locker.system.get_var("xcom_providers") or {}
     providers["email"] = {
-        "enabled": False, #True,
+        "enabled": False,  # Set to True if you want to enable email
         "smtp": {
             "server": "smtp.gmail.com",
             "port": 587,
@@ -92,9 +102,6 @@ def api_heartbeat():
             "interval_seconds": row["interval_seconds"],
         })
     return jsonify({"monitors": result})
-
-if "dashboard.index" in app.view_functions:
-    app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 
 # --- Simple Root Redirect ---
 @app.route("/")
