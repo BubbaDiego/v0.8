@@ -71,4 +71,27 @@
   100% { transform: rotate(360deg);}
 }
 
+.dashboard-middle-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 2.2rem;
+  width: 100%;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.dashboard-middle-half {
+  flex: 1 1 0;
+  min-width: 320px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 950px) {
+  .dashboard-middle-flex {
+    flex-direction: column;
+    gap: 1.3rem;
+  }
+}
 

@@ -1,6 +1,6 @@
-/* ===== Dashboard Middle Layout ===== */
+/* ===== Dashboard Middle Layout (Side by Side, Bulletproof) ===== */
 
-/* Layout for the row of boxes in the dashboard middle */
+/* Parent flex row for the two containers */
 .dashboard-middle-flex {
   display: flex;
   flex-direction: row;
@@ -8,37 +8,60 @@
   width: 100%;
   align-items: stretch;
   justify-content: center;
+  overflow-x: auto;        /* Allow horizontal scroll if squeezed too much */
+  min-width: 0;            /* Fix for flex children overflow */
 }
 
+/* Each half of the middle row */
 .dashboard-middle-half {
-  flex: 1 1 0;
-  min-width: 320px;
+  flex: 1 1 320px;         /* Allow to grow and shrink, with sensible minimum */
+  min-width: 240px;        /* Lower min-width lets it fit on smaller screens */
   max-width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: stretch;
+  min-height: 1px;
+  min-width: 0;            /* CRITICAL: prevents flex overflow clipping */
 }
 
-/* Make sure on mobile, things stack instead of side-by-side */
+/* The card container */
+.dashboard-section {
+  flex: 1 1 auto;
+  min-width: 0;            /* CRITICAL for child table/grid overflow! */
+  min-height: 1px;
+  background: var(--card-bg, #fff);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+/* Section titles inside the cards */
+.section-title {
+  font-size: 1.13rem;
+  font-weight: bold;
+  margin-bottom: 1.1rem;
+  color: var(--text, #222);
+  letter-spacing: 0.04em;
+}
+
+/* Responsive: Stack vertically on tablet/mobile */
 @media (max-width: 950px) {
   .dashboard-middle-flex {
     flex-direction: column;
     gap: 1.3rem;
+    min-width: 0;
   }
-}
-
-/* Wrapper for the grid/table: NO background, NO padding, just safe overflow */
-.positions-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  background: transparent !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  margin: 0 !important;
-}
-
-/* Optional: Prevent grid from breaking on narrow screens */
-.grid-header, .grid-row, .grid-totals {
-  min-width: 800px;  /* Adjust as needed for your column count */
+  .dashboard-middle-half {
+    min-width: 0;
+    width: 100%;
+    border-radius: 9px;
+  }
+  .dashboard-section {
+    padding: 0.7rem 0.6rem;
+    border-radius: 9px;
+  }
 }

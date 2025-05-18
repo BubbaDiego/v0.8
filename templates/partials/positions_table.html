@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="../../static/css/title_bar.css">
 <link rel="stylesheet" href="../../static/css/dashboard.css">
 <div class="positions-table-wrapper">
   <table class="positions-table">
@@ -6,12 +5,10 @@
       <tr>
         <th class="sortable left" data-col-index="0">Asset <span class="sort-indicator"></span></th>
         <th class="sortable right" data-col-index="1">Profit <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="2">Heat Index <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="3">Collateral <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="4">Value <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="5">Size <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="6">Leverage <span class="sort-indicator"></span></th>
-        <th class="sortable right" data-col-index="7">Travel % <span class="sort-indicator"></span></th>
+        <th class="sortable right" data-col-index="2">Collateral <span class="sort-indicator"></span></th>
+        <th class="sortable right" data-col-index="3">Value <span class="sort-indicator"></span></th>
+        <th class="sortable right" data-col-index="4">Size <span class="sort-indicator"></span></th>
+        <th class="sortable right" data-col-index="5">Leverage <span class="sort-indicator"></span></th>
       </tr>
     </thead>
     <tbody>
@@ -29,30 +26,26 @@
               {{ pos.asset_type }}
             {% endif %}
           </td>
-          <td class="right">{{ "{:,.2f}".format(pos.pnl_after_fees_usd or 0) }}</td>
-          <td class="right">{{ "{:,.2f}".format(pos.heat_index or 0) }}</td>
-          <td class="right">{{ "{:,.2f}".format(pos.collateral or 0) }}</td>
-          <td class="right">{{ "{:,.2f}".format(pos.value or 0) }}</td>
-          <td class="right">{{ "{:,.2f}".format(pos.size or 0) }}</td>
+          <td class="right">{{ "{:,.0f}".format(pos.pnl_after_fees_usd or 0) }}</td>
+          <td class="right">{{ "{:,.0f}".format(pos.collateral or 0) }}</td>
+          <td class="right">{{ "{:,.0f}".format(pos.value or 0) }}</td>
+          <td class="right">{{ "{:,.0f}".format(pos.size or 0) }}</td>
           <td class="right">{{ "{:,.2f}".format(pos.leverage or 0) }}</td>
-          <td class="right">{{ "{:,.2f}".format(pos.travel_percent or 0) }}%</td>
         </tr>
         {% endfor %}
       {% else %}
-        <tr><td colspan="8" class="no-data">No positions available.</td></tr>
+        <tr><td colspan="6" class="no-data">No positions available.</td></tr>
       {% endif %}
     </tbody>
     {% if positions %}
     <tfoot>
       <tr>
         <th class="left">Totals</th>
-        <th class="right">{{ "{:,.2f}".format(positions|sum(attribute='pnl_after_fees_usd')) }}</th>
-        <th class="right">{{ "{:,.2f}".format(totals.avg_heat_index or 0) }}</th>
-        <th class="right">{{ "{:,.2f}".format(totals.total_collateral or 0) }}</th>
-        <th class="right">{{ "{:,.2f}".format(totals.total_value or 0) }}</th>
-        <th class="right">{{ "{:,.2f}".format(totals.total_size or 0) }}</th>
+        <th class="right">{{ "{:,.0f}".format(positions|sum(attribute='pnl_after_fees_usd')) }}</th>
+        <th class="right">{{ "{:,.0f}".format(totals.total_collateral or 0) }}</th>
+        <th class="right">{{ "{:,.0f}".format(totals.total_value or 0) }}</th>
+        <th class="right">{{ "{:,.0f}".format(totals.total_size or 0) }}</th>
         <th class="right">{{ "{:,.2f}".format(totals.avg_leverage or 0) }}</th>
-        <th class="right">{{ "{:,.2f}".format(totals.avg_travel_percent or 0) }}%</th>
       </tr>
     </tfoot>
     {% endif %}
@@ -81,7 +74,6 @@
 
 .positions-table thead th {
   background: #222e3a;
-  background: #222e3a;
   color: #fff;
   font-weight: 700;
   padding: 0.7em 0.6em;
@@ -98,7 +90,6 @@
 
 .positions-table tbody td {
   background: var(--container-bg);
-  background: transparent;
   color: #111;
   padding: 0.7em 0.6em;
   border-bottom: 1px solid #e6ecf8;
@@ -156,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const headers = table.querySelectorAll("thead th.sortable");
   const tbody = table.querySelector("tbody");
 
-  let currentSort = { col: 5, dir: "desc" }; // Default sort on 'Size'
+  let currentSort = { col: 4, dir: "desc" }; // Default sort on 'Size'
 
   function sortTable(colIndex, dir) {
     const rows = Array.from(tbody.querySelectorAll("tr")).filter(r => !r.classList.contains("no-data-row"));
