@@ -1,3 +1,18 @@
+// --------- LAYOUT MODE TOGGLE SUPPORT ----------
+function setLayoutMode(mode) {
+  document.body.classList.remove("wide-mode", "fitted-mode", "mobile-mode");
+  document.body.classList.add(mode);
+  localStorage.setItem("layoutMode", mode);
+}
+
+function cycleLayoutMode() {
+  const modes = ["wide-mode", "fitted-mode", "mobile-mode"];
+  const current = modes.find(m => document.body.classList.contains(m)) || "wide-mode";
+  const next = modes[(modes.indexOf(current) + 1) % modes.length];
+  setLayoutMode(next);
+  console.log("🌀 Layout mode switched to:", next);
+}
+
 // =============================
 // Designer-Proud Title Bar JS - SONIC ONLY, CENTERED WITH FLAIR
 // =============================
@@ -151,6 +166,15 @@ document.addEventListener("DOMContentLoaded", function () {
         handleAction("/cyclone_wipe_all", "POST", "Wipe All");
       }
     });
+
+  // 📐 Layout Toggle Button Support
+  const toggleBtn = document.getElementById("layoutModeToggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", cycleLayoutMode);
+  }
+
+  const saved = localStorage.getItem("layoutMode");
+  if (saved) setLayoutMode(saved);
 
   // Start live, centered Sonic countdown
   startCountdowns();

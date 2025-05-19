@@ -1,8 +1,15 @@
-<div class="sonic-section-container">
-  <div class="sonic-panel-body">
+<!--
+  Dashboard Top Row (Sonic)
+  - Uses .sonic-section-container (wrapper)
+  - Uses .sonic-content-panel (flex row, wraps as needed)
+  - Each panel is .sonic-dashboard-panel.small
+  - Fully responsive and theme-ready!
+-->
 
+<div class="sonic-section-container">
+  <div class="sonic-content-panel">
     <!-- 🔹 Portfolio Panel -->
-    <div class="sonic-dashboard-panel small sonic-dashboard-panel portfolio">
+    <div class="sonic-dashboard-panel small portfolio">
       <div class="sonic-panel-header">
         <h5 class="panel-title">Portfolio</h5>
       </div>
@@ -50,7 +57,7 @@
     </div>
 
     <!-- 🔹 Monitor Panel -->
-    <div class="sonic-dashboard-panel small sonic-dashboard-panel monitor">
+    <div class="sonic-dashboard-panel small monitor">
       <div class="sonic-panel-header">
         <h5 class="panel-title">Monitor</h5>
       </div>
@@ -128,6 +135,5 @@
         {% endfor %}
       </div>
     </div>
-
   </div>
 </div>

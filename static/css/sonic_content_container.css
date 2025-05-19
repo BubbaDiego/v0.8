@@ -1,32 +1,27 @@
-/* === Sonic Section Container (layout only) === */
+/* === Sonic Section Container (Wrapper for Dashboard Top) ===
+   - Shows blue dotted border for debug (remove/comment for prod)
+   - Holds the row of content panels (flex by default)
+*/
 .sonic-section-container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   padding: 1rem 0;
+  border: 2px dotted #2277ff !important; /* Debug only! */
+  position: relative;
 }
 
-/* === Primary Panel (big container) === */
-.sonic-dashboard-panel.big {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
-  border-radius: 12px;
-  padding: 1.2rem;
-  background-color: var(--card-bg, transparent); /* Mostly invisible */
-}
-
-/* === Panel Body that holds subpanels === */
-.sonic-panel-body {
+/* === Row: Side-by-side panels (flex row, stacks on mobile) === */
+.sonic-content-panel {
   display: flex;
   flex-direction: row;
   gap: 1.5rem;
-  flex-wrap: nowrap;
-  justify-content: space-between;
   align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
 }
 
-/* === Subpanels (like Portfolio / Monitor) === */
+/* === Individual Dashboard Panel (Portfolio/Monitor) === */
 .sonic-dashboard-panel.small {
   flex: 1 1 48%;
   min-width: 300px;
@@ -36,26 +31,10 @@
   background-color: var(--card-bg, #f9f9f9);
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-/* === Responsive stacking on smaller screens === */
-@media (max-width: 950px) {
-  .sonic-panel-body {
-    flex-direction: column;
-    flex-wrap: wrap;
-  }
-
-  .sonic-dashboard-panel.small {
-    max-width: 100%;
-    flex: 1 1 100%;
-  }
-}
-
-/* === Named Panel Variants === */
-.sonic-dashboard-panel.portfolio { }
-.sonic-dashboard-panel.monitor   { }
-
-/* === Panel Title Styling === */
 .sonic-dashboard-panel .panel-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -63,16 +42,26 @@
   color: var(--text, #222);
 }
 
-/* === Layout Modes: wide, fitted, mobile === */
-body.wide-mode .sonic-dashboard-panel.small   { max-width: 49%; }
-body.fitted-mode .sonic-dashboard-panel.small { flex: 0 1 300px; }
-body.mobile-mode .sonic-dashboard-panel.small { flex: 1 1 100%; max-width: 100%; }
+/* === Card Container inside Panel === */
+.card-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+
+/* === Responsive: Stack panels vertically on mobile/tablet === */
+@media (max-width: 950px) {
+  .sonic-content-panel {
+    flex-direction: column;
+  }
+  .sonic-dashboard-panel.small {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
 
 /* === Theme Variants === */
-.sonic-dashboard-panel {
-  box-sizing: border-box;
-  background-color: var(--card-bg, #f9f9f9);
-}
 body.theme-light .sonic-dashboard-panel {
   background-color: #ffffff;
   color: #222;
@@ -82,31 +71,4 @@ body.theme-dark .sonic-dashboard-panel {
   color: #eee;
 }
 body.theme-fancy .sonic-dashboard-panel {
-  background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
-  color: #fff;
-}
-
-/* === Debug Overlay for Layout Modes === */
-.sonic-section-container::after {
-  content: attr(data-layout-mode);
-  position: absolute;
-  top: -0.8rem;
-  right: 1rem;
-  font-size: 0.65rem;
-  color: #888;
-  background: rgba(240,240,255,0.4);
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  padding: 2px 6px;
-  text-transform: uppercase;
-  pointer-events: none;
-  z-index: 50;
-  font-family: monospace;
-  opacity: 0.5;
-}
-body.dev-mode .sonic-section-container::after {
-  display: block;
-}
-body:not(.dev-mode) .sonic-section-container::after {
-  display: none;
-}
+  background: linear-gradient(135deg, #a18cd1 0

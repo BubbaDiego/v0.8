@@ -1,0 +1,213 @@
+/* ============================================================================
+   DEBUG: Layout detection (will print visible hints in dev tools only)
+============================================================================ */
+
+@media (max-width: 768px) {
+  body::before {
+    content: "📱 DEBUG: Layout = MOBILE / wrapping enabled";
+    display: block;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: orange;
+    padding: 2px 10px;
+  }
+}
+
+/* ============================================================================
+   GLOBAL BACKGROUND (Color-based with wallpaper preserved)
+============================================================================ */
+body {
+  background-image: url('/static/images/wally.png'); /* 🔒 Preserved wallpaper */
+ /* background-color: #f0f2f5; /* ✅ Clean dashboard-neutral tone */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center center;
+}
+
+
+/* ============================================================================
+   ROW THAT HOLDS PORTFOLIO + MONITOR PANELS
+============================================================================ */
+.balanced-status-row {
+  display: flex;
+  flex-wrap: nowrap;              /* ❗ Force single row */
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 3rem;
+  column-gap: 32px;
+  margin-bottom: 1.5rem;
+  padding: 1 0rem;
+}
+
+/* 📱 Wrap panels on mobile */
+@media (max-width: 768px) {
+  .balanced-status-row {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* ============================================================================
+   EACH PANEL BOX (e.g. Portfolio, Monitor)
+============================================================================ */
+.status-wrapper {
+  flex: 1 1 0;
+  max-height: 200px; /* or whatever value you want */
+  max-width: 70%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 0.75rem;
+  padding: 0.4rem;
+  background-color: #aecded;
+  border: 2px solid #c0d7f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 🎨 Backgrounds for panels */
+.status-wrapper.portfolio {
+  /* background-image: url('/static/images/wallpaper5.jpg'); */  /* 🔒 Preserved */
+  background-color: #c6d8f6;  /* ✅ Match dashboard background */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.status-wrapper.monitor {
+  /* background-image: url('/static/images/wallpaper6.jpg'); */  /* 🔒 Preserved */
+  background-color: #c6d8f6;  /* ✅ Match dashboard background */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+/* Headings */
+.status-wrapper.portfolio .section-title,
+.status-wrapper.monitor .section-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+/* 📱 Full width on mobile */
+@media (max-width: 768px) {
+  .status-wrapper {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+
+/* ============================================================================
+   CARD ROW CONTAINERS INSIDE PANELS
+============================================================================ */
+.portfolio-status-container,
+.monitor-status-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 1.2rem;
+  padding: 1rem;
+  scroll-behavior: smooth;
+}
+
+/* Monitor: even spacing if fits */
+.monitor-status-container {
+  justify-content: space-between;
+}
+
+/* Scrollbars */
+.portfolio-status-container::-webkit-scrollbar,
+.monitor-status-container::-webkit-scrollbar {
+  height: 8px;
+}
+.portfolio-status-container::-webkit-scrollbar-thumb,
+.monitor-status-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+}
+
+/* 📱 Enable wrapping instead of scroll */
+@media (max-width: 768px) {
+  .portfolio-status-container,
+  .monitor-status-container {
+    flex-wrap: wrap;
+    overflow-x: unset;
+    justify-content: center;
+  }
+}
+
+
+/* ============================================================================
+   STATUS CARDS
+============================================================================ */
+.status-card {
+  border-radius: 0.5rem;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 0.70rem 0.5rem;
+  width: 90px;
+  height: 110px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.status-card:hover {
+  transform: scale(1.03);
+}
+
+/* === ICON / VALUE / LABEL === */
+.status-card .icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.3rem;
+}
+.status-card .value {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #000000;
+}
+.status-card .label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-weight: bold;
+  color: #373535;
+}
+
+
+/* ============================================================================
+   CARD STATUS COLORS
+============================================================================ */
+.status-card.green {
+  background-color: #d4edda;
+}
+.status-card.yellow {
+  background-color: #fff3cd;
+}
+.status-card.red {
+  background-color: #f8d7da;
+}
+
+
+/* ============================================================================
+   MONITOR VALUE SMALL TEXT
+============================================================================ */
+.monitor-value {
+  font-size: 0.3rem;
+  font-weight: 600;
+  color: #d61616;
+  opacity: 0.9;
+}
+
+
+/* ============================================================================
+   DARK MODE
+============================================================================ */
+body.dark-bg .status-wrapper {
+  background-color: #2a2a2a;
+  color: #ddd;
+  border: 2px solid #444;
+}

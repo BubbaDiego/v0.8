@@ -1,32 +1,49 @@
-/* ===== Dashboard Top Layout and Card Styling ===== */
-@media (min-width: 951px) {
-  .dashboard-top-wrapper {
-    flex-direction: row !important;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    justify-content: space-between;
-  }
+/* ===== Sonic Dashboard Top Row and Card Styling ===== */
 
-  .dashboard-top-wrapper > .dashboard-section {
-    flex: 1 1 48%;
-    max-width: 48%;
+/* === Main Flex Row for Panels === */
+.sonic-content-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;           /* <--- KEY: allows panels to wrap if space is tight */
+  gap: 1.5rem;
+  align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Responsive: stack vertically on tablet/mobile */
+@media (max-width: 950px) {
+  .sonic-content-panel {
+    flex-direction: column;
+    gap: 1.3rem;
   }
 }
 
-.dashboard-section {
-  flex: 1 1 0;
-  min-width: 340px;
-  max-width: 100%;
-  margin-bottom: 0;
+/* === Each Panel (Portfolio / Monitor) === */
+.sonic-dashboard-panel.small {
+  flex: 1 1 340px;           /* Minimum "preferred" width for nice wrapping */
+  min-width: 300px;          /* Don't shrink below this */
+  max-width: 48%;            /* So they share the row evenly, but can wrap */
   background: var(--card-bg, #fff);
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 1.2rem 1.3rem;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
 }
 
-/* Card container for flip-cards inside Portfolio/Monitor */
+@media (max-width: 950px) {
+  .sonic-dashboard-panel.small {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 9px;
+    padding: 0.7rem 0.6rem;
+  }
+}
+
+/* === Card container for flip-cards inside Portfolio/Monitor === */
 .card-flex {
   display: flex;
   flex-direction: row;
@@ -34,7 +51,13 @@
   flex-wrap: wrap;
 }
 
-/* Flip card (summary cards) */
+@media (max-width: 950px) {
+  .card-flex {
+    gap: 0.8rem;
+  }
+}
+
+/* === Flip Card Styling (unchanged) === */
 .flip-card {
   flex: 1 1 0;
   max-width: 160px;
@@ -44,6 +67,14 @@
   cursor: pointer;
   position: relative;
   margin-bottom: 0.6rem;
+}
+
+@media (max-width: 950px) {
+  .flip-card {
+    max-width: 95vw;
+    min-width: 0;
+    margin-bottom: 1rem;
+  }
 }
 
 .flip-card-inner {
@@ -87,7 +118,7 @@
   padding-right: 1.1em;
 }
 
-/* Card icons, labels, and value styles */
+/* === Card icons, labels, and value styles === */
 .icon {
   font-size: 1.5rem;
 }
@@ -110,7 +141,7 @@
   letter-spacing: 0.04em;
 }
 
-/* Mini-list on card backs */
+/* === Mini-list on card backs === */
 .mini-list {
   list-style: none;
   padding-left: 0.2em;
@@ -125,12 +156,15 @@
   align-items: center;
   gap: 0.35em;
 }
+
+/* === Utility/Text Classes === */
 .text-muted { color: #8d98b1 !important; }
 .text-success { color: #1da63a !important; }
 .text-danger  { color: #d72d36 !important; }
 .text-warning { color: #ffc107 !important; }
 .text-bold    { font-weight: 600 !important; }
 
+/* === LED Dot Styles (for card status indicators) === */
 .led-dot {
   width: 10px;
   height: 10px;
@@ -141,7 +175,7 @@
 .led-dot.yellow { background-color: #ffc107; box-shadow: 0 0 4px #ffc107; }
 .led-dot.red { background-color: #dc3545; box-shadow: 0 0 4px #dc3545; }
 
-/* Status card backgrounds */
+/* === Status card backgrounds for different states === */
 .status-card.monitor-style.green {
   background-color: #e6f4ea;
   background-image: repeating-linear-gradient(
@@ -173,7 +207,7 @@
   );
 }
 
-/* Threshold dots */
+/* === Threshold Dots (Legend on card back) === */
 .dot {
   width: 10px;
   height: 10px;
@@ -191,26 +225,4 @@
   align-items: flex-start;
   gap: 0.3rem;
   padding: 0.25rem 0;
-}
-
-/* Responsive: stack on mobile/tablet */
-@media (max-width: 950px) {
-  .dashboard-top-wrapper {
-    flex-direction: column;
-    gap: 1.3rem;
-  }
-  .dashboard-section {
-    min-width: 0;
-    width: 100%;
-    border-radius: 9px;
-    padding: 0.7rem 0.6rem;
-  }
-  .card-flex {
-    gap: 0.8rem;
-  }
-  .flip-card {
-    max-width: 95vw;
-    min-width: 0;
-    margin-bottom: 1rem;
-  }
 }
