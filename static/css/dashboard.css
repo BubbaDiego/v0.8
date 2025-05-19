@@ -1,0 +1,69 @@
+.sonic-section-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  margin-bottom: 2rem;
+}
+
+.sonic-section-panel .section-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.6rem;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.sonic-content-panel {
+  flex: 1 1 48%;
+  min-width: 320px;
+  background-color: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.sonic-content-panel .panel-title {
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.sonic-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sonic-panel-header .panel-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.panel-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 950px) {
+  .sonic-section-panel .section-row {
+    flex-direction: column;
+  }
+
+  .sonic-content-panel {
+    flex: 1 1 100%;
+    width: 100%;
+    border-radius: 9px;
+    padding: 1rem 1.2rem;
+  }
+}
