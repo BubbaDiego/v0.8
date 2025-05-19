@@ -5,12 +5,14 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.table import Table
 from cyclone.cyclone_engine import Cyclone
+from monitor.monitor_core import MonitorCore
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
 
 console = Console()
 dl = DataLocker(str(DB_PATH))
-cyclone = Cyclone()
+monitor_core = MonitorCore()
+cyclone = Cyclone(monitor_core)
 
 
 def get_counts_banner():

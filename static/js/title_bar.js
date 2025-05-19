@@ -1,96 +1,157 @@
-console.log("✅ title_bar.js loaded");
+// =============================
+// Designer-Proud Title Bar JS - SONIC ONLY, CENTERED WITH FLAIR
+// =============================
 
-// ======================
-// 🧪 Toast Utility
-// ======================
-function showToast(message, isError = false) {
-  const toast = document.createElement('div');
-  toast.className = `toast align-items-center text-bg-${isError ? 'danger' : 'success'} border-0`;
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'assertive');
-  toast.setAttribute('aria-atomic', 'true');
-
+function showToast(message, type = "info") {
+  const toastContainer = document.getElementById("toastContainer");
+  if (!toastContainer) return;
+  const color =
+    type === "success"
+      ? "#198754"
+      : type === "error"
+      ? "#d72d36"
+      : type === "warning"
+      ? "#ffc107"
+      : "#4678d8";
+  const toast = document.createElement("div");
+  toast.className = `toast align-items-center text-bg-${type} show mb-2`;
+  toast.style.background = color;
+  toast.style.color = "#fff";
+  toast.role = "alert";
+  toast.ariaLive = "assertive";
+  toast.ariaAtomic = "true";
   toast.innerHTML = `
     <div class="d-flex">
       <div class="toast-body">${message}</div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   `;
-
-  const container = document.getElementById('toastContainer');
-  if (container) container.appendChild(toast);
-
-  const bootstrapToast = new bootstrap.Toast(toast, { delay: 4000 });
-  bootstrapToast.show();
-  toast.addEventListener('hidden.bs.toast', () => toast.remove());
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 800);
+  }, 3200);
 }
 
-// ======================
-// 🎯 Call POST Endpoint with Optional Follow-up
-// ======================
-function callEndpoint(url, icon = "✅", label = "Action", postAction = null) {
-  showToast(`${icon} ${label} started...`);
-
-  return fetch(url, { method: 'POST' })
-    .then(res => res.json())
+// ---- Dashboard AJAX actions (unchanged) ----
+function refreshDashboardCards() {
+  fetch('/api/dashboard_cards')
+    .then(resp => resp.json())
     .then(data => {
-      if (data.message) {
-        showToast(`${icon} ${label} complete: ${data.message}`);
-        if (typeof postAction === "function") postAction();
-      } else if (data.error) {
-        showToast(`❌ ${label} failed: ${data.error}`, true);
+      if (data.success && data.html) {
+        document.getElementById('dashboardCardsContainer').innerHTML = data.html;
+        if (typeof bindFlipCards === "function") bindFlipCards();
+        showToast('Dashboard updated!', 'success');
       } else {
-        showToast(`⚠️ ${label} returned unknown response`, true);
+        showToast('Dashboard update failed.', 'error');
       }
     })
-    .catch(err => {
-      console.error(`${label} error:`, err);
-      showToast(`❌ ${label} failed to connect`, true);
+    .catch(() => showToast('Dashboard update error.', 'error'));
+}
+
+function handleAction(apiUrl, method = "POST", friendlyName = "Action") {
+  fetch(apiUrl, { method })
+    .then((r) => r.json())
+    .then((resp) => {
+      if (resp.success) {
+        showToast(`${friendlyName} complete!`, "success");
+        setTimeout(refreshDashboardCards, 600);
+      } else {
+        let msg =
+          resp.message ||
+          resp.error ||
+          `${friendlyName} failed. Please try again.`;
+        showToast(msg, "error");
+      }
+    })
+    .catch((err) => {
+      showToast(
+        `${friendlyName} failed: ${err.message || "Unknown error"}`,
+        "error"
+      );
     });
 }
 
-// ======================
-// 🔁 AJAX Dashboard Section Refresh
-// ======================
-function reloadDashboardSection() {
-  const section = document.getElementById("dashboardSection");
-  if (!section) return;
+// --------- COUNTDOWN BAR LOGIC (SONIC ONLY) ----------
+function pad(n) { return n < 10 ? "0" + n : n; }
 
-  section.classList.add("loading");
-
-  fetch("/api/dashboard_html")
-    .then(res => {
-      if (!res.ok) throw new Error("Failed to load dashboard HTML");
-      return res.text();
-    })
-    .then(html => {
-      section.innerHTML = html;
-      section.classList.remove("loading");
-      console.log("✅ Dashboard reloaded via AJAX");
-    })
-    .catch(err => {
-      console.error("❌ Error refreshing dashboard section:", err);
-      section.classList.remove("loading");
-    });
+function renderCountdowns(monitors) {
+  const container = document.getElementById("countdown-bar");
+  if (!container) return;
+  const sonic = monitors.find(m => m.name === "sonic_monitor");
+  if (!sonic) { container.innerHTML = ""; return; }
+  container.innerHTML = `
+    <span class="countdown-label">
+      <span class="countdown-icon" title="Sonic Monitor Backend">🌀</span>
+      Sonic Monitor
+      <span class="countdown-timer"
+        data-last="${sonic.last_run}"
+        data-interval="${sonic.interval_seconds}"
+        id="countdown-timer-sonic"
+      >--:--</span>
+    </span>`;
 }
 
-// ======================
-// 🔗 Bind Title Bar Actions
-// ======================
-document.addEventListener('DOMContentLoaded', () => {
-  const actions = {
-    sync: () => callEndpoint('/cyclone/run_position_updates', "🪐", "Jupiter Sync", reloadDashboardSection),
-    market: () => callEndpoint('/cyclone/run_market_updates', "💲", "Market Update", reloadDashboardSection),
-    full: () => callEndpoint('/cyclone/run_full_cycle', "🌪️", "Full Cycle", reloadDashboardSection),
-    wipe: () => callEndpoint('/cyclone/clear_all_data', "🗑️", "Cyclone Delete", reloadDashboardSection)
-  };
+function updateCountdownTimers() {
+  const now = Date.now();
+  const el = document.getElementById('countdown-timer-sonic');
+  if (!el) return;
+  const last = Date.parse(el.getAttribute("data-last"));
+  const interval = parseInt(el.getAttribute("data-interval"));
+  if (!last || !interval) { el.textContent = "--:--"; return; }
+  let next = last + interval * 1000;
+  let diff = Math.max(0, Math.floor((next - now) / 1000));
+  let mm = Math.floor(diff / 60), ss = diff % 60;
+  el.textContent = `${pad(mm)}:${pad(ss)}`;
+  if (diff < 10) {
+    el.setAttribute('data-blink', 'true');
+    el.title = "Next update in " + diff + " seconds";
+  } else {
+    el.removeAttribute('data-blink');
+    el.title = "";
+  }
+}
 
-  document.querySelectorAll('[data-action]').forEach(btn => {
-    const key = btn.getAttribute('data-action');
-    if (actions[key]) {
-      btn.addEventListener('click', actions[key]);
-    } else {
-      console.warn(`⚠️ Unknown [data-action="${key}"]`);
-    }
-  });
+function startCountdowns() {
+  function poll() {
+    fetch('/api/heartbeat').then(r => r.json()).then(data => {
+      if (data && data.monitors) renderCountdowns(data.monitors);
+    });
+  }
+  poll();
+  setInterval(poll, 15_000); // re-fetch heartbeat every 15 seconds
+  setInterval(updateCountdownTimers, 1000);
+}
+
+// --------- MAIN BINDINGS ----------
+document.addEventListener("DOMContentLoaded", function () {
+  document
+    .querySelector('[data-action="sync"]')
+    ?.addEventListener("click", function () {
+      handleAction("/cyclone_sync", "POST", "Jupiter Sync");
+    });
+  document
+    .querySelector('[data-action="market"]')
+    ?.addEventListener("click", function () {
+      handleAction("/cyclone_market_update", "POST", "Market Update");
+    });
+  document
+    .querySelector('[data-action="full"]')
+    ?.addEventListener("click", function () {
+      handleAction("/cyclone_full_cycle", "POST", "Full Cycle");
+    });
+  document
+    .querySelector('[data-action="wipe"]')
+    ?.addEventListener("click", function () {
+      if (
+        confirm(
+          "Are you sure you want to wipe all data? This cannot be undone."
+        )
+      ) {
+        handleAction("/cyclone_wipe_all", "POST", "Wipe All");
+      }
+    });
+
+  // Start live, centered Sonic countdown
+  startCountdowns();
 });

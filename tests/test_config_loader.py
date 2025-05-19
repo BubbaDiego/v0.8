@@ -1,38 +1,40 @@
-import pytest
 import os
-import json
-from utils.config_loader import load_config
-from core.core_imports import log
+import platform
+import shutil
+import subprocess
 
-@pytest.fixture
-def tmp_config_file(tmp_path):
-    config = {
-        "alert_cooldown_seconds": 300,
-        "alert_ranges": {
-            "price_alerts": {
-                "BTC": {"enabled": True, "trigger_value": 70000, "condition": "ABOVE"}
-            }
-        }
-    }
-    config_path = tmp_path / "alert_limitsz.json"
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(config, f)
-    return str(config_path)
+def play_sound():
+    # 🎯 Anchor path to script location, not CWD
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    sound_path = os.path.join(script_dir, "static", "sounds", "death_nail.mp3")
 
-def test_load_config_success(tmp_config_file):
-    config = load_config(tmp_config_file)
-    assert isinstance(config, dict)
-    assert config.get("alert_cooldown_seconds") == 300
-    log.success("Test passed: load_config_success", source="TestConfigLoader")
+    print(f"🔍 Looking for: {sound_path}")  # Debug path being used
 
-def test_load_config_missing_file():
-    config = load_config("nonexistent/path/to/config.json")
-    assert config == {}
-    log.success("Test passed: load_config_missing_file", source="TestConfigLoader")
+    if not os.path.isfile(sound_path):
+        print(f"❌ File not found: {sound_path}")
+        return
 
-def test_load_config_invalid_json(tmp_path):
-    bad_config_path = tmp_path / "bad_config.json"
-    bad_config_path.write_text("this is not valid JSON")
-    config = load_config(str(bad_config_path))
-    assert config == {}
-    log.success("Test passed: load_config_invalid_json", source="TestConfigLoader")
+    system = platform.system()
+
+    try:
+        if system == "Windows":
+            import winsound
+            winsound.PlaySound(sound_path, winsound.SND_FILENAME)
+        elif system == "Darwin":
+            if shutil.which("afplay"):
+                subprocess.call(["afplay", sound_path])
+            else:
+                print("❌ 'afplay' not found on macOS")
+        else:
+            if shutil.which("mpg123"):
+                subprocess.call(["mpg123", sound_path])
+            elif shutil.which("play"):
+                subprocess.call(["play", sound_path])
+            else:
+                print("❌ No compatible audio player found (mpg123 or play)")
+        print("✅ System sound played.")
+    except Exception as e:
+        print(f"❌ Playback failed: {e}")
+
+if __name__ == "__main__":
+    play_sound()

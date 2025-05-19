@@ -1,0 +1,216 @@
+/* ===== Dashboard Top Layout and Card Styling ===== */
+@media (min-width: 951px) {
+  .dashboard-top-wrapper {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+
+  .dashboard-top-wrapper > .dashboard-section {
+    flex: 1 1 48%;
+    max-width: 48%;
+  }
+}
+
+.dashboard-section {
+  flex: 1 1 0;
+  min-width: 340px;
+  max-width: 100%;
+  margin-bottom: 0;
+  background: var(--card-bg, #fff);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card container for flip-cards inside Portfolio/Monitor */
+.card-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+
+/* Flip card (summary cards) */
+.flip-card {
+  flex: 1 1 0;
+  max-width: 160px;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+
+.flip-card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.flip-card-front {
+  background-color: var(--card-bg, #fff);
+}
+
+.flip-card-back {
+  background-color: var(--card-bg, #fff);
+  transform: rotateY(180deg);
+  font-size: 0.95rem;
+  text-align: left;
+  padding-left: 1.1em;
+  padding-right: 1.1em;
+}
+
+/* Card icons, labels, and value styles */
+.icon {
+  font-size: 1.5rem;
+}
+.value {
+  font-size: 1.17rem;
+  font-weight: bold;
+  margin-top: 0.3rem;
+}
+.label {
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+  color: #666;
+}
+
+.section-title {
+  font-size: 1.13rem;
+  font-weight: bold;
+  margin-bottom: 1.1rem;
+  color: var(--text, #222);
+  letter-spacing: 0.04em;
+}
+
+/* Mini-list on card backs */
+.mini-list {
+  list-style: none;
+  padding-left: 0.2em;
+  margin: 0.6em 0 0.5em 0;
+}
+.mini-list li {
+  font-family: "JetBrains Mono", "Menlo", monospace;
+  font-size: 1.09em;
+  margin-bottom: 6px;
+  color: #283c52;
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+}
+.text-muted { color: #8d98b1 !important; }
+.text-success { color: #1da63a !important; }
+.text-danger  { color: #d72d36 !important; }
+.text-warning { color: #ffc107 !important; }
+.text-bold    { font-weight: 600 !important; }
+
+.led-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+.led-dot.green { background-color: #28a745; box-shadow: 0 0 4px #28a745; }
+.led-dot.yellow { background-color: #ffc107; box-shadow: 0 0 4px #ffc107; }
+.led-dot.red { background-color: #dc3545; box-shadow: 0 0 4px #dc3545; }
+
+/* Status card backgrounds */
+.status-card.monitor-style.green {
+  background-color: #e6f4ea;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+.status-card.monitor-style.yellow {
+  background-color: #fff9e6;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+.status-card.monitor-style.red {
+  background-color: #ffe6e6;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.25),
+    rgba(255,255,255,0.25) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+/* Threshold dots */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5em;
+}
+.dot.green { background-color: #28a745; }
+.dot.yellow { background-color: #ffc107; }
+.dot.red { background-color: #dc3545; }
+
+.thresholds {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.25rem 0;
+}
+
+/* Responsive: stack on mobile/tablet */
+@media (max-width: 950px) {
+  .dashboard-top-wrapper {
+    flex-direction: column;
+    gap: 1.3rem;
+  }
+  .dashboard-section {
+    min-width: 0;
+    width: 100%;
+    border-radius: 9px;
+    padding: 0.7rem 0.6rem;
+  }
+  .card-flex {
+    gap: 0.8rem;
+  }
+  .flip-card {
+    max-width: 95vw;
+    min-width: 0;
+    margin-bottom: 1rem;
+  }
+}

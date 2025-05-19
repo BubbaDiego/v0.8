@@ -7,7 +7,7 @@ import requests
 from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 
 class PositionSyncService:
     def __init__(self, data_locker):
@@ -57,9 +57,9 @@ class PositionSyncService:
                 "last_update_prices_source": source
             })
 
-            self.dl.portfolio.record_snapshot(
-                CalcServices().calculate_totals(positions)
-            )
+            calc_core = CalculationCore(self.dl)
+            totals = calc_core.calculate_totals(positions)
+            self.dl.portfolio.record_snapshot(totals)
 
             # Step 4: HTML Report
             try:

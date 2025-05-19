@@ -1,230 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Threshold Editor – Collapsible Cards</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f3f3f3;
-      margin: 0;
-      padding: 20px;
+// alert_monitor.js
+
+const alerts = [
+  {
+    asset: 'BTC',
+    starting_value: 40000,
+    trigger_value: 60000,
+    evaluated_value: 52000,
+    level: 'Medium',
+    condition: 'ABOVE',
+    thresholds: { low: 10000, medium: 25000, high: 50000 },
+    last_triggered: '2024-12-01T12:34:56Z'
+  },
+  {
+    asset: 'ETH',
+    starting_value: 1800,
+    trigger_value: 2200,
+    evaluated_value: 2000,
+    level: 'Low',
+    condition: 'ABOVE',
+    thresholds: { low: 1200, medium: 1600, high: 2100 },
+    last_triggered: '2024-12-02T10:20:30Z'
+  }
+];
+
+function loadAlerts(alertList) {
+  alerts.forEach(alert => {
+    const start = alert.starting_value ?? 0;
+    const trigger = alert.trigger_value ?? 0;
+    const current = alert.evaluated_value ?? 0;
+
+    let travelPercent = 0;
+    if (trigger !== start) {
+      travelPercent = ((current - start) / (trigger - start)) * 100;
+      travelPercent = Math.min(Math.max(travelPercent, -100), 100);
     }
 
-    .group-header {
-      background: #005a9c;
-      color: white;
-      padding: 10px;
-      margin-top: 20px;
-      font-size: 1.2em;
-    }
+    const row = document.createElement('div');
+    row.className = 'alert-row';
 
-    .card {
-      background: white;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
+    const flipCard = document.createElement('div');
+    flipCard.className = 'flip-card';
+    flipCard.innerHTML = `
+      <div class="flip-card-front">
+        <img src="/static/images/${alert.asset.toLowerCase()}_logo.png" class="asset-icon" onerror="this.src='/static/images/unknown.png'">
+        <div class="alert-info">
+          <strong>${alert.asset}</strong><br>${alert.level}
+        </div>
+        <div class="progress-bar-container">
+          <div class="midline"></div>
+          <div class="bar-fill ${travelPercent >= 0 ? 'positive' : 'negative'}"
+               style="${travelPercent >= 0
+                 ? `left:50%;width:${travelPercent}%` : `right:50%;width:${Math.abs(travelPercent)}%`}">
+            ${travelPercent.toFixed(1)}%
+          </div>
+        </div>
+        <div class="level-badge level-${alert.level}">${alert.level.charAt(0)}</div>
+      </div>
+      <div class="flip-card-back">
+        <div class="flip-details">
+          <div><strong>Evaluated:</strong> ${alert.evaluated_value}</div>
+          <div><strong>Trigger:</strong> ${alert.trigger_value}</div>
+          <div><strong>Starting:</strong> ${alert.starting_value}</div>
+          <div><strong>Condition:</strong> ${alert.condition}</div>
+          <div><strong>Thresholds:</strong> Low ${alert.thresholds.low}, Medium ${alert.thresholds.medium}, High ${alert.thresholds.high}</div>
+          <div><strong>Last Triggered:</strong> ${new Date(alert.last_triggered).toLocaleString()}</div>
+        </div>
+      </div>
+    `;
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: #f9f9f9;
-    }
+    flipCard.addEventListener('click', () => {
+      flipCard.classList.toggle('flipped');
+    });
 
-    .card-header:hover {
-      background: #eee;
-    }
+    row.appendChild(flipCard);
+    alertList.appendChild(row);
+  });
+}
 
-    .collapsed-content {
-      padding: 10px 12px;
-      font-size: 0.95em;
-    }
-
-    .expanded {
-      display: none;
-      border-top: 1px solid #ddd;
-      padding: 10px 12px;
-      background: #fcfcfc;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 8px;
-      text-align: left;
-    }
-
-    .notify-icon {
-      margin-right: 8px;
-      opacity: 0.6;
-    }
-
-    .notify-icon.enabled {
-      opacity: 1;
-      font-weight: bold;
-    }
-
-    input[type="number"] {
-      width: 60px;
-    }
-
-    .level-label {
-      font-weight: bold;
-      width: 60px;
-    }
-
-    .notify-row {
-      margin-top: 4px;
-    }
-
-    .notify-row label {
-      margin-right: 15px;
-    }
-
-    .toggle {
-      font-size: 0.9em;
-      color: #005a9c;
-      cursor: pointer;
-      float: right;
-    }
-  </style>
-</head>
-<body>
-  <h1>🧾 Alert Threshold Editor (Compact Card Mode)</h1>
-  <div id="thresholdContainer"></div>
-
-  <script>
-    const thresholds = [
-      {
-        id: "1",
-        alert_type: "Profit",
-        alert_class: "Position",
-        condition: "ABOVE",
-        low: 10,
-        medium: 50,
-        high: 100,
-        enabled: true,
-        low_notify: ["SMS"],
-        medium_notify: ["SMS", "Email"],
-        high_notify: ["SMS", "Email", "Voice"]
-      },
-      {
-        id: "2",
-        alert_type: "HeatIndex",
-        alert_class: "Position",
-        condition: "ABOVE",
-        low: 5,
-        medium: 25,
-        high: 50,
-        enabled: false,
-        low_notify: [],
-        medium_notify: ["Email"],
-        high_notify: ["Email", "Voice"]
-      },
-      {
-        id: "3",
-        alert_type: "TotalValue",
-        alert_class: "Portfolio",
-        condition: "ABOVE",
-        low: 10000,
-        medium: 25000,
-        high: 50000,
-        enabled: true,
-        low_notify: [],
-        medium_notify: ["SMS"],
-        high_notify: ["SMS", "Email"]
-      }
-    ];
-
-    const container = document.getElementById("thresholdContainer");
-
-    function render() {
-      const grouped = {};
-      thresholds.forEach(t => {
-        if (!grouped[t.alert_class]) grouped[t.alert_class] = [];
-        grouped[t.alert_class].push(t);
-      });
-
-      container.innerHTML = "";
-
-      for (const [cls, items] of Object.entries(grouped)) {
-        const section = document.createElement("div");
-        section.innerHTML = `<div class="group-header">${cls} Alerts</div>`;
-        items.forEach((t, i) => {
-          const card = document.createElement("div");
-          card.className = "card";
-
-          const notifyIcons = level => {
-            const icons = { SMS: "📱", Email: "✉️", Voice: "📞" };
-            return ["SMS", "Email", "Voice"].map(n =>
-              `<span class="notify-icon ${t[`${level}_notify`].includes(n) ? 'enabled' : ''}">${icons[n]}</span>`
-            ).join("");
-          };
-
-          card.innerHTML = `
-            <div class="card-header" onclick="toggleCard('${t.id}')">
-              <div>
-                <strong>${t.alert_type}</strong> (${t.condition})  
-                <span style="font-size: 0.85em;">Low: ${t.low}, Med: ${t.medium}, High: ${t.high}</span>
-              </div>
-              <div class="collapsed-content">
-                ${notifyIcons("low")}${notifyIcons("medium")}${notifyIcons("high")}
-              </div>
-            </div>
-            <div class="expanded" id="expand-${t.id}">
-              <table>
-                <tr>
-                  <th>Level</th>
-                  <th>Value</th>
-                  <th>SMS</th>
-                  <th>Email</th>
-                  <th>Voice</th>
-                  <th>Enabled</th>
-                </tr>
-                ${["low", "medium", "high"].map(level => `
-                  <tr>
-                    <td class="level-label">${level.charAt(0).toUpperCase() + level.slice(1)}</td>
-                    <td><input type="number" value="${t[level]}" /></td>
-                    <td><input type="checkbox" ${t[`${level}_notify`].includes("SMS") ? "checked" : ""}></td>
-                    <td><input type="checkbox" ${t[`${level}_notify`].includes("Email") ? "checked" : ""}></td>
-                    <td><input type="checkbox" ${t[`${level}_notify`].includes("Voice") ? "checked" : ""}></td>
-                    ${level === "low" ? `<td rowspan="3" style="text-align:center; vertical-align: middle;"><input type="checkbox" ${t.enabled ? "checked" : ""}></td>` : ""}
-                  </tr>
-                `).join("")}
-              </table>
-              <div style="margin-top:10px; text-align:right;">
-                <button onclick="collapse('${t.id}')">Collapse ▲</button>
-              </div>
-            </div>
-          `;
-
-          section.appendChild(card);
-        });
-
-        container.appendChild(section);
-      }
-    }
-
-    function toggleCard(id) {
-      const el = document.getElementById(`expand-${id}`);
-      document.querySelectorAll('.expanded').forEach(e => {
-        if (e !== el) e.style.display = 'none';
-      });
-      el.style.display = el.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function collapse(id) {
-      document.getElementById(`expand-${id}`).style.display = 'none';
-    }
-
-    render();
-  </script>
-</body>
-</html>
+document.addEventListener('DOMContentLoaded', () => {
+  const alertList = document.getElementById('alertList');
+  loadAlerts(alertList);
+});

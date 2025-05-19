@@ -1,48 +1,86 @@
 <!-- templates/title_bar.html -->
+<script src="../static/js/title_bar.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+
+<!-- Add these to your <head> if not already present -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+
 <nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
   <!-- Left Navigation -->
   <div class="left-buttons d-flex gap-2">
-    <!-- Home -->
-    <a class="btn btn-light" href="{{ url_for('dashboard.dash_page') }}" title="Home">🏠</a>
-
-    <!-- Positions -->
-    <a class="btn btn-light" href="{{ url_for('positions.positions_table') }}" title="Positions">📊</a>
-
-    <!-- Alerts -->
-    <a class="btn btn-light" href="{{ url_for('alerts_bp.monitor_page') }}" title="Alerts">🔔</a>
-
-    <!-- Settings Dropdown -->
+    <a class="btn btn-light nav-icon-btn" href="{{ url_for('dashboard.dash_page') }}" title="Home">
+      <span class="icon-set-emoji">🏠</span>
+      <span class="icon-set-fa"><i class="fa-solid fa-house"></i></span>
+      <span class="icon-set-material"><span class="material-symbols-rounded">home</span></span>
+    </a>
+    <a class="btn btn-light nav-icon-btn" href="{{ url_for('positions.positions_table') }}" title="Positions">
+      <span class="icon-set-emoji">📊</span>
+      <span class="icon-set-fa"><i class="fa-solid fa-chart-bar"></i></span>
+      <span class="icon-set-material"><span class="material-symbols-rounded">bar_chart</span></span>
+    </a>
+    <a class="btn btn-light nav-icon-btn" href="{{ url_for('alerts_bp.monitor_page') }}" title="Alerts">
+      <span class="icon-set-emoji">🔔</span>
+      <span class="icon-set-fa"><i class="fa-solid fa-bell"></i></span>
+      <span class="icon-set-material"><span class="material-symbols-rounded">notifications</span></span>
+    </a>
     <div class="dropdown">
-      <button class="btn btn-light dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        ⚙️
+      <button class="btn btn-light nav-icon-btn dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="icon-set-emoji">⚙️</span>
+        <span class="icon-set-fa"><i class="fa-solid fa-gear"></i></span>
+        <span class="icon-set-material"><span class="material-symbols-rounded">settings</span></span>
       </button>
       <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
         <li>
-          <a class="dropdown-item" href="{{ url_for('system.theme_editor_page') }}">🎨 Theme Builder</a>
+          <a class="dropdown-item" href="{{ url_for('system.theme_editor_page') }}">
+            <span class="icon-set-emoji">🎨</span>
+            <span class="icon-set-fa"><i class="fa-solid fa-palette"></i></span>
+            <span class="icon-set-material"><span class="material-symbols-rounded">palette</span></span>
+            Theme Builder
+          </a>
         </li>
         <li>
-          <a class="dropdown-item" href="{{ url_for('system.database_viewer') }}">🗃️ Database Viewer</a>
+          <a class="dropdown-item" href="{{ url_for('system.database_viewer') }}">
+            <span class="icon-set-emoji">🗃️</span>
+            <span class="icon-set-fa"><i class="fa-solid fa-database"></i></span>
+            <span class="icon-set-material"><span class="material-symbols-rounded">storage</span></span>
+            Database Viewer
+          </a>
         </li>
         <li>
-          <a class="dropdown-item" href="{{ url_for('system.list_alert_thresholds') }}">📏 Alert Thresholds</a>
+          <a class="dropdown-item" href="{{ url_for('system.list_alert_thresholds') }}">
+            <span class="icon-set-emoji">📏</span>
+            <span class="icon-set-fa"><i class="fa-solid fa-ruler-horizontal"></i></span>
+            <span class="icon-set-material"><span class="material-symbols-rounded">straighten</span></span>
+            Alert Thresholds
+          </a>
         </li>
         <li>
-          <a class="dropdown-item" href="{{ url_for('system.xcom_config_page') }}">🔌 XCom Config</a>
+          <a class="dropdown-item" href="{{ url_for('system.xcom_config_page') }}">
+            <span class="icon-set-emoji">🔌</span>
+            <span class="icon-set-fa"><i class="fa-solid fa-plug"></i></span>
+            <span class="icon-set-material"><span class="material-symbols-rounded">electrical_services</span></span>
+            XCom Config
+          </a>
         </li>
         <li><hr class="dropdown-divider"></li>
-        <li>
-          <a class="dropdown-item" href="#" onclick="document.getElementById('themeToggleButton').click()">🌓 Toggle Theme</a>
-        </li>
       </ul>
     </div>
+    <!-- COUNTDOWN BAR is commented out for now; bring it back by uncommenting -->
+    <!-- <div id="countdown-bar" class="countdown-bar"></div> -->
   </div>
 
   <!-- Right Action Buttons -->
-  <div class="title-bar-actions">
-    <button class="btn btn-outline-primary" data-action="sync">🪐</button>
-    <button class="btn btn-outline-success" data-action="market">💲</button>
-    <button class="btn btn-outline-info" data-action="full">🌪️</button>
-    <button class="btn btn-outline-danger" data-action="wipe">🗑️</button>
-    <button class="btn btn-outline-secondary" id="themeToggleButton">🌗</button>
+  <div class="title-bar-actions d-flex align-items-center gap-2">
+    <button class="btn btn-outline-primary" data-action="sync"   title="Jupiter Sync">🪐</button>
+    <button class="btn btn-outline-success" data-action="market" title="Market Update">💲</button>
+    <button class="btn btn-outline-info"    data-action="full"   title="Full Cycle">🌪️</button>
+    <button class="btn btn-outline-danger"  data-action="wipe"   title="Wipe All">🗑️</button>
+    <!-- Theme Toggle: 3-way -->
+    <div class="theme-toggle-group" id="themeToggleGroup">
+      <button class="btn btn-outline-secondary theme-btn" data-theme="light" title="Light Theme">☀️</button>
+      <button class="btn btn-outline-secondary theme-btn" data-theme="dark" title="Dark Theme">🌙</button>
+      <button class="btn btn-outline-secondary theme-btn" data-theme="funky" title="Funky Theme">🎨</button>
+    </div>
   </div>
 </nav>

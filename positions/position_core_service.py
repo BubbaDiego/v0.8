@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from positions.position_enrichment_service import PositionEnrichmentService, validate_enriched_position
-from utils.calc_services import CalcServices
+from calc_core.calculation_core import CalculationCore
 from core.logging import log
 
 class PositionCoreService:
@@ -59,9 +59,9 @@ class PositionCoreService:
     def record_positions_snapshot(self):
         try:
             positions = self.dl.read_positions()
-            calc = CalcServices()
+            calc = CalculationCore(self.dl)
             totals = calc.calculate_totals(positions)
-            self.dl.record_positions_totals_snapshot(totals)
+            self.dl.portfolio.record_snapshot(totals)
             log.success(f"📋 Snapshot of {len(positions)} positions recorded.", source="PositionCoreService")
         except Exception as e:
             log.error(f"❌ record_positions_snapshot failed: {e}", source="PositionCoreService")

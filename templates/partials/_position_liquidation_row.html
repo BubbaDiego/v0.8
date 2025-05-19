@@ -1,10 +1,6 @@
-<link rel="stylesheet" href="../../static/css/portfolio_status.css">
-<link rel="stylesheet" href="../../static/css/dashboard.css">
-
+<!-- === HEADER ROW (only first row) === -->
 {% if is_first %}
-<!-- === HEADER ROW FOR POSITION + LIQUIDATION COLUMNS === -->
 <div class="liq-header-row">
-  <!-- 🔹 Left Side: Column Titles -->
   <div class="pos-header">
     <div class="pos-col-label">Asset</div>
     <div class="pos-col-label">Wallet</div>
@@ -12,47 +8,40 @@
     <div class="pos-col-label">Travel %</div>
     <div class="pos-col-label">Lev</div>
   </div>
-
-  <!-- 🔸 Right Side: Bar Title and 🔥 -->
   <div class="liq-header">
-    <div class="liq-col-label" style="min-width: 150px;">Liquidation</div>
-    <div class="heat-label-wrapper">
-      <div class="heat-icon">🔥</div>
-    </div>
+    <div class="liq-col-label">Liquidation</div>
+    <div class="heat-label-wrapper"><div class="heat-icon">🔥</div></div>
   </div>
 </div>
 {% endif %}
 
-<!-- === RESPONSIVE ROW: Position + Liquidation Bar === -->
+<!-- === ROW CONTENT === -->
 <div class="row-pair">
-
-  <!-- 🔹 LEFT COLUMN: Position Fields -->
+  <!-- 🔹 LEFT SIDE (Position Info) -->
   <div class="pos-col">
-
-    <!-- Asset type with icon -->
+    <!-- Asset icon -->
     <div class="pos-cell asset">
       {{ pos.asset_type }}
       <img class="asset-icon" src="{{ url_for('static', filename='images/' + pos.asset_type|lower + '_logo.png') }}" alt="{{ pos.asset_type }}">
     </div>
 
-    <!-- Wallet ID + image -->
-<div class="pos-cell wallet">
-  {% if pos.wallet %}
-    <img class="wallet-icon mb-1" src="{{ pos.wallet.image_path }}" alt="{{ pos.wallet.name }}">
-    <div class="small">{{ pos.wallet.name }}</div>
-    <div class="text-muted small">{{ pos.wallet.type|capitalize }}</div>
-  {% else %}
-    <span class="text-muted">No Wallet</span>
-  {% endif %}
-</div>
+    <!-- Wallet info -->
+    <div class="pos-cell wallet">
+      {% if pos.wallet %}
+        <img class="wallet-icon mb-1" src="{{ pos.wallet.image_path }}" alt="{{ pos.wallet.name }}">
+        <div class="small">{{ pos.wallet.name }}</div>
+        <div class="text-muted small">{{ pos.wallet.type|capitalize }}</div>
+      {% else %}
+        <span class="text-muted">No Wallet</span>
+      {% endif %}
+    </div>
 
-
-    <!-- Heat index -->
+    <!-- Heat -->
     <div class="pos-cell heat">
       {{ pos.heat_index|int }}
     </div>
 
-    <!-- Travel % -->
+    <!-- Travel -->
     <div class="pos-cell travel">
       {{ pos.travel_percent|round(2) }}%
     </div>
@@ -61,40 +50,27 @@
     <div class="pos-cell leverage">
       {{ pos.leverage|round(2) }}
     </div>
-
   </div>
 
-  <!-- 🔸 RIGHT COLUMN: Liquidation Bar + Heat -->
-  <div class="liq-col" style="position: relative;">
-
-    <!-- Profit index badge (green left-side circle) -->
-    {% if pos.travel_percent >= 0 %}
-    <div class="liq-profit-badge-wrapper">
-      <div class="liq-profit-badge">
-        {{ pos.travel_percent|round(0)|int }}
-      </div>
-    </div>
-    {% endif %}
-
-
+  <!-- 🔸 RIGHT SIDE (Liquidation bar + badge) -->
+  <div class="liq-col">
     <div class="liq-bar-container">
       <div class="liq-midline"></div>
       {% set pct = pos.travel_percent|float %}
       {% if pct >= 0 %}
-        <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
+        <div class="liq-bar-fill positive" style="left: 50%; width: {{ pct }}%;">
           <div class="travel-text">{{ pct|round(1) }}%</div>
         </div>
       {% else %}
-        <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
+        <div class="liq-bar-fill negative" style="right: 50%; width: {{ pct|abs }}%;">
           <div class="travel-text">{{ pct|round(1) }}%</div>
         </div>
       {% endif %}
     </div>
 
-    <!-- Heat index badge -->
+    <!-- Heat badge -->
     <div class="liq-heat-badge">
       {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
     </div>
   </div>
-
 </div>

@@ -26,6 +26,7 @@ from data.dl_brokers import DLBrokerManager
 from data.dl_portfolio import DLPortfolioManager
 from data.dl_system_data import DLSystemDataManager
 from data.dl_monitor_ledger import DLMonitorLedgerManager
+from data.dl_modifiers import DLModifierManager
 
 class DataLocker:
     def __init__(self, db_path):
@@ -48,6 +49,7 @@ class DataLocker:
         self.portfolio = DLPortfolioManager(self.db)
         self.system = DLSystemDataManager(self.db)
         self.ledger = DLMonitorLedgerManager(self.db)
+        self.modifiers = DLModifierManager(self.db)
 
         self.ensure_alert_threshold_table()
         self.seed_default_thresholds()
@@ -148,6 +150,14 @@ class DataLocker:
                     current_heat_index REAL,
                     pnl_after_fees_usd REAL
                 )
+            """,
+            "modifiers": """
+            CREATE TABLE IF NOT EXISTS modifiers (
+                key TEXT PRIMARY KEY,
+                group_name TEXT NOT NULL,
+                value REAL NOT NULL,
+                last_modified TEXT DEFAULT CURRENT_TIMESTAMP
+            )
             """,
             "prices": """
                 CREATE TABLE IF NOT EXISTS prices (

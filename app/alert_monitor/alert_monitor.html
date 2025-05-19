@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Alert Monitor{% endblock %}
+
+{% block extra_styles %}
+  <link rel="stylesheet" href="{{ url_for('alerts_bp.static', filename='alert_monitor.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid pt-2">
+    <h2>📊 Alert Progress Monitor</h2>
+    <div id="alertList"></div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{{ url_for('alerts_bp.static', filename='alert_monitor.js') }}"></script>
+{% endblock %}

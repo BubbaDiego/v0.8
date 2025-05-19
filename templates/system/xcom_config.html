@@ -27,7 +27,10 @@
                   <input type="text" name="twilio[account_sid]" value="{{ twilio.account_sid or '' }}" class="form-control">
                 </div>
                 <div class="col-md-6"><label class="form-label">Auth Token</label>
-                  <input type="password" name="twilio[auth_token]" value="{{ twilio.auth_token or '' }}" class="form-control">
+                  <div class="input-group">
+                    <input type="password" id="authTokenField" name="twilio[auth_token]" value="{{ twilio.auth_token or '' }}" class="form-control">
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleToken()">👁️</button>
+                  </div>
                 </div>
                 <div class="col-md-6"><label class="form-label">Flow SID</label>
                   <input type="text" name="twilio[flow_sid]" value="{{ twilio.flow_sid or '' }}" class="form-control">
@@ -37,6 +40,17 @@
                 </div>
                 <div class="col-md-6"><label class="form-label">To Phone</label>
                   <input type="text" name="twilio[default_to_phone]" value="{{ twilio.default_to_phone or '' }}" class="form-control">
+                </div>
+
+                <!-- 🔍 DISPLAY VALUES -->
+                <div class="col-md-12 mt-2">
+                  <label class="form-label text-muted">🔍 Loaded Twilio Config (read-only)</label>
+                  <div class="p-2 border bg-light text-monospace small rounded">
+                    <div>Account SID: <strong>{{ twilio.account_sid or "—" }}</strong></div>
+                    <div>Flow SID: <strong>{{ twilio.flow_sid or "—" }}</strong></div>
+                    <div>From Phone: <strong>{{ twilio.default_from_phone or "—" }}</strong></div>
+                    <div>To Phone: <strong>{{ twilio.default_to_phone or "—" }}</strong></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -114,11 +128,13 @@
         <div class="card-body">
           <p class="text-muted">Trigger live test messages through XCom routes.</p>
           <div class="d-grid gap-3">
+
             {% for mode, icon, label, color in [
               ('sms', 'fas fa-sms', 'Send SMS', 'primary'),
               ('email', 'fas fa-envelope', 'Send Email', 'secondary'),
               ('system', 'fas fa-volume-up', 'Play System Sound', 'info'),
               ('voice', 'fas fa-phone-alt', 'Trigger Voice Call', 'danger'),
+              ('death', '💀', 'Test DeathNail', 'dark')
             ] %}
             <form method="POST" action="{{ url_for('system.test_xcom') }}">
               <input type="hidden" name="mode" value="{{ mode }}">
@@ -127,6 +143,7 @@
               </button>
             </form>
             {% endfor %}
+
           </div>
         </div>
       </div>
@@ -134,4 +151,11 @@
 
   </div>
 </div>
+
+<script>
+function toggleToken() {
+  const field = document.getElementById("authTokenField");
+  field.type = field.type === "password" ? "text" : "password";
+}
+</script>
 {% endblock %}

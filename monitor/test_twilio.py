@@ -1,4 +1,3 @@
-# test_twilio_from_db.py
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -7,6 +6,9 @@ from data.data_locker import DataLocker
 from xcom.xcom_core import XComCore
 from core.constants import DB_PATH
 from utils.console_logger import ConsoleLogger as log
+
+# ---- NEW: Import your Flask app ----
+from sonic_app import app   # Adjust import if needed
 
 def run_test_call():
     # 📦 Load DataLocker + XComCore
@@ -24,4 +26,5 @@ def run_test_call():
     print("Dispatch Result:", result)
 
 if __name__ == "__main__":
-    run_test_call()
+    with app.app_context():
+        run_test_call()

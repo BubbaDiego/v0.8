@@ -1,76 +1,65 @@
-/* =======================
-   ICONS.CSS — Flame, Profit, Animated UI Markers 🔥💰
-   ======================= */
+/* =========================
+   Asset & Wallet Icon Rules
+   ========================= */
 
-/* === 🔥 Heat Badge Icon Label (Top Right of Bar) === */
-.heat-label-wrapper {
-  position: relative;
-  flex: 0 0 30px;
-  height: 100%;
+/* Main: Safe, always-circular, size-capped */
+.asset-icon,
+.wallet-icon {
+  width: 32px !important;
+  height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  display: inline-block !important;
+  background: #f8fafc; /* fallback for transparency */
+  border: 1px solid #dde5f5;
+  box-shadow: 0 0 2px rgba(40,70,120,0.07);
+  vertical-align: middle;
+  overflow: hidden;
+  /* Prevent accidental stretching in flex/grid */
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
-/* === 💸 Profit Icon Label (Top Left of Bar) === */
-.profit-label-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  padding-right: 6px;
+/* Smaller variant (for buttons, badges, etc.) */
+.asset-icon.sm,
+.wallet-icon.sm {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
 }
 
-/* === 🧿 Icon Styling (Flame/Profit) === */
-.heat-icon,
-.profit-icon {
-  width: 20px;
-  height: 20px;
-  animation: bounceFlame 1.4s infinite ease-in-out;
-  display: inline-block;
+/* Larger variant (rarely used) */
+.asset-icon.lg,
+.wallet-icon.lg {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
 }
 
-/* === 🔁 Reusable Bounce Animation === */
-@keyframes bounceFlame {
-  0%, 100%   { transform: translateY(0) scale(1); }
-  25%        { transform: translateY(-4px) scale(1.05); }
-  50%        { transform: translateY(0) scale(1.15); }
-  75%        { transform: translateY(-2px) scale(1.05); }
+/* Disabled/placeholder look */
+.asset-icon.placeholder,
+.wallet-icon.placeholder {
+  filter: grayscale(0.6) opacity(0.6);
+  background: #e7ecfa;
 }
 
-/* === 🔘 Circular Heat Badge (Right) === */
-.liq-heat-badge {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: #ff5722;             /* 🔧 Use variable for theme if needed */
-  color: #fff;
-  font-weight: bold;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.asset-icon.square,
+.wallet-icon.square {
+  border-radius: 6px !important;
 }
 
-/* === 🟢 Circular Profit Badge (Left) === */
-.liq-profit-badge-wrapper {
-  position: absolute;
-  left: -14px;                      /* 🔧 Move flush to bar */
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.liq-profit-badge {
-  background-color: #00b050;       /* ✅ Green Profit */
-  color: white;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 13px;
-  box-shadow: 0 0 3px rgba(0,0,0,0.4);
-  margin-top: 2px;
+.asset-icon:hover,
+.wallet-icon:hover {
+  box-shadow: 0 2px 8px rgba(70,120,216,0.13);
+  border-color: #b7c5e0;
 }

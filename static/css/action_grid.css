@@ -1,0 +1,24 @@
+.sonic-action-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.action-tile {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.action-tile:hover {
+  transform: scale(1.08);
+}

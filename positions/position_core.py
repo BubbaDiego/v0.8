@@ -7,7 +7,7 @@ from positions.position_store import PositionStore
 from positions.position_enrichment_service import PositionEnrichmentService
 from positions.position_enrichment_service import validate_enriched_position
 from positions.hedge_manager import HedgeManager
-from utils.calc_services import CalcServices
+from calc_core.calc_services import CalcServices
 from datetime import datetime
 
 class PositionCore:
