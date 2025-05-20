@@ -1,0 +1,48 @@
+<div class="dashboard-section">
+  <div class="section-title">Monitor</div>
+  <div class="card-flex">
+    {% for item in monitor_items %}
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front status-card monitor-style {{ item.color }}">
+            <div class="icon">{{ item.icon }}</div>
+            <div class="value">{{ item.value }}</div>
+            <div class="label">{{ item.title }}</div>
+            <div class="led-dot {{ item.color }}"></div>
+          </div>
+          <div class="flip-card-back">
+            {% if item.title == "Price" %}
+              <strong>Status:</strong>
+              {% if item.color == 'green' %}✅{% elif item.color == 'yellow' %}⚠️{% else %}❌{% endif %}
+              <ul class="mini-list">
+                {% for asset in price_monitor_history %}
+                  <li>{{ asset.icon }} <span class="text-bold">{{ asset.label }}:</span>
+                    ${{ asset.value }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% elif item.title == "Positions" %}
+              <ul class="mini-list">
+                {% for sync in positions_monitor_history %}
+                  <li>+{{ sync.imported }} <span style="color:#ffaa1a;">Skipped: {{ sync.skipped }}</span>
+                    <span style="color:#d72d36;">Errors: {{ sync.errors }}</span>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% elif item.title == "Operations" %}
+              <ul class="mini-list">
+                {% for op in operations_monitor_history %}
+                  <li>
+                    {% if op.post_success %}✅{% else %}❌{% endif %}
+                    {{ op.duration_seconds }}s
+                    {% if op.error %}<span style="color:#d72d36;">Error: {{ op.error }}</span>{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

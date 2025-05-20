@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Sonic Dashboard{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+  <!-- Add any additional CSS files here -->
+{% endblock %}
+
+{% block content %}
+  {% include "title_bar.html" %}
+  {% include "dash_top.html" %}
+  {% include "dash_middle.html" %}
+  {% include "dash_bottom.html" %}
+
+  <!-- JS: Layout Mode Toggle -->
+  <script>
+    const MODES = ['wide-mode', 'fitted-mode', 'mobile-mode'];
+    let current = 0;
+    function setLayoutMode(idx) {
+      document.body.classList.remove(...MODES);
+      document.body.classList.add(MODES[idx]);
+      const label = document.getElementById('currentLayoutMode');
+      if (label) label.innerText = MODES[idx].replace('-mode', '');
+      localStorage.setItem('sonicLayoutMode', idx);
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      const btn = document.getElementById('layoutModeToggle');
+      current = Number(localStorage.getItem('sonicLayoutMode')) || 0;
+      setLayoutMode(current);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          current = (current + 1) % MODES.length;
+          setLayoutMode(current);
+        });
+      }
+    });
+  </script>
+  <!-- JS: Theme Toggle -->
+  <script>
+    const THEME_KEY = "themeMode";
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-theme", mode);
+      localStorage.setItem(THEME_KEY, mode);
+      document.cookie = THEME_KEY + "=" + mode + ";path=/;max-age=31536000";
+    }
+    function getPersistedTheme() {
+      let mode = localStorage.getItem(THEME_KEY);
+      if (!mode) {
+        const cookie = document.cookie.split('; ').find(r => r.startsWith(THEME_KEY + '='));
+        if (cookie) mode = cookie.split('=')[1];
+      }
+      return mode || "light";
+    }
+    function bindThemeButtons() {
+      const buttons = document.querySelectorAll('.theme-btn[data-theme]');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', e => {
+          const mode = btn.getAttribute('data-theme');
+          setTheme(mode);
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const mode = getPersistedTheme();
+      setTheme(mode);
+      const buttons = document.querySelectorAll('.theme-btn[data-theme]');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-theme') === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      bindThemeButtons();
+    });
+  </script>
+  <!-- JS: Cyclone Action Toasts -->
+  <script>
+    function showToast(message, type = "info") {
+      const toastContainer = document.getElementById("toastContainer");
+      if (!toastContainer) return;
+      const toast = document.createElement("div");
+      toast.className = `sonic-toast ${type}`;
+      toast.innerHTML = message;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 600);
+      }, 2500);
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".cyclone-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+          const action = btn.getAttribute("data-action");
+          let api = null;
+          let label = "";
+          switch (action) {
+            case "sync":   api = "/cyclone_sync"; label = "Jupiter Sync"; break;
+            case "market": api = "/cyclone_market_update"; label = "Market Update"; break;
+            case "full":   api = "/cyclone_full_cycle"; label = "Full Cycle"; break;
+            case "wipe":   api = "/cyclone_wipe_all"; label = "Wipe All"; break;
+          }
+          if (!api) return;
+          fetch(api, {method:"POST"}).then(resp => resp.json()).then(result => {
+            if (result.success) showToast(`✅ ${label} complete!`, 'success');
+            else showToast(`❌ ${label} failed: ${result.error || result.message}`, 'error');
+          }).catch(err => showToast(`❌ ${label} failed: ${err.message}`, 'error'));
+        });
+      });
+    });
+  </script>
+  <script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
+{% endblock %}

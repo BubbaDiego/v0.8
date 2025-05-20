@@ -1,0 +1,53 @@
+:root {
+  --card-bg: #fff;
+  --text: #232946;
+  --title-bar-bg: #f8f4ff;
+  --primary: #7c3aed;
+  --accent: #e4bad4;
+}
+html[data-theme="light"] {
+  --card-bg: #fff;
+  --text: #232946;
+  --title-bar-bg: #f8f4ff;
+  --primary: #7c3aed;
+  --accent: #e4bad4;
+}
+html[data-theme="dark"] {
+  --card-bg: #232946;
+  --text: #f1f1f1;
+  --title-bar-bg: #232946;
+  --primary: #7c3aed;
+  --accent: #e4bad4;
+}
+html[data-theme="funky"] {
+  --card-bg: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+  --text: #540d6e;
+  --title-bar-bg: #e4bad4;
+  --primary: #e944bb;
+  --accent: #a8edea;
+}
+.sonic-content-panel, .sonic-section-container {
+  background: var(--card-bg) !important;
+  color: var(--text) !important;
+  transition: background 0.25s, color 0.25s;
+}
+.title-bar {
+  background: var(--title-bar-bg) !important;
+  color: var(--text) !important;
+  transition: background 0.25s, color 0.25s;
+}
+.layout-toggle-btn, .theme-btn.active {
+  border-color: var(--primary) !important;
+  background: var(--primary) !important;
+  color: #fff !important;
+}
+.theme-btn {
+  border-color: var(--primary) !important;
+}
+.theme-btn:hover, .layout-toggle-btn:hover {
+  background: var(--accent) !important;
+  color: var(--text) !important;
+}
+.sonic-content-panel, .title-bar, .layout-toggle-btn, .theme-btn {
+  transition: background 0.22s, color 0.22s, border-color 0.22s;
+}
