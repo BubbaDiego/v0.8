@@ -28,6 +28,10 @@ dashboard_bp = Blueprint(
     static_url_path='/dashboard_static'
 )
 
+@dashboard_bp.route("/new_dashboard")
+def new_dashboard():
+    return render_template("sonic_dashboard.html")
+
 
 
 # Main dashboard page
