@@ -39,7 +39,7 @@ def new_dashboard():
 @route_log_alert
 def dash_page():
     context = get_dashboard_context(current_app.data_locker)
-    return render_template("dashboard.html", **context)
+    return render_template("sonic_dashboard.html", **context)
 
 # ✅ NEW WALLET IMAGE MAP
 WALLET_IMAGE_MAP = {
