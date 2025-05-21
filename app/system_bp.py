@@ -12,6 +12,9 @@ from system.system_core import SystemCore
 from data.dl_thresholds import DLThresholdManager
 from data.models import AlertThreshold
 from wallets.wallet_schema import WalletIn
+from positions.position_core import PositionCore
+from utils.json_manager import JsonType
+from core.constants import THEME_CONFIG_PATH
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -320,6 +323,33 @@ def database_viewer():
     except Exception as e:
         flash(f"❌ Error loading DB viewer: {e}", "danger")
         return render_template("db_viewer.html", datasets={})
+
+
+@system_bp.route("/hedge_calculator", methods=["GET"])
+def hedge_calculator_page():
+    """Render the hedge calculator page."""
+    try:
+        core = PositionCore(current_app.data_locker)
+        positions = core.get_all_positions() or []
+
+        long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
+        short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
+
+        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
+            theme_config = json.load(f)
+
+        json_manager = current_app.json_manager
+        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+
+        return render_template(
+            "hedge_calculator.html",
+            theme=theme_config,
+            long_positions=long_positions,
+            short_positions=short_positions,
+            modifiers=modifiers,
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():
