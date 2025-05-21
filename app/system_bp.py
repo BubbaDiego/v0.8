@@ -316,10 +316,10 @@ def seed_all_thresholds():
 def database_viewer():
     try:
         datasets = current_app.data_locker.get_all_tables_as_dict()
-        return render_template("system/database_viewer.html", datasets=datasets)
+        return render_template("db_viewer.html", datasets=datasets)
     except Exception as e:
         flash(f"❌ Error loading DB viewer: {e}", "danger")
-        return render_template("system/database_viewer.html", datasets={})
+        return render_template("db_viewer.html", datasets={})
 
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():

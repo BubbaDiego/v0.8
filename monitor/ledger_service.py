@@ -43,7 +43,8 @@ class LedgerService:
             return {}
 
     def get_status(self, monitor_name: str) -> dict:
-        entry = self.get_last_entry(monitor_name)
+        filename = f"{monitor_name}_ledger.json"
+        entry = self.read_last_entry(filename)
         if not entry or not entry.get("timestamp"):
             return {"age_seconds": 9999, "last_timestamp": None}
 

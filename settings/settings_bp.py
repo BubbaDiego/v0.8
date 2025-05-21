@@ -47,7 +47,7 @@ def database_viewer():
     try:
         dl = current_app.data_locker
         datasets = dl.get_all_tables_as_dict()
-        return render_template("database_viewer.html", datasets=datasets)
+        return render_template("db_viewer.html", datasets=datasets)
     except Exception as e:
         log.error(f"❌ Error loading tables: {e}", source="DatabaseViewer")
-        return render_template("database_viewer.html", datasets={})
+        return render_template("db_viewer.html", datasets={})
