@@ -93,6 +93,12 @@ def api_heartbeat():
         })
     return jsonify({"monitors": result})
 
+# --- Hedge Calculator Redirect ---
+@app.route("/hedge_calculator")
+def hedge_calculator_redirect():
+    """Redirect to the Hedge Calculator page within the system blueprint."""
+    return redirect(url_for("system.hedge_calculator_page"))
+
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 
