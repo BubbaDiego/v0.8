@@ -77,18 +77,21 @@ async def test_evaluate_profit_no_thresholds(evaluation_service):
     log.success(f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}", source="TestEval")
     assert evaluated_alert.level == AlertLevel.LOW or evaluated_alert.level == AlertLevel.MEDIUM
 
-    @pytest.mark.asyncio
-    async def test_evaluate_heat_index_below_low(evaluation_service):
-        """Test evaluating a HeatIndex alert BELOW condition."""
-        alert = Alert(
-            id="heatindex-low",
-            alert_type=AlertType.HeatIndex,
-            asset="BTC",
-            trigger_value=50,
-            condition=Condition.BELOW,
-            evaluated_value=20
-        )
+@pytest.mark.asyncio
+async def test_evaluate_heat_index_below_low(evaluation_service):
+    """Test evaluating a HeatIndex alert BELOW condition."""
+    alert = Alert(
+        id="heatindex-low",
+        alert_type=AlertType.HeatIndex,
+        asset="BTC",
+        trigger_value=50,
+        condition=Condition.BELOW,
+        evaluated_value=20
+    )
 
-        evaluated_alert = evaluation_service.evaluate(alert)
-        log.success(f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}", source="TestEval")
-        assert evaluated_alert.level == AlertLevel.HIGH
+    evaluated_alert = evaluation_service.evaluate(alert)
+    log.success(
+        f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}",
+        source="TestEval",
+    )
+    assert evaluated_alert.level == AlertLevel.HIGH
