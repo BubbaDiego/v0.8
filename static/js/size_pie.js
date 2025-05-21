@@ -2,8 +2,11 @@
 window.addEventListener('DOMContentLoaded', () => {
   const data = window.sizeData?.series || [];
   const isZero = data.every(v => v === 0);
+
+  let mode = 'donut';
+
   const options = {
-    chart: { type: 'donut', height: 260 },
+    chart: { type: mode, height: 260 },
     labels: ['Long', 'Short'],
     series: isZero ? [1] : data,
     colors: isZero ? ['#ccc'] : ['#3498db', '#e74c3c'],
@@ -13,8 +16,22 @@ window.addEventListener('DOMContentLoaded', () => {
       align: 'center',
       style: { fontSize: '14px', fontWeight: 'bold' }
     },
-    tooltip: { y: { formatter: val => `${val}%` } }
+    tooltip: {
+      y: {
+        formatter: val => `${val}%`
+      }
+    }
   };
-  const chart = new ApexCharts(document.querySelector('#pieChartSize'), options);
+
+  const chartEl = document.querySelector('#pieChartSize');
+  const chart = new ApexCharts(chartEl, options);
   chart.render();
+
+  const btn = document.getElementById('togglePieMode');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      mode = mode === 'donut' ? 'pie' : 'donut';
+      chart.updateOptions({ chart: { type: mode } });
+    });
+  }
 });
