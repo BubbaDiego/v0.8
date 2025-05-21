@@ -170,6 +170,13 @@ class DataLocker:
                     source TEXT
                 )
             """,
+            "monitor_heartbeat": """
+                CREATE TABLE IF NOT EXISTS monitor_heartbeat (
+                    monitor_name TEXT PRIMARY KEY,
+                    last_run TIMESTAMP NOT NULL,
+                    interval_seconds INTEGER NOT NULL
+                )
+            """,
             "system_vars": """
             CREATE TABLE IF NOT EXISTS system_vars (
     id TEXT PRIMARY KEY DEFAULT 'main',
