@@ -29,3 +29,19 @@ class DatabaseManager:
         if self.conn:
             self.conn.close()
             self.conn = None
+
+    # New helper methods
+    def list_tables(self) -> list:
+        """Return a list of user-defined table names."""
+        cursor = self.get_cursor()
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+        )
+        return [row[0] for row in cursor.fetchall()]
+
+    def fetch_all(self, table_name: str) -> list:
+        """Return all rows from a table as a list of dictionaries."""
+        cursor = self.get_cursor()
+        cursor.execute(f"SELECT * FROM {table_name}")
+        rows = cursor.fetchall()
+        return [dict(r) for r in rows]
