@@ -1,0 +1,32 @@
+{# NO inner container, NO title/label row, just bars and badges #}
+{% if liquidation_positions %}
+  {% for pos in liquidation_positions %}
+    {% if pos.travel_percent is defined and pos.travel_percent is not none %}
+      <div class="liq-row d-flex align-items-center" style="gap: 0.6rem; margin-bottom: 0.7rem;">
+        <img src="{{ url_for('static', filename='images/btc_logo.png') }}" alt="A" class="asset-icon" style="width: 28px; height: 28px; border-radius: 50%;" />
+
+        <div class="liq-bar-container" style="flex: 1;">
+          <div class="liq-midline"></div>
+          {% set pct = pos.travel_percent|float %}
+          {% if pct >= 0 %}
+            <div class="liq-bar-fill positive" style="left:50%; width:{{ pct }}%;">
+              <div class="travel-text">{{ pct|round(1) }}%</div>
+            </div>
+          {% else %}
+            <div class="liq-bar-fill negative" style="right:50%; width:{{ pct|abs }}%;">
+              <div class="travel-text">{{ pct|round(1) }}%</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="liq-heat-badge">
+          {{ pos.heat_index|int if pos.heat_index is defined and pos.heat_index is not none else 'N/A' }}
+        </div>
+      </div>
+    {% else %}
+      <p style="color:red;">⚠️ Skipping a position missing travel_percent</p>
+    {% endif %}
+  {% endfor %}
+{% else %}
+  <p style="color:orange;">⚠️ No liquidation positions to display.</p>
+{% endif %}
