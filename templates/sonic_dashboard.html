@@ -117,4 +117,9 @@
     });
   </script>
   <script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script>
+    window.sizeData = {{ size_composition | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/size_pie.js') }}"></script>
 {% endblock %}
