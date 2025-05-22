@@ -20,14 +20,19 @@ def hedge_calculator():
 
         dl = current_app.data_locker
         theme_config = dl.system.get_active_theme_profile() or {}
-        modifiers = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        hedge_mods = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
+        modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
 
-        if not modifiers:
+        if not hedge_mods or not heat_mods:
             try:
                 json_manager = current_app.json_manager
-                modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+                fallback = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE) or {}
+                hedge_mods = hedge_mods or fallback.get("hedge_modifiers", {})
+                heat_mods = heat_mods or fallback.get("heat_modifiers", {})
+                modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
             except Exception:
-                modifiers = {}
+                pass
 
         return render_template("hedge_calculator.html",
                                theme=theme_config,
