@@ -14,7 +14,6 @@ from data.models import AlertThreshold
 from wallets.wallet_schema import WalletIn
 from positions.position_core import PositionCore
 from utils.json_manager import JsonType
-from core.constants import THEME_CONFIG_PATH
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -335,11 +334,21 @@ def hedge_calculator_page():
         long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
         short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
 
-        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
-            theme_config = json.load(f)
+        dl = current_app.data_locker
 
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+        # Load the active theme profile from the DB instead of a JSON file
+        theme_config = dl.system.get_active_theme_profile() or {}
+
+        # Retrieve hedge calculator modifiers from the modifiers table
+        modifiers = dl.modifiers.get_all_modifiers("hedge_modifiers")
+
+        if not modifiers:
+            # Optional fallback to sonic_sauce.json if DB is empty
+            try:
+                json_manager = current_app.json_manager
+                modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+            except Exception:
+                modifiers = {}
 
         return render_template(
             "hedge_calculator.html",
