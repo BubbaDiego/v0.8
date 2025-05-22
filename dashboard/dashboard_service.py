@@ -31,7 +31,8 @@ def format_monitor_time(iso_str):
     try:
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
         pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        return pacific.strftime("%I:%M %p %m/%d").lstrip("0")
+        # format time on one line and date on the next
+        return pacific.strftime("%I:%M %p\n%m/%d").lstrip("0")
     except Exception as e:
         log.error(f"Time formatting failed: {e}", source="DashboardContext")
         return "N/A"
@@ -86,7 +87,7 @@ def format_monitor_time(iso_str):
     try:
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
         pacific = dt.astimezone(ZoneInfo("America/Los_Angeles"))
-        return pacific.strftime("%I:%M %p %m/%d").lstrip("0")
+        return pacific.strftime("%I:%M %p\n%m/%d").lstrip("0")
     except Exception as e:
         return "N/A"
 
