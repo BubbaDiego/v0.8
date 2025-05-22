@@ -116,6 +116,7 @@
   font-size: 0.75rem;       /* smaller numeric value */
   font-weight: 400;         /* not bold for timestamp */
   white-space: pre-line;    /* allow newline between time and date */
+
 }
 .status-card.monitor-style .label {
   font-size: 0.9rem;        /* emphasize monitor name */
