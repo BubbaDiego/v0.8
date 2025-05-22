@@ -68,7 +68,7 @@ def format_monitor_time(iso_str):
         month = str(pacific.month)
         day = str(pacific.day)
 
-        formatted = f"{hour}:{minute} {ampm} {month}/{day}"
+        formatted = f"{hour}:{minute} {ampm}\n{month}/{day}"
         print(f"DEBUG: Parsed and formatted time: {formatted}")
         return formatted
     except Exception as e:
