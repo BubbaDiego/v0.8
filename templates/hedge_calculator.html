@@ -1,8 +1,57 @@
 {% extends "base.html" %}
 {% block title %}Hedge Calculator{% endblock %}
-{% block page_title %}{% endblock %}
 
 {% block content %}
-<h1>Hedge Calculator</h1>
-<p>TODO: full hedge calculator content.</p>
+{% include "title_bar.html" %}
+<div class="container py-4">
+  <h2 class="mb-3">Long Positions</h2>
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        {% if long_positions %}
+          {% for col in long_positions[0].keys() %}
+          <th>{{ col }}</th>
+          {% endfor %}
+        {% else %}
+          <th>No Data</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in long_positions %}
+      <tr>
+        {% for val in row.values() %}
+        <td>{{ val }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="fw-bold">Total Value: {{ long_total }}</p>
+
+  <h2 class="mt-4 mb-3">Short Positions</h2>
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        {% if short_positions %}
+          {% for col in short_positions[0].keys() %}
+          <th>{{ col }}</th>
+          {% endfor %}
+        {% else %}
+          <th>No Data</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in short_positions %}
+      <tr>
+        {% for val in row.values() %}
+        <td>{{ val }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="fw-bold">Total Value: {{ short_total }}</p>
+</div>
 {% endblock %}

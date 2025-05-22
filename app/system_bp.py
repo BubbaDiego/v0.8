@@ -335,18 +335,30 @@ def hedge_calculator_page():
         long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
         short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
 
-        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
-            theme_config = json.load(f)
+        dl = current_app.data_locker
+        theme_config = dl.system.get_active_theme_profile()
+        if not theme_config:
+            with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
+                theme_config = json.load(f)
 
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+        hedge_modifiers = dl.modifiers.get_all_modifiers(group="hedge_modifiers")
+        if not hedge_modifiers:
+            sauce = current_app.json_manager.load(
+                "sonic_sauce.json", json_type=JsonType.SONIC_SAUCE
+            )
+            hedge_modifiers = sauce.get("hedge_modifiers", {})
+
+        long_total = sum(float(p.get("value", 0.0)) for p in long_positions)
+        short_total = sum(float(p.get("value", 0.0)) for p in short_positions)
 
         return render_template(
             "hedge_calculator.html",
             theme=theme_config,
+            hedge_modifiers=hedge_modifiers,
             long_positions=long_positions,
             short_positions=short_positions,
-            modifiers=modifiers,
+            long_total=long_total,
+            short_total=short_total,
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
