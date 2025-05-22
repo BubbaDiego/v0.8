@@ -300,3 +300,14 @@ class DataLocker:
         self.db.commit()
         log.success("✅ Seeded default thresholds", source="DataLocker")
 
+    def get_all_tables_as_dict(self) -> dict:
+        """Return all user tables and their rows as a dictionary."""
+        try:
+            datasets = {}
+            for table in self.db.list_tables():
+                datasets[table] = self.db.fetch_all(table)
+            return datasets
+        except Exception as e:
+            log.error(f"❌ Failed to gather tables: {e}", source="DataLocker")
+            return {}
+
