@@ -39,21 +39,19 @@
 .layout-toggle-btn {
   border-radius: 10px;
   border: 1.5px solid #d2cdf7;
-  font-size: 1.1rem;
-  padding: 0.32em 1em;
-  margin-left: 1rem;
+  font-size: 1.6rem;
+  padding: 0.18rem 0.55rem;
 }
 .theme-toggle-group {
   display: inline-flex;
   gap: 0.22rem;
-  margin-left: 0.9rem;
   vertical-align: middle;
 }
 .theme-btn {
   border: 1.5px solid #d2cdf7;
   border-radius: 10px;
-  padding: 0.34em 0.66em;
-  font-size: 1.4em;
+  padding: 0.18rem 0.55rem;
+  font-size: 1.6rem;
   background: #fff;
   color: #444;
   cursor: pointer;
@@ -75,10 +73,9 @@
   border-color: #7c3aed;
 }
 .cyclone-btn {
-  font-size: 1.9rem;
+  font-size: 1.6rem;
   border-radius: 10px;
   padding: 0.18rem 0.55rem;
-  margin-left: 0.18rem;
   background: #fff;
   border: 1.5px solid #d2cdf7;
   min-width: 42px;
