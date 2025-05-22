@@ -181,6 +181,7 @@
 
 /* Container & label for dashboard version */
 .common-box.liquidation-box {
+  width: 100%;
   padding: 0.8rem 1rem;
   border-radius: 12px;
   background: var(--container-bg, #fff);
