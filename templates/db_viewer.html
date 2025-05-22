@@ -3,14 +3,27 @@
 {% block title %}Database Viewer{% endblock %}
 
 {% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
   <style>
-    .db-table { margin-top: 1rem; }
+    body {
+      background-image: url('{{ url_for('static', filename='images/database_wall.jpg') }}');
+      background-size: cover;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    .db-viewer-container {
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 1rem;
+    }
+    .db-table { margin-top: 1rem; background: #fff; }
   </style>
 {% endblock %}
 
 {% block content %}
 {% include "title_bar.html" %}
-<div class="container py-4">
+<div class="container py-4 db-viewer-container">
   <h2 class="mb-3">Database Viewer</h2>
   <div class="mb-3">
     <label for="tableSelect" class="form-label">Select Table:</label>
@@ -50,6 +63,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/title_bar.js') }}" defer></script>
 <script>
 function showTable(name) {
   document.querySelectorAll('.db-table').forEach(tbl => {
