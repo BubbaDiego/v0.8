@@ -132,13 +132,28 @@ def get_alert_icon(alert_type):
 @dashboard_bp.route("/api/graph_data")
 @route_log_alert
 def api_graph_data():
+    """Return cumulative portfolio totals for the history line chart."""
     dl = current_app.data_locker
     portfolio_history = dl.portfolio.get_snapshots() or []
-    timestamps = [entry.get("snapshot_time") for entry in portfolio_history]
-    values = [float(entry.get("total_value", 0)) for entry in portfolio_history]
-    collaterals = [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
 
-    return jsonify({"timestamps": timestamps, "values": values, "collateral": collaterals})
+    timestamps = []
+    cumulative_values = []
+    cumulative_collateral = []
+    running_value = 0.0
+    running_collateral = 0.0
+
+    for entry in portfolio_history:
+        timestamps.append(entry.get("snapshot_time"))
+        running_value += float(entry.get("total_value", 0))
+        running_collateral += float(entry.get("total_collateral", 0))
+        cumulative_values.append(running_value)
+        cumulative_collateral.append(running_collateral)
+
+    return jsonify({
+        "timestamps": timestamps,
+        "values": cumulative_values,
+        "collateral": cumulative_collateral,
+    })
 
 # ---------------------------------
 # API: Size Composition Pie (Real positions)
