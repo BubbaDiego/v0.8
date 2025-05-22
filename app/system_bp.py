@@ -339,16 +339,25 @@ def hedge_calculator_page():
         # Load the active theme profile from the DB instead of a JSON file
         theme_config = dl.system.get_active_theme_profile() or {}
 
-        # Retrieve hedge calculator modifiers from the modifiers table
-        modifiers = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        # Retrieve hedge & heat modifiers from the modifiers table
+        hedge_mods = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
 
-        if not modifiers:
+        if not hedge_mods or not heat_mods:
             # Optional fallback to sonic_sauce.json if DB is empty
             try:
                 json_manager = current_app.json_manager
-                modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+                sauce = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE) or {}
+                hedge_mods = hedge_mods or sauce.get("hedge_modifiers", {})
+                heat_mods = heat_mods or sauce.get("heat_modifiers", {})
             except Exception:
-                modifiers = {}
+                hedge_mods = hedge_mods or {}
+                heat_mods = heat_mods or {}
+
+        modifiers = {
+            "hedge_modifiers": hedge_mods,
+            "heat_modifiers": heat_mods,
+        }
 
         return render_template(
             "hedge_calculator.html",
