@@ -132,10 +132,23 @@
   margin-bottom: 0.2rem;
 }
 .status-card.monitor-style .value {
-  font-size: 0.75rem;       /* smaller numeric value */
-  font-weight: 400;         /* not bold for timestamp */
-  white-space: pre-line;    /* allow newline between time and date */
+  font-size: 0.85rem;       /* slightly larger time */
+  font-weight: 600;         /* emphasize timestamp */
+  white-space: normal;      /* spans manage layout */
+}
 
+.status-card.monitor-style .monitor-time {
+  display: block;
+}
+
+.status-card.monitor-style .monitor-date {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.status-card.monitor-style .value:hover .monitor-date {
+  display: block;
 }
 .status-card.monitor-style .label {
   font-size: 0.9rem;        /* emphasize monitor name */

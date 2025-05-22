@@ -6,7 +6,10 @@
           <div class="flip-card-front status-card monitor-style {{ item.color }}">
               <div class="label">{{ item.title }}</div>
               <div class="icon">{{ item.icon }}</div>
-              <div class="value">{{ item.value }}</div>
+              <div class="value">
+                <span class="monitor-time">{{ item.value.split('\n')[0] }}</span>
+                <span class="monitor-date">{{ item.value.split('\n')[1] }}</span>
+              </div>
               <div class="led-dot {{ item.color }}"></div>
             </div>
           <div class="flip-card-back">
