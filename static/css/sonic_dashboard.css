@@ -122,7 +122,9 @@
 }
 .label {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.85rem;       /* label below value (e.g., "Leverage") */
+  font-size: 0.85rem;       /* label text */
+  font-weight: 600;         /* make label bold */
+  margin-bottom: 0.2rem;    /* spacing when label on top */
 }
 
 /* ─────────────────────────────────────────────── */
