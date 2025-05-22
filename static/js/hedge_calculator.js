@@ -1,0 +1,124 @@
+// Simplified Hedge Calculator JS extracted from template
+
+function setDisplayMode(mode) {
+  const toggle = (id, show) => document.getElementById(id).style.display = show ? 'flex' : 'none';
+  const showInputs = mode === 'full';
+  const showMods = mode !== 'test';
+  toggle('positionInputRow', showInputs);
+  toggle('modifierRow', showMods);
+  ['approachToggleRow','recommendationRow','outputRow','projectedOutputRow'].forEach(id=>toggle(id,true));
+}
+
+let longLiquidation = null;
+let shortLiquidation = null;
+let lastComputedCurrentPrice = 0;
+const longPositions = window.longPositionsData || [];
+const shortPositions = window.shortPositionsData || [];
+
+function loadLongPosition() {
+  const id = document.getElementById('longSelect').value;
+  const p = longPositions.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('longEntry').value = p.entry_price;
+  document.getElementById('longSize').value = p.size;
+  document.getElementById('longCollateral').value = p.collateral || 0;
+  document.getElementById('longLiqPrice').value = p.liquidation_price || 0;
+  longLiquidation = p.liquidation_price;
+  updateReferencePrice();
+}
+
+function loadShortPosition() {
+  const id = document.getElementById('shortSelect').value;
+  const p = shortPositions.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('shortEntry').value = p.entry_price;
+  document.getElementById('shortSize').value = p.size;
+  document.getElementById('shortCollateral').value = p.collateral || 0;
+  document.getElementById('shortLiqPrice').value = p.liquidation_price || 0;
+  shortLiquidation = p.liquidation_price;
+  updateReferencePrice();
+}
+
+function updateReferencePrice() {
+  const longEntry = parseFloat(document.getElementById('longEntry').value) || 0;
+  const shortEntry = parseFloat(document.getElementById('shortEntry').value) || 0;
+  let current = longEntry && shortEntry ? (longEntry + shortEntry)/2 : longEntry || shortEntry || 0;
+  const slider = document.getElementById('priceSlider');
+  slider.min = (longLiquidation||current*0.8)*0.95;
+  slider.max = (shortLiquidation||current*1.2)*1.05;
+  slider.value = current;
+  lastComputedCurrentPrice = current;
+  sliderChanged();
+  updateEntryMarkers();
+}
+
+function updatePriceTicks() {
+  if (longLiquidation) document.getElementById('tickLeft').textContent = '$'+longLiquidation.toFixed(2);
+  if (shortLiquidation) document.getElementById('tickRight').textContent = '$'+shortLiquidation.toFixed(2);
+}
+
+function updateMarker() {
+  const slider = document.getElementById('priceSlider');
+  const simPrice = parseFloat(slider.value);
+  const pos = (simPrice-slider.min)/(slider.max-slider.min);
+  const left = pos*slider.getBoundingClientRect().width;
+  const marker = document.getElementById('currentMarker');
+  marker.style.left = left+'px';
+  marker.textContent = 'Price: $'+simPrice.toFixed(2);
+}
+
+function updateEntryMarkers() {
+  const slider = document.getElementById('priceSlider');
+  const width = slider.getBoundingClientRect().width;
+  const longEntry = parseFloat(document.getElementById('longEntry').value) || 0;
+  const shortEntry = parseFloat(document.getElementById('shortEntry').value) || 0;
+  if (longEntry) {
+    const left = ((longEntry-slider.min)/(slider.max-slider.min))*width;
+    const m = document.getElementById('entryMarkerLong');
+    m.style.left = left+'px';
+    m.textContent = 'Long Entry: $'+longEntry.toFixed(2);
+  }
+  if (shortEntry) {
+    const left = ((shortEntry-slider.min)/(slider.max-slider.min))*width;
+    const m = document.getElementById('entryMarkerShort');
+    m.style.left = left+'px';
+    m.textContent = 'Short Entry: $'+shortEntry.toFixed(2);
+  }
+}
+
+function updateLong(simPrice) {
+  const entry = parseFloat(document.getElementById('longEntry').value) || 0;
+  const size = parseFloat(document.getElementById('longSize').value) || 0;
+  const collateral = parseFloat(document.getElementById('longCollateral').value) || 0;
+  let pnl = (simPrice - entry) * (entry? size/entry:0);
+  document.getElementById('longPnL').textContent = 'P&L: '+pnl.toFixed(2);
+}
+
+function updateShort(simPrice) {
+  const entry = parseFloat(document.getElementById('shortEntry').value) || 0;
+  const size = parseFloat(document.getElementById('shortSize').value) || 0;
+  let pnl = (entry - simPrice) * (entry? size/entry:0);
+  document.getElementById('shortPnL').textContent = 'P&L: '+pnl.toFixed(2);
+}
+
+function sliderChanged(){
+  const price = parseFloat(document.getElementById('priceSlider').value);
+  updatePriceTicks();
+  updateMarker();
+  updateLong(price);
+  updateShort(price);
+  updateProjectedHeatIndex();
+}
+
+document.getElementById('saveModifiers').addEventListener('click',()=>alert('Save modifiers called')); 
+
+function updateProjectedHeatIndex(){
+  const lev = parseFloat(document.getElementById('leverageSlider').value);
+  document.getElementById('leverageValue').textContent = 'Leverage: '+lev+'x';
+}
+
+function resetPriceToCurrent(){
+  const slider=document.getElementById('priceSlider');
+  slider.value=lastComputedCurrentPrice;
+  sliderChanged();
+}
