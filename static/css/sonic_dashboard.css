@@ -12,7 +12,7 @@
   display: flex;
   gap: 2rem;                         /* spacing between .sonic-content-panel items */
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 /* Individual Panel in Each Section */
