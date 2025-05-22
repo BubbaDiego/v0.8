@@ -24,6 +24,7 @@ def hedge_calculator():
         heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
         modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
 
+
         if not hedge_mods or not heat_mods:
             try:
                 json_manager = current_app.json_manager
@@ -33,6 +34,7 @@ def hedge_calculator():
                 modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
             except Exception:
                 pass
+
 
         return render_template("hedge_calculator.html",
                                theme=theme_config,
