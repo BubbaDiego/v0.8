@@ -134,6 +134,91 @@ body {
 }
 .sonic-section-container {
   background: transparent !important;
+=======
+}
+
+:root[data-theme="funky"] {
+  --bg: #1e1e40;
+  --text: #ffec99;
+  --card-bg: #3a2f5d;
+  --card-border: #e5eff3;
+  --navbar: #8db5e1;
+  --title-bar-bg: #8db5e1;
+  --primary: #e4e7f1;
+  --primary-hover: #4e87f0;
+  --accent: #f4eef4;
+  --container-bg: #ffffff;
+  --body-bg-image: url('/static/images/wally.png');
+  --section-bg-image: url('/static/images/wally2.png');
+}
+
+/* === Main Background Styling === */
+body {
+  background-color: var(--bg);
+  background-image: var(--body-bg-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--text);
+  transition: background-color 0.6s ease, background-image 0.6s ease, color 0.4s ease;
+}
+
+/* === Card Container Styling === */
+.dashboard-section,
+.common-box,
+.status-card,
+.theme-preview-card,
+.mini-table-box,
+.ledger-box {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.navbar,
+.title-bar {
+  background: var(--title-bar-bg);
+  color: var(--text);
+}
+
+/* Accent utility */
+.accent-bg {
+  background: var(--accent) !important;
+}
+
+/* === Card Background Image Overlay (Funky Only) === */
+.dashboard-section {
+  position: relative;
+  z-index: 1;
+  background-color: var(--container-bg);
+  overflow: hidden;
+}
+
+.dashboard-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: var(--section-bg-image);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+:root[data-theme="funky"] .dashboard-section::before {
+  opacity: 1;
+}
+
+/* === Sonic Dashboard Elements === */
+.sonic-content-panel,
+.sonic-section-container {
+  background: var(--card-bg) !important;
   color: var(--text) !important;
   transition: background 0.25s, color 0.25s;
 }
@@ -162,8 +247,10 @@ body {
   transition: background 0.22s, color 0.22s, border-color 0.22s;
 }
 
+
 /* Debug outlines - add 'debug-outlines' class to <body> to visualize layout boxes */
 body.debug-outlines .sonic-section-container,
 body.debug-outlines .sonic-content-panel {
   outline: 2px dashed rgba(255, 0, 0, 0.5);
 }
+

@@ -4,11 +4,11 @@
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front status-card monitor-style {{ item.color }}">
-            <div class="icon">{{ item.icon }}</div>
-            <div class="value">{{ item.value }}</div>
-            <div class="label">{{ item.title }}</div>
-            <div class="led-dot {{ item.color }}"></div>
-          </div>
+              <div class="label">{{ item.title }}</div>
+              <div class="icon">{{ item.icon }}</div>
+              <div class="value">{{ item.value }}</div>
+              <div class="led-dot {{ item.color }}"></div>
+            </div>
           <div class="flip-card-back">
             {% if item.title == "Price" %}
               <strong>Status:</strong>
