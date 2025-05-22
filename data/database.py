@@ -16,7 +16,22 @@ class DatabaseManager:
 
             self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
             self.conn.row_factory = sqlite3.Row
-            self.conn.execute("PRAGMA journal_mode=WAL;")
+            try:
+                self.conn.execute("PRAGMA journal_mode=WAL;")
+            except sqlite3.DatabaseError as e:
+                # Handle corruption or non-database files gracefully
+                if "file is not a database" in str(e):
+                    self.conn.close()
+                    # Remove the bad file and recreate a fresh database
+                    try:
+                        os.remove(self.db_path)
+                    except OSError:
+                        pass
+                    self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
+                    self.conn.row_factory = sqlite3.Row
+                    self.conn.execute("PRAGMA journal_mode=WAL;")
+                else:
+                    raise
         return self.conn
 
     def get_cursor(self):
