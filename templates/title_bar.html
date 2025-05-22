@@ -9,23 +9,23 @@
   </div>
   <div class="title-bar-center flex-grow-1 text-center" style="font-size:1.3rem;font-weight:bold;letter-spacing:0.04em;">
   </div>
-  <div class="title-bar-actions d-flex align-items-center gap-2">
-    <button class="btn nav-icon-btn cyclone-btn" data-action="sync"   title="Jupiter Sync">🪐</button>
-    <button class="btn nav-icon-btn cyclone-btn" data-action="market" title="Market Update">💲</button>
-    <button class="btn nav-icon-btn cyclone-btn" data-action="full"  title="Full Cycle">🌪️</button>
-    <button class="btn nav-icon-btn cyclone-btn" data-action="wipe"  title="Wipe All">🗑️</button>
-    <button id="layoutModeToggle" class="btn btn-outline-primary layout-toggle-btn" title="Switch View Mode">
-      🛠 <span id="currentLayoutMode">wide</span>
-    </button>
-    <div class="theme-toggle-group" id="themeToggleGroup">
-      <button class="btn btn-outline-secondary theme-btn" data-theme="light" title="Light Theme">☀️</button>
-      <button class="btn btn-outline-secondary theme-btn" data-theme="dark" title="Dark Theme">🌙</button>
-      <button class="btn btn-outline-secondary theme-btn" data-theme="funky" title="Funky Theme">🎨</button>
-    </div>
-    <div class="dropdown ms-2">
-      <button class="btn btn-light nav-icon-btn dropdown-toggle" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Settings">
-        <span>⚙️</span>
-      </button>
+    <div class="title-bar-actions d-flex align-items-center gap-2">
+      <a class="btn nav-icon-btn cyclone-btn" href="#" role="button" data-action="sync"   title="Jupiter Sync"><span>🪐</span></a>
+      <a class="btn nav-icon-btn cyclone-btn" href="#" role="button" data-action="market" title="Market Update"><span>💲</span></a>
+      <a class="btn nav-icon-btn cyclone-btn" href="#" role="button" data-action="full"  title="Full Cycle"><span>🌪️</span></a>
+      <a class="btn nav-icon-btn cyclone-btn" href="#" role="button" data-action="wipe"  title="Wipe All"><span>🗑️</span></a>
+      <a id="layoutModeToggle" class="btn btn-outline-primary layout-toggle-btn" href="#" role="button" title="Switch View Mode">
+        🛠 <span id="currentLayoutMode">wide</span>
+      </a>
+      <div class="theme-toggle-group" id="themeToggleGroup">
+        <a class="btn btn-outline-secondary theme-btn" href="#" role="button" data-theme="light" title="Light Theme">☀️</a>
+        <a class="btn btn-outline-secondary theme-btn" href="#" role="button" data-theme="dark" title="Dark Theme">🌙</a>
+        <a class="btn btn-outline-secondary theme-btn" href="#" role="button" data-theme="funky" title="Funky Theme">🎨</a>
+      </div>
+      <div class="dropdown ms-2">
+        <a class="btn btn-light nav-icon-btn dropdown-toggle" href="#" role="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Settings">
+          <span>⚙️</span>
+        </a>
       <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
         <li><a class="dropdown-item" href="/system/themes/editor"><span>🎨</span> Theme Builder</a></li>
         <li><a class="dropdown-item" href="/system/database_viewer"><span>🗃️</span> Database Viewer</a></li>
