@@ -13,17 +13,13 @@
       background-repeat: no-repeat;
       background-position: center;
     }
-    .db-viewer-container {
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 1rem;
-    }
     .db-table { margin-top: 1rem; background: #fff; }
   </style>
 {% endblock %}
 
 {% block content %}
 {% include "title_bar.html" %}
-<div class="container py-4 db-viewer-container">
+<div class="container py-4 page-container">
   <h2 class="mb-3">Database Viewer</h2>
   <div class="mb-3">
     <label for="tableSelect" class="form-label">Select Table:</label>
