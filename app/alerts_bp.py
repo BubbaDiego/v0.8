@@ -166,6 +166,18 @@ def monitor_page():
     return render_template("alert_monitor.html")
 
 
+@alerts_bp.route('/status_page', methods=['GET'])
+def alert_status_page():
+    """Render the combined alert status panel."""
+    alerts = []
+    try:
+        dl = current_app.data_locker
+        alerts = dl.alerts.get_all_alerts()
+    except Exception as e:
+        logger.error(f"Failed to load alerts for status page: {e}", exc_info=True)
+    return render_template('alert_status.html', alerts=alerts)
+
+
 @alerts_bp.route('/alert_matrix', methods=['GET'])
 def alert_matrix_page():
     """Render the Alert Matrix page."""
