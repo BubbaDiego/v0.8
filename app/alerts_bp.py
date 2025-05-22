@@ -167,7 +167,6 @@ def monitor_page():
 
 
 @alerts_bp.route('/status_page', methods=['GET'])
-@alerts_bp.route('/', methods=['GET'])
 def alert_status_page():
     """Render the combined alert status panel."""
     alerts = []
