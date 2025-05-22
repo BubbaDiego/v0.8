@@ -41,6 +41,7 @@
 
 /* Section titles inside the cards */
 .section-title {
+  font-family: 'Orbitron', sans-serif;
   font-size: 1.25rem;
   font-weight: bold;
   margin-bottom: 1.2rem;
