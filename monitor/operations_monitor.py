@@ -12,8 +12,7 @@ import time
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from utils.console_logger import ConsoleLogger as log
-
-DB_PATH = os.getenv("DB_PATH", "mother_brain.db")
+from core.constants import DB_PATH
 
 
 class OperationsMonitor(BaseMonitor):
@@ -26,7 +25,7 @@ class OperationsMonitor(BaseMonitor):
             timer_config_path=timer_config_path,
             ledger_filename=ledger_filename or "operations_ledger.json"
         )
-        self.data_locker = DataLocker(DB_PATH)
+        self.data_locker = DataLocker(str(DB_PATH))
         self.monitor_interval = monitor_interval
         self.continuous_mode = continuous_mode
         self.notifications_enabled = notifications_enabled
