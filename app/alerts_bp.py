@@ -151,6 +151,11 @@ def alert_config_page():
     )
 
 
+@alerts_bp.route('/alert_thresholds', methods=['GET'])
+def alert_thresholds():
+    return alert_config_page()
+
+
 @alerts_bp.route('/monitor_page', methods=['GET'])
 def monitor_page():
     print("🧪 Rendering from:", TEMPLATE_PATH)
