@@ -41,6 +41,11 @@
   margin-top: 1.1rem;
 }
 
+/* Slightly smaller cards and tighter spacing for the portfolio panel */
+.portfolio-panel .card-flex {
+  gap: 1rem 1.4rem;
+}
+
 /* ─────────────────────────────────────────────── */
 /* Flip Card Base */
 .flip-card {
@@ -52,6 +57,13 @@
   cursor: pointer;
   margin-bottom: 0.6rem;
   border-radius: 1.15rem;
+}
+
+/* Slightly smaller card sizing within the portfolio panel */
+.portfolio-panel .flip-card {
+  flex-basis: 100px;
+  max-width: 110px;
+  min-width: 90px;
 }
 
 /* Inner container to enable 3D flip */
