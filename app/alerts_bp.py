@@ -131,6 +131,7 @@ def delete_all_alerts():
 
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
+
     """Render the alert limits configuration page with config data."""
     try:
         config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
