@@ -335,11 +335,18 @@ def hedge_calculator_page():
         long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
         short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
 
-        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
-            theme_config = json.load(f)
+        # Prefer DB-stored theme profiles and hedge modifiers
+        dl = current_app.data_locker
+        theme_config = dl.system.get_active_theme_profile()
+        if not theme_config:
+            with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
+                theme_config = json.load(f)
 
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+        modifiers = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        if not modifiers:
+            json_manager = current_app.json_manager
+            sauce = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+            modifiers = sauce.get("hedge_modifiers", {})
 
         return render_template(
             "hedge_calculator.html",
