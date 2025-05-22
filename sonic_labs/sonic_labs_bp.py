@@ -3,9 +3,8 @@
 
 from flask import Blueprint, render_template, jsonify, current_app, request
 import json
-from positions.position_sync_service import PositionSyncService
-from positions.position_core_service import PositionCoreService
-from core.constants import THEME_CONFIG_PATH
+from positions.position_sync_service import PositionSyncService  # noqa: F401
+from positions.position_core_service import PositionCoreService  # noqa: F401
 from utils.json_manager import JsonType
 from core.core_imports import DB_PATH, retry_on_locked
 
@@ -19,12 +18,16 @@ def hedge_calculator():
         long_positions = [p for p in positions if p.get("position_type", "").upper() == "LONG"]
         short_positions = [p for p in positions if p.get("position_type", "").upper() == "SHORT"]
 
-        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
-            theme_config = json.load(f)
+        dl = current_app.data_locker
+        theme_config = dl.system.get_active_theme_profile() or {}
+        modifiers = dl.modifiers.get_all_modifiers("hedge_modifiers")
 
-        # Use the JsonManager instance from the app
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+        if not modifiers:
+            try:
+                json_manager = current_app.json_manager
+                modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+            except Exception:
+                modifiers = {}
 
         return render_template("hedge_calculator.html",
                                theme=theme_config,
