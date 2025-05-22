@@ -122,3 +122,14 @@ function resetPriceToCurrent(){
   slider.value=lastComputedCurrentPrice;
   sliderChanged();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const longSel = document.getElementById('longSelect');
+  if (longSel && longSel.value) {
+    loadLongPosition();
+  }
+  const shortSel = document.getElementById('shortSelect');
+  if (shortSel && shortSel.value) {
+    loadShortPosition();
+  }
+});
