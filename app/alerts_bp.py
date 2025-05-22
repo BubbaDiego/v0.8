@@ -6,8 +6,9 @@ from flask import current_app
 from config.config_loader import load_config
 from core.core_imports import ALERT_LIMITS_PATH
 
-from flask import Blueprint, jsonify, render_template, render_template_string
+from flask import Blueprint, jsonify, render_template, render_template_string, request, session
 from data.data_locker import DataLocker
+from config.config_managerz import UnifiedConfigManager
 
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app'))
 ALERT_MONITOR_DIR = os.path.join(APP_DIR, 'alert_monitor')
@@ -174,6 +175,28 @@ def monitor_data():
     except Exception as e:
         logger.error(f"Failed to load alerts for monitor: {e}", exc_info=True)
         return jsonify({"alerts": [], "error": str(e)}), 500
+
+@alerts_bp.route('/update_config', methods=['POST'])
+def update_config():
+    """Update alert limits configuration."""
+    token = session.get('csrf_token')
+    request_token = request.headers.get('X-CSRFToken') or request.form.get('csrf_token')
+    if token and token != request_token:
+        logger.warning("CSRF token mismatch on update_config")
+        return jsonify({"success": False, "error": "Invalid CSRF token"}), 400
+
+    try:
+        form_data = request.form.to_dict(flat=False)
+        parsed = _parse_nested_form(form_data)
+        parsed = convert_types_in_dict(parsed)
+
+        manager = UnifiedConfigManager(str(ALERT_LIMITS_PATH))
+        manager.update_config(parsed)
+
+        return jsonify({"success": True, "message": "Configuration updated"})
+    except Exception as e:
+        logger.error(f"Failed to update alert config: {e}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # --- Internal helpers ---
 
