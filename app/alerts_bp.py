@@ -166,6 +166,25 @@ def monitor_page():
     return render_template("alert_monitor.html")
 
 
+@alerts_bp.route('/alert_matrix', methods=['GET'])
+def alert_matrix_page():
+    """Render the Alert Matrix page."""
+    alerts = []
+    hedges = []
+    try:
+        dl = current_app.data_locker
+        alerts = dl.alerts.get_all_alerts()
+    except Exception as e:
+        logger.error(f"Failed to load alerts for matrix: {e}", exc_info=True)
+    # Hedging data may not be available yet; attempt if method exists
+    try:
+        if hasattr(dl, 'portfolio') and hasattr(dl.portfolio, 'get_hedges'):
+            hedges = dl.portfolio.get_hedges()
+    except Exception as e:
+        logger.warning(f"Failed to load hedges: {e}")
+    return render_template('alert_matrix.html', alerts=alerts, hedges=hedges)
+
+
 
 @alerts_bp.route('/monitor', methods=['GET'])
 def monitor_data():
