@@ -5,7 +5,7 @@ Module: DataLocker
 Description:
     High-level orchestrator that composes all DL*Manager modules. This is the
     central access point for interacting with alerts, prices, positions, wallets,
-    brokers, portfolio data, and global system state via a unified SQLite backend.
+    brokers, portfolio data, hedges, and global system state via a unified SQLite backend.
 
 Dependencies:
     - DatabaseManager (SQLite wrapper)
@@ -27,6 +27,7 @@ from data.dl_portfolio import DLPortfolioManager
 from data.dl_system_data import DLSystemDataManager
 from data.dl_monitor_ledger import DLMonitorLedgerManager
 from data.dl_modifiers import DLModifierManager
+from data.dl_hedges import DLHedgeManager
 
 class DataLocker:
     def __init__(self, db_path):
@@ -44,6 +45,7 @@ class DataLocker:
         self.alerts = DLAlertManager(self.db)
         self.prices = DLPriceManager(self.db)
         self.positions = DLPositionManager(self.db)
+        self.hedges = DLHedgeManager(self.db)
         self.wallets = DLWalletManager(self.db)
         self.brokers = DLBrokerManager(self.db)
         self.portfolio = DLPortfolioManager(self.db)
