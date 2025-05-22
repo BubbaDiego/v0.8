@@ -37,8 +37,9 @@
   border-color: #bcb4ef;
 }
 .layout-toggle-btn {
-  border-radius: 7px;
-  font-size: 1.05rem;
+  border-radius: 10px;
+  border: 1.5px solid #d2cdf7;
+  font-size: 1.1rem;
   padding: 0.32em 1em;
   margin-left: 1rem;
 }
@@ -49,13 +50,15 @@
   vertical-align: middle;
 }
 .theme-btn {
-  border: 2px solid #bbb;
-  border-radius: 50%;
+  border: 1.5px solid #d2cdf7;
+  border-radius: 10px;
   padding: 0.34em 0.66em;
-  font-size: 1.26em;
+  font-size: 1.4em;
   background: #fff;
   color: #444;
   cursor: pointer;
+  min-width: 42px;
+  min-height: 42px;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
   outline: none;
 }
@@ -72,12 +75,14 @@
   border-color: #7c3aed;
 }
 .cyclone-btn {
-  font-size: 1.8rem;
-  border-radius: 8px;
-  padding: 0.18rem 0.7rem;
+  font-size: 1.9rem;
+  border-radius: 10px;
+  padding: 0.18rem 0.55rem;
   margin-left: 0.18rem;
   background: #fff;
   border: 1.5px solid #d2cdf7;
+  min-width: 42px;
+  min-height: 42px;
   transition: background 0.18s, color 0.18s, border 0.18s;
 }
 .cyclone-btn:hover {
