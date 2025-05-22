@@ -178,6 +178,7 @@
   font-size: 0.8rem;
 }
 
+
 /* Container & label for dashboard version */
 .common-box.liquidation-box {
   padding: 0.8rem 1rem;
@@ -192,3 +193,4 @@
   margin-bottom: 0.6rem;
   color: var(--text, #222);
 }
+
