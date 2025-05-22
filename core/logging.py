@@ -25,4 +25,20 @@ def configure_console_log():
         "CyclonePositionService"
     ])
     log.enable_group("cyclone_core")
+
+    # Silence DataLocker and related DL manager modules during init
+    for module in [
+        "DataLocker",
+        "DLAlertManager",
+        "DLPriceManager",
+        "DLPositionManager",
+        "DLWalletManager",
+        "DLBrokerManager",
+        "DLPortfolioManager",
+        "DLSystemDataManager",
+        "DLMonitorLedger",
+        "DLModifierManager",
+        "DLThresholdManager",
+    ]:
+        log.silence_module(module)
     log.init_status()
