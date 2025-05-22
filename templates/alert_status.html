@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Alert Status{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_middle.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include "title_bar.html" %}
+<div class="sonic-section-container sonic-section-middle mt-3">
+  <div class="sonic-content-panel middle-left">
+    <div class="section-title">Alerts</div>
+    <div class="positions-table-wrapper">
+      <table class="positions-table alerts-table">
+        <thead>
+          <tr>
+            <th class="sortable left" data-col-index="0">Asset <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="1">Type <span class="sort-indicator"></span></th>
+            <th class="sortable right" data-col-index="2">Current <span class="sort-indicator"></span></th>
+            <th class="sortable right" data-col-index="3">Trigger <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="4">Level <span class="sort-indicator"></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if alerts %}
+            {% for alert in alerts %}
+            <tr data-alert-id="{{ alert.id }}">
+              <td class="left">{{ alert.asset or 'N/A' }}</td>
+              <td class="left">{{ alert.alert_type }}</td>
+              <td class="right">{{ "{:,.2f}".format(alert.evaluated_value or 0) }}</td>
+              <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
+              <td class="left">{{ alert.level }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="no-data-row"><td colspan="5" class="no-data">No alerts available.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="sonic-content-panel middle-right">
+    <div class="section-title">Proximity to Alert</div>
+    <div id="alertBars">
+      {% if alerts %}
+        {% for alert in alerts %}
+          {% if alert.travel_percent is defined and alert.travel_percent is not none %}
+          <div class="liq-row" data-alert-id="{{ alert.id }}">
+            <img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.asset|lower) + '_logo.png') }}" alt="{{ alert.asset }}" />
+            <div class="liq-progress-bar">
+              <div class="liq-bar-container">
+                <div class="liq-midline"></div>
+                {% set pct = alert.travel_percent|float %}
+                {% if pct >= 0 %}
+                  <div class="liq-bar-fill positive" style="left:50%; width: {{ pct }}%;">
+                    <div class="travel-text">{{ pct|round(1) }}%</div>
+                  </div>
+                {% else %}
+                  <div class="liq-bar-fill negative" style="right:50%; width: {{ pct|abs }}%;">
+                    <div class="travel-text">{{ pct|round(1) }}%</div>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="liq-flame-container">
+                {{ alert.level[0] if alert.level }}
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <p style="color:orange;">⚠️ No alerts to display.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const table = document.querySelector(".alerts-table");
+  if (!table) return;
+  const headers = table.querySelectorAll("thead th.sortable");
+  const tbody = table.querySelector("tbody");
+  const barsContainer = document.getElementById("alertBars");
+
+  let currentSort = { col: 0, dir: "asc" };
+
+  function sortTable(colIndex, dir) {
+    const rows = Array.from(tbody.querySelectorAll("tr")).filter(r => !r.classList.contains("no-data-row"));
+    if (rows.length === 0) return;
+    rows.sort((a, b) => {
+      const getText = (row) => {
+        const cell = row.children[colIndex];
+        const text = cell.textContent.replace(/[,%]/g, "").trim();
+        const num = parseFloat(text.replace(/[^0-9.-]/g, ""));
+        return isNaN(num) ? text.toLowerCase() : num;
+      };
+      let aVal = getText(a);
+      let bVal = getText(b);
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return dir === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      return dir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    rows.forEach(row => {
+      tbody.appendChild(row);
+      const alertId = row.getAttribute('data-alert-id');
+      const bar = barsContainer.querySelector(`[data-alert-id="${alertId}"]`);
+      if (bar) barsContainer.appendChild(bar);
+    });
+    headers.forEach((th, i) => {
+      th.classList.remove("sorted-asc", "sorted-desc");
+      th.querySelector(".sort-indicator").textContent = "";
+      if (i === colIndex) {
+        th.classList.add(dir === "asc" ? "sorted-asc" : "sorted-desc");
+        th.querySelector(".sort-indicator").textContent = dir === "asc" ? "▲" : "▼";
+      }
+    });
+  }
+
+  headers.forEach((th, i) => {
+    th.addEventListener("click", function() {
+      let dir = "desc";
+      if (currentSort.col === i && currentSort.dir === "desc") dir = "asc";
+      currentSort = { col: i, dir };
+      sortTable(i, dir);
+    });
+  });
+
+  sortTable(currentSort.col, currentSort.dir);
+});
+</script>
+{% endblock %}
