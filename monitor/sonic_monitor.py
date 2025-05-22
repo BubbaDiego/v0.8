@@ -8,13 +8,13 @@ from datetime import datetime, timezone
 from cyclone.cyclone_engine import Cyclone
 
 from data.data_locker import DataLocker
+from core.constants import DB_PATH
 
-DB_PATH = "mother_brain.db"
 MONITOR_NAME = "sonic_monitor"
 DEFAULT_INTERVAL = 60  # fallback if nothing set in DB
 
 def get_monitor_interval(db_path=DB_PATH, monitor_name=MONITOR_NAME):
-    dl = DataLocker(db_path)
+    dl = DataLocker(str(db_path))
     cursor = dl.db.get_cursor()
     cursor.execute(
         "SELECT interval_seconds FROM monitor_heartbeat WHERE monitor_name = ?",
@@ -29,7 +29,7 @@ def get_monitor_interval(db_path=DB_PATH, monitor_name=MONITOR_NAME):
     return DEFAULT_INTERVAL
 
 def update_heartbeat(monitor_name, interval_seconds, db_path=DB_PATH):
-    dl = DataLocker(db_path)
+    dl = DataLocker(str(db_path))
     cursor = dl.db.get_cursor()
     cursor.execute("""
         INSERT INTO monitor_heartbeat (monitor_name, last_run, interval_seconds)
@@ -57,7 +57,7 @@ def main():
     cyclone = Cyclone(monitor_core=monitor_core)
 
     # --- Ensure the heartbeat table exists ---
-    dl = DataLocker(DB_PATH)
+    dl = DataLocker(str(DB_PATH))
     cursor = dl.db.get_cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS monitor_heartbeat (
