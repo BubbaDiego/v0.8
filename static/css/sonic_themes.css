@@ -1,53 +1,159 @@
+/* ===========================================================
+   Super Theme Adjustments
+   This section defines color variables for each theme.
+   Modify these values to customize the look and feel.
+   =========================================================== */
+
 :root {
-  --card-bg: #fff;
-  --text: #232946;
-  --title-bar-bg: #f8f4ff;
-  --primary: #7c3aed;
-  --accent: #e4bad4;
+  /* Light theme defaults */
+  --bg: #e7ecfa;
+  --text: #222;
+  --card-bg: #f8fafc;
+  --card-border: #b7c5e0;
+  --navbar: #8fbbef;
+  --title-bar-bg: #8fbbef;
+  --primary: #4678d8;
+  --primary-hover: #3659a5;
+  --accent: #ecf0fc;
+  --container-bg: #fff;
+  --body-bg-image: none;
 }
-html[data-theme="light"] {
-  --card-bg: #fff;
-  --text: #232946;
-  --title-bar-bg: #f8f4ff;
-  --primary: #7c3aed;
-  --accent: #e4bad4;
+
+/* === Theme Variables === */
+:root[data-theme="light"] {
+  --bg: #e7ecfa;
+  --text: #222;
+  --card-bg: #f8fafc;
+  --card-border: #b7c5e0;
+  --navbar: #8fbbef;
+  --title-bar-bg: #8fbbef;
+  --primary: #4678d8;
+  --primary-hover: #3659a5;
+  --accent: #ecf0fc;
+  --container-bg: #fff;
+  --body-bg-image: none;
 }
-html[data-theme="dark"] {
-  --card-bg: #232946;
-  --text: #f1f1f1;
-  --title-bar-bg: #232946;
-  --primary: #7c3aed;
-  --accent: #e4bad4;
+
+:root[data-theme="dark"] {
+  --bg: #3a3a3c;
+  --text: #eee;
+  --card-bg: #23272f;
+  --card-border: #39404e;
+  --navbar: #191c22;
+  --title-bar-bg: #191c22;
+  --primary: #4678d8;
+  --primary-hover: #27408b;
+  --accent: #1a2639;
+  --container-bg: #14161c;
+  --body-bg-image: none;
 }
-html[data-theme="funky"] {
-  --card-bg: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
-  --text: #540d6e;
-  --title-bar-bg: #e4bad4;
-  --primary: #e944bb;
-  --accent: #a8edea;
+
+:root[data-theme="funky"] {
+  --bg: #1e1e40;
+  --text: #ffec99;
+  --card-bg: #3a2f5d;
+  --card-border: #e5eff3;
+  --navbar: #8db5e1;
+  --title-bar-bg: #8db5e1;
+  --primary: #e4e7f1;
+  --primary-hover: #4e87f0;
+  --accent: #f4eef4;
+  --container-bg: #ffffff;
+  --body-bg-image: url('/static/images/wally.png');
+  --section-bg-image: url('/static/images/wally2.png');
 }
-.sonic-content-panel, .sonic-section-container {
+
+/* === Main Background Styling === */
+body {
+  background-color: var(--bg);
+  background-image: var(--body-bg-image);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--text);
+  transition: background-color 0.6s ease, background-image 0.6s ease, color 0.4s ease;
+}
+
+/* === Card Container Styling === */
+.dashboard-section,
+.common-box,
+.status-card,
+.theme-preview-card,
+.mini-table-box,
+.ledger-box {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.navbar,
+.title-bar {
+  background: var(--title-bar-bg);
+  color: var(--text);
+}
+
+/* Accent utility */
+.accent-bg {
+  background: var(--accent) !important;
+}
+
+/* === Card Background Image Overlay (Funky Only) === */
+.dashboard-section {
+  position: relative;
+  z-index: 1;
+  background-color: var(--container-bg);
+  overflow: hidden;
+}
+
+.dashboard-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: var(--section-bg-image);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+:root[data-theme="funky"] .dashboard-section::before {
+  opacity: 1;
+}
+
+/* === Sonic Dashboard Elements === */
+.sonic-content-panel,
+.sonic-section-container {
   background: var(--card-bg) !important;
   color: var(--text) !important;
   transition: background 0.25s, color 0.25s;
 }
-.title-bar {
-  background: var(--title-bar-bg) !important;
-  color: var(--text) !important;
-  transition: background 0.25s, color 0.25s;
-}
-.layout-toggle-btn, .theme-btn.active {
+
+.layout-toggle-btn,
+.theme-btn.active {
   border-color: var(--primary) !important;
   background: var(--primary) !important;
   color: #fff !important;
 }
+
 .theme-btn {
   border-color: var(--primary) !important;
 }
-.theme-btn:hover, .layout-toggle-btn:hover {
+
+.theme-btn:hover,
+.layout-toggle-btn:hover {
   background: var(--accent) !important;
   color: var(--text) !important;
 }
-.sonic-content-panel, .title-bar, .layout-toggle-btn, .theme-btn {
+
+.sonic-content-panel,
+.title-bar,
+.layout-toggle-btn,
+.theme-btn {
   transition: background 0.22s, color 0.22s, border-color 0.22s;
 }
