@@ -300,3 +300,22 @@ class DataLocker:
         self.db.commit()
         log.success("✅ Seeded default thresholds", source="DataLocker")
 
+    def get_all_tables_as_dict(self) -> dict:
+        """Return all tables with their rows as lists of dicts."""
+        cursor = self.db.get_cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = [row[0] for row in cursor.fetchall()]
+
+        datasets = {}
+        for tbl in tables:
+            cursor.execute(f"SELECT * FROM {tbl}")
+            datasets[tbl] = [dict(row) for row in cursor.fetchall()]
+
+        return datasets
+
+    def get_table_as_dict(self, table_name: str) -> list:
+        """Return a single table as a list of dicts."""
+        cursor = self.db.get_cursor()
+        cursor.execute(f"SELECT * FROM {table_name}")
+        return [dict(row) for row in cursor.fetchall()]
+

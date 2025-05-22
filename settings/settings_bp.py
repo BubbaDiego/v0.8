@@ -44,10 +44,27 @@ def save_theme():
 @settings_bp.route("/database")
 @route_log_alert
 def database_viewer():
+    return render_template("db_viewer.html")
+
+
+@settings_bp.route("/database/datasets")
+@route_log_alert
+def database_datasets():
+    dl = current_app.data_locker
     try:
-        dl = current_app.data_locker
-        datasets = dl.get_all_tables_as_dict()
-        return render_template("database_viewer.html", datasets=datasets)
+        return jsonify(dl.get_all_tables_as_dict())
     except Exception as e:
         log.error(f"❌ Error loading tables: {e}", source="DatabaseViewer")
-        return render_template("database_viewer.html", datasets={})
+        return jsonify({"error": str(e)}), 500
+
+
+@settings_bp.route("/database/<table_name>")
+@route_log_alert
+def get_table_data(table_name):
+    dl = current_app.data_locker
+    try:
+        rows = dl.get_table_as_dict(table_name)
+        return jsonify(rows)
+    except Exception as e:
+        log.error(f"❌ Error fetching table {table_name}: {e}", source="DatabaseViewer")
+        return jsonify({"error": str(e)}), 500

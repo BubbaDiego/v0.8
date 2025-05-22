@@ -314,12 +314,26 @@ def seed_all_thresholds():
 
 @system_bp.route("/database_viewer", methods=["GET"])
 def database_viewer():
+    return render_template("db_viewer.html")
+
+
+@system_bp.route("/database_viewer/datasets", methods=["GET"])
+def database_datasets():
+    dl = current_app.data_locker
     try:
-        datasets = current_app.data_locker.get_all_tables_as_dict()
-        return render_template("system/database_viewer.html", datasets=datasets)
+        return jsonify(dl.get_all_tables_as_dict())
     except Exception as e:
-        flash(f"❌ Error loading DB viewer: {e}", "danger")
-        return render_template("system/database_viewer.html", datasets={})
+        return jsonify({"error": str(e)}), 500
+
+
+@system_bp.route("/database_viewer/<table_name>", methods=["GET"])
+def get_table_data(table_name: str):
+    dl = current_app.data_locker
+    try:
+        rows = dl.get_table_as_dict(table_name)
+        return jsonify(rows)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():
