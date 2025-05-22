@@ -114,3 +114,7 @@ class CalculationCore:
         for key, value in heat_mods.items():
             self.set_modifier(key, float(value))
         log.success("📦 Modifiers imported from JSON", source="CalculationCore")
+
+    def calculate_totals(self, positions: list) -> dict:
+        """Return aggregated totals for the provided positions."""
+        return self.calc_services.calculate_totals(positions)
