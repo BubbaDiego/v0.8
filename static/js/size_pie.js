@@ -24,14 +24,16 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   const chartEl = document.querySelector('#pieChartSize');
+  if (!chartEl) return;
+  chartEl.textContent = '';
+  chartEl.style.width = '100%';
+  chartEl.style.cursor = 'pointer';
+
   const chart = new ApexCharts(chartEl, options);
   chart.render();
 
-  const btn = document.getElementById('togglePieMode');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      mode = mode === 'donut' ? 'pie' : 'donut';
-      chart.updateOptions({ chart: { type: mode } });
-    });
-  }
+  chartEl.addEventListener('click', () => {
+    mode = mode === 'donut' ? 'pie' : 'donut';
+    chart.updateOptions({ chart: { type: mode } });
+  });
 });
