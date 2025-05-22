@@ -178,16 +178,7 @@
   font-size: 0.8rem;
 }
 
-
-/* Container & label for dashboard version */
-.common-box.liquidation-box {
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  background: var(--container-bg, #fff);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  margin-bottom: 1rem;
-}
-
+/* Label for dashboard version */
 .chart-label {
   font-weight: 600;
   margin-bottom: 0.6rem;
