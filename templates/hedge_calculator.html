@@ -36,9 +36,9 @@
             <div class="mb-2">
               <label for="longSelect" class="form-label"><strong>Select Long Position</strong></label>
               <select id="longSelect" class="form-select" onchange="loadLongPosition()">
-                <option value="" disabled selected>-- Choose a Position --</option>
+                <option value="" disabled {% if not default_long_id %}selected{% endif %}>-- Choose a Position --</option>
                 {% for pos in long_positions %}
-                <option value="{{ pos.id }}">{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+                <option value="{{ pos.id }}" {% if pos.id == default_long_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -60,9 +60,9 @@
             <div class="mb-2">
               <label for="shortSelect" class="form-label"><strong>Select Short Position</strong></label>
               <select id="shortSelect" class="form-select" onchange="loadShortPosition()">
-                <option value="" disabled selected>-- Choose a Position --</option>
+                <option value="" disabled {% if not default_short_id %}selected{% endif %}>-- Choose a Position --</option>
                 {% for pos in short_positions %}
-                <option value="{{ pos.id }}">{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+                <option value="{{ pos.id }}" {% if pos.id == default_short_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
                 {% endfor %}
               </select>
             </div>

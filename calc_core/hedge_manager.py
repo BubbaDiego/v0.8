@@ -17,8 +17,9 @@ from typing import List, Optional
 from datetime import datetime
 from uuid import uuid4
 from data.models import Position, Hedge
-from data.data_locker import DataLocker
 from core.core_imports import DB_PATH, log
+
+# Import DataLocker lazily inside functions to avoid circular dependencies
 
 
 class HedgeManager:
@@ -84,9 +85,11 @@ class HedgeManager:
 
     @staticmethod
     def find_hedges(db_path: str = DB_PATH) -> List[list]:
+        """Scan the database for hedgable position groups."""
+        from data.data_locker import DataLocker  # Local import to prevent circular deps
+
         log.debug("🔍 Entering find_hedges()", source="HedgeManager")
         try:
-           #1 dl = get_locker()
             dl = DataLocker(str(DB_PATH))
             raw_positions = dl.read_positions()
             log.debug(f"Retrieved {len(raw_positions)} raw positions", source="HedgeManager")
@@ -137,8 +140,11 @@ class HedgeManager:
 
     @staticmethod
     def clear_hedge_data(db_path: str = DB_PATH) -> None:
+        """Clear all hedge associations in the positions table."""
+        from data.data_locker import DataLocker
+
         try:
-            dl = get_locker()
+            dl = DataLocker(str(db_path))
             cursor = dl.db.get_cursor()
             cursor.execute("UPDATE positions SET hedge_buddy_id = NULL WHERE hedge_buddy_id IS NOT NULL")
             dl.db.commit()

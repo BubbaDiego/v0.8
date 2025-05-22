@@ -2,17 +2,29 @@
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
-from flask import Blueprint, request, render_template, redirect, url_for, flash, jsonify, current_app
+from flask import (
+    Blueprint,
+    request,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    jsonify,
+    current_app,
+)
 from werkzeug.utils import secure_filename
-#from config.alert_limits_json import legacy_alert_limits  # Simulating legacy load
+
+# from config.alert_limits_json import legacy_alert_limits  # Simulating legacy load
 
 from system.system_core import SystemCore
 from data.dl_thresholds import DLThresholdManager
 from data.models import AlertThreshold
 from wallets.wallet_schema import WalletIn
 from positions.position_core import PositionCore
+from positions.hedge_manager import HedgeManager
 from utils.json_manager import JsonType
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
@@ -20,8 +32,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 system_bp = Blueprint("system", __name__, url_prefix="/system")
 
+
 def get_core():
     return SystemCore(current_app.data_locker)
+
 
 @system_bp.route("/test_xcom", methods=["POST"])
 def test_xcom():
@@ -70,6 +84,7 @@ def list_wallets():
     wallets = core.wallets.list_wallets()
     return render_template("wallets/wallet_list.html", wallets=wallets)
 
+
 # ➕ Add a wallet
 @system_bp.route("/wallets/add", methods=["POST"])
 def add_wallet():
@@ -83,7 +98,11 @@ def add_wallet():
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
 
-        image_path = f"/static/uploads/wallets/{filename}" if filename else form.get("image_path")
+        image_path = (
+            f"/static/uploads/wallets/{filename}"
+            if filename
+            else form.get("image_path")
+        )
 
         data = WalletIn(
             name=form.get("name"),
@@ -93,7 +112,7 @@ def add_wallet():
             balance=float(form.get("balance", 0.0)),
             tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
             is_active=form.get("is_active", "off") == "on",
-            type=form.get("type", "personal")
+            type=form.get("type", "personal"),
         )
 
         get_core().wallets.create_wallet(data)
@@ -103,6 +122,7 @@ def add_wallet():
         flash(f"❌ Failed to add wallet: {e}", "danger")
 
     return redirect(url_for("system.list_wallets"))
+
 
 # 🗑️ Delete wallet
 @system_bp.route("/wallets/delete/<name>", methods=["POST"])
@@ -114,6 +134,7 @@ def delete_wallet(name):
         flash(f"❌ Delete failed: {e}", "danger")
     return redirect(url_for("system.list_wallets"))
 
+
 # 💾 Export wallets to JSON
 @system_bp.route("/wallets/export", methods=["POST"])
 def export_wallets():
@@ -124,6 +145,7 @@ def export_wallets():
         flash(f"❌ Export failed: {e}", "danger")
     return redirect(url_for("system.list_wallets"))
 
+
 # ♻️ Import from JSON
 @system_bp.route("/wallets/import", methods=["POST"])
 def import_wallets():
@@ -133,6 +155,7 @@ def import_wallets():
     except Exception as e:
         flash(f"❌ Import failed: {e}", "danger")
     return redirect(url_for("system.list_wallets"))
+
 
 # ✏️ Update wallet (from modal)
 @system_bp.route("/wallets/update/<name>", methods=["POST"])
@@ -148,7 +171,7 @@ def update_wallet(name):
             balance=float(form.get("balance", 0.0)),
             tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
             is_active="is_active" in form,
-            type=form.get("type", "personal")
+            type=form.get("type", "personal"),
         )
 
         get_core().wallets.update_wallet(name, data)
@@ -157,7 +180,9 @@ def update_wallet(name):
         flash(f"❌ Failed to update wallet '{name}': {e}", "danger")
     return redirect(url_for("system.list_wallets"))
 
+
 # === 🎨 Theme Profile Routes ===
+
 
 # 🔍 GET: All saved theme profiles
 @system_bp.route("/themes", methods=["GET"])
@@ -168,6 +193,7 @@ def list_themes():
         return jsonify(profiles)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # 💾 POST: Save or update a theme profile
 @system_bp.route("/themes", methods=["POST"])
@@ -184,6 +210,7 @@ def save_theme():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # ❌ DELETE: Remove a theme profile
 @system_bp.route("/themes/<name>", methods=["DELETE"])
 def delete_theme(name):
@@ -192,6 +219,7 @@ def delete_theme(name):
         return jsonify({"message": f"Theme '{name}' deleted."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # 🌟 POST: Set a profile as active
 @system_bp.route("/themes/activate/<name>", methods=["POST"])
@@ -202,6 +230,7 @@ def activate_theme(name):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # 🎯 GET: Active theme profile
 @system_bp.route("/themes/active", methods=["GET"])
 def get_active_theme():
@@ -211,13 +240,16 @@ def get_active_theme():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @system_bp.route("/themes/editor", methods=["GET"])
 def theme_editor_page():
     try:
         core = get_core()
         profiles = core.get_all_profiles()
         active = core.get_active_profile()
-        return render_template("system/theme_builder.html", profiles=profiles, active=active)
+        return render_template(
+            "system/theme_builder.html", profiles=profiles, active=active
+        )
     except Exception as e:
         return render_template("system/theme_builder.html", profiles={}, active={})
 
@@ -236,7 +268,6 @@ def theme_mode():
 
 # 🎨 Get/save theme config
 @system_bp.route("/theme_config", methods=["GET", "POST"])
-
 def theme_config():
     core = get_core()
 
@@ -260,6 +291,7 @@ def theme_config():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+
 @system_bp.route("/seed_all_thresholds", methods=["POST", "GET"])
 def seed_all_thresholds():
     from data.dl_thresholds import DLThresholdManager
@@ -278,15 +310,20 @@ def seed_all_thresholds():
             ("TotalSize", "Portfolio", "total_size", 10000, 50000, 100000),
             ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10),
             ("AvgTravelPercent", "Portfolio", "avg_travel_percent", -10, -5, 0),
-            ("ValueToCollateralRatio", "Portfolio", "value_to_collateral_ratio", 1.1, 1.5, 2.0),
+            (
+                "ValueToCollateralRatio",
+                "Portfolio",
+                "value_to_collateral_ratio",
+                1.1,
+                1.5,
+                2.0,
+            ),
             ("TotalHeat", "Portfolio", "total_heat_index", 30, 60, 90),
-
             # === Position Metrics
             ("Profit", "Position", "profit", 10, 25, 50),
             ("HeatIndex", "Position", "heat_index", 30, 60, 90),
             ("TravelPercentLiquid", "Position", "travel_percent_liquid", -20, -10, 0),
             ("LiquidationDistance", "Position", "liquidation_distance", 10, 5, 2),
-
             # === Market Metrics
             ("PriceThreshold", "Market", "current_price", 20000, 30000, 40000),
         ]
@@ -303,7 +340,7 @@ def seed_all_thresholds():
                 medium=med,
                 high=high,
                 enabled=True,
-                last_modified=now
+                last_modified=now,
             )
             if dl_mgr.insert(threshold):
                 created += 1
@@ -331,8 +368,30 @@ def hedge_calculator_page():
         core = PositionCore(current_app.data_locker)
         positions = core.get_all_positions() or []
 
-        long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
-        short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
+        long_positions = [
+            p for p in positions if str(p.get("position_type", "")).upper() == "LONG"
+        ]
+        short_positions = [
+            p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"
+        ]
+
+        hedges = HedgeManager(positions).get_hedges()
+        default_long_id = None
+        default_short_id = None
+        if hedges:
+            first = hedges[0]
+            pos_map = {p.get("id"): p for p in positions}
+            for pid in first.positions:
+                pos = pos_map.get(pid)
+                if not pos:
+                    continue
+                ptype = str(pos.get("position_type", "")).upper()
+                if ptype == "LONG" and default_long_id is None:
+                    default_long_id = pid
+                elif ptype == "SHORT" and default_short_id is None:
+                    default_short_id = pid
+                if default_long_id and default_short_id:
+                    break
 
         dl = current_app.data_locker
 
@@ -348,9 +407,12 @@ def hedge_calculator_page():
         if not hedge_mods or not heat_mods:
             try:
                 json_manager = current_app.json_manager
-                fallback = json_manager.load(
-                    "sonic_sauce.json", json_type=JsonType.SONIC_SAUCE
-                ) or {}
+                fallback = (
+                    json_manager.load(
+                        "sonic_sauce.json", json_type=JsonType.SONIC_SAUCE
+                    )
+                    or {}
+                )
                 hedge_mods = hedge_mods or fallback.get("hedge_modifiers", {})
                 heat_mods = heat_mods or fallback.get("heat_modifiers", {})
                 modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
@@ -363,15 +425,23 @@ def hedge_calculator_page():
             long_positions=long_positions,
             short_positions=short_positions,
             modifiers=modifiers,
+            default_long_id=default_long_id,
+            default_short_id=default_short_id,
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():
     dl = current_app.data_locker
-    config = dl.system.get_active_theme_profile().get("communication", {}).get("providers", {})
+    config = (
+        dl.system.get_active_theme_profile()
+        .get("communication", {})
+        .get("providers", {})
+    )
     return render_template("system/xcom_config.html", xcom_config=config)
+
 
 @system_bp.route("/xcom_config/save", methods=["POST"])
 def save_xcom_config():
@@ -401,14 +471,16 @@ def save_xcom_config():
                             "port": int(extract("email[smtp][port]") or 0),
                             "username": extract("email[smtp][username]"),
                             "password": extract("email[smtp][password]"),
-                            "default_recipient": extract("email[smtp][default_recipient]")
-                        }
+                            "default_recipient": extract(
+                                "email[smtp][default_recipient]"
+                            ),
+                        },
                     },
                     "sms": {
                         "enabled": True,
                         "carrier_gateway": extract("sms[carrier_gateway]"),
-                        "default_recipient": extract("sms[default_recipient]")
-                    }
+                        "default_recipient": extract("sms[default_recipient]"),
+                    },
                 }
             }
         }
@@ -427,7 +499,6 @@ def save_xcom_config():
         flash(f"❌ Failed to save XCom config: {e}", "danger")
 
     return redirect(url_for("system.xcom_config_page"))
-
 
 
 @system_bp.route("/alert_thresholds", methods=["GET"])
@@ -454,8 +525,6 @@ def list_alert_thresholds():
     return render_template("system/alert_thresholds.html", grouped_thresholds=grouped)
 
 
-
-
 # === POST: Update a threshold (AJAX) ===
 @system_bp.route("/alert_thresholds/update/<id>", methods=["POST"])
 def update_alert_threshold(id):
@@ -468,13 +537,14 @@ def update_alert_threshold(id):
             "enabled": bool(data["enabled"]),
             "low_notify": ",".join(data.get("low_notify", [])),
             "medium_notify": ",".join(data.get("medium_notify", [])),
-            "high_notify": ",".join(data.get("high_notify", []))
+            "high_notify": ",".join(data.get("high_notify", [])),
         }
         db = current_app.data_locker.db
         DLThresholdManager(db).update(id, fields)
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @system_bp.route("/alert_thresholds/export", methods=["GET"])
 def export_alert_thresholds():
@@ -484,12 +554,16 @@ def export_alert_thresholds():
 
     return jsonify(data)
 
+
 @system_bp.route("/alert_thresholds/import", methods=["POST"])
 def import_alert_thresholds():
     try:
         payload = request.get_json()
         if not isinstance(payload, list):
-            return jsonify({"success": False, "error": "Expected a list of thresholds"}), 400
+            return (
+                jsonify({"success": False, "error": "Expected a list of thresholds"}),
+                400,
+            )
 
         db = current_app.data_locker.db
         dl_mgr = DLThresholdManager(db)
@@ -504,6 +578,7 @@ def import_alert_thresholds():
         return jsonify({"success": True, "updated": count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @system_bp.route("/xcom_config/export", methods=["GET"])
 def export_xcom_config():
@@ -526,6 +601,7 @@ def import_xcom_config():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+
 @system_bp.route("/xcom_config/validate_twilio", methods=["POST"])
 def validate_twilio():
     try:
@@ -545,27 +621,39 @@ def validate_twilio():
         response = requests.get(url, auth=(sid, token))
 
         if response.status_code == 200:
-            return jsonify({"status": "ok", "message": "✅ Twilio credentials are valid."})
+            return jsonify(
+                {"status": "ok", "message": "✅ Twilio credentials are valid."}
+            )
         elif response.status_code == 401:
-            return jsonify({
-                "status": "fail",
-                "message": "❌ Invalid Account SID or Auth Token.",
-                "details": response.json()
-            }), 401
+            return (
+                jsonify(
+                    {
+                        "status": "fail",
+                        "message": "❌ Invalid Account SID or Auth Token.",
+                        "details": response.json(),
+                    }
+                ),
+                401,
+            )
         else:
-            return jsonify({
-                "status": "fail",
-                "message": f"❌ Unexpected response from Twilio: {response.status_code}",
-                "details": response.text
-            }), response.status_code
+            return (
+                jsonify(
+                    {
+                        "status": "fail",
+                        "message": f"❌ Unexpected response from Twilio: {response.status_code}",
+                        "details": response.text,
+                    }
+                ),
+                response.status_code,
+            )
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
 @classmethod
 def death(cls, message: str, source: str = None, payload: dict = None):
     cls._print("death", message, source, payload)
-
 
 
 @system_bp.route("/test_death", methods=["GET"])
@@ -573,19 +661,20 @@ def test_death_nail():
     try:
         system_core = current_app.system_core
 
-        system_core.death({
-            "message": "💀 Manual death spiral test triggered via /test_death",
-            "payload": {
-                "status": 401,
-                "source": "manual_test",
-                "user": "tester",
-                "reason": "Triggered by /test_death"
-            },
-            "level": "HIGH"
-        })
+        system_core.death(
+            {
+                "message": "💀 Manual death spiral test triggered via /test_death",
+                "payload": {
+                    "status": 401,
+                    "source": "manual_test",
+                    "user": "tester",
+                    "reason": "Triggered by /test_death",
+                },
+                "level": "HIGH",
+            }
+        )
 
         return "<h2 style='color:red'>💀 DEATH NAIL TRIGGERED</h2><p>Sound, log, and escalation executed.</p>"
 
     except Exception as e:
         return f"<h2>❌ Death Nail Failed</h2><pre>{str(e)}</pre>", 500
-
