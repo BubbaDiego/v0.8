@@ -130,7 +130,14 @@ def delete_all_alerts():
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
     """Render the alert limits configuration page."""
-    return render_template("alert_limits.html")
+    # ❗ Alert thresholds are stored in the database via the DataLocker
+    # interface. For now we simply render the template with empty
+    # placeholders so the page loads without relying on JSON files.
+    return render_template(
+        "alert_limits.html",
+        price_alerts={},
+        global_alert_config={},
+    )
 
 
 @alerts_bp.route('/monitor_page', methods=['GET'])
