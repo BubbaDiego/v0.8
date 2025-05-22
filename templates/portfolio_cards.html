@@ -4,9 +4,9 @@
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front status-card {{ item.color }}">
+            <div class="label">{{ item.title }}</div>
             <div class="icon">{{ item.icon }}</div>
             <div class="value">{{ item.value }}</div>
-            <div class="label">{{ item.title }}</div>
           </div>
           <div class="flip-card-back">
             {% set thresholds = portfolio_limits.get(item.title.lower().replace(' ', '_'), {}) %}
