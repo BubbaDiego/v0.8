@@ -24,7 +24,7 @@
   box-shadow: 0 8px 30px 0 rgba(56, 72, 140, 0.13),
               0 1.5px 8px rgba(70, 90, 144, 0.08);
   margin: 0 1rem;
-  padding: 2.3rem 2rem 2.4rem 2rem;
+  padding: 0.8rem 2rem 2.4rem 2rem; /* reduced top padding */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -120,6 +120,7 @@
   font-weight: 600;
 }
 .label {
+  font-family: 'Orbitron', sans-serif;
   font-size: 0.85rem;       /* label below value (e.g., "Leverage") */
 }
 
@@ -191,7 +192,7 @@
 /* Responsive Adjustments */
 @media (max-width: 900px) {
   .sonic-content-panel {
-    padding: 1.1rem 0.6rem;
+    padding: 0.4rem 0.6rem; /* reduced top padding */
     min-width: 210px;
   }
   .card-flex {
@@ -206,6 +207,7 @@
 
 /* Section title styling */
 .section-title {
+  font-family: 'Orbitron', sans-serif;
   font-size: 1.25rem;
   font-weight: bold;
   margin-bottom: 1.2rem;
