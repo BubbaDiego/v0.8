@@ -217,7 +217,7 @@ body {
   transition: background 0.25s, color 0.25s;
 }
 .sonic-section-container {
-  background: var(--container-bg);
+  background: transparent; /* show body background behind each section */
   border-radius: 1rem;
 }
 
