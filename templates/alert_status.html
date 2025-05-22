@@ -4,6 +4,9 @@
 
 {% block extra_styles %}
 {{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_middle.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
 {% endblock %}
@@ -22,6 +25,7 @@
             <th class="sortable right" data-col-index="2">Current <span class="sort-indicator"></span></th>
             <th class="sortable right" data-col-index="3">Trigger <span class="sort-indicator"></span></th>
             <th class="sortable left" data-col-index="4">Level <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="5">Status <span class="sort-indicator"></span></th>
           </tr>
         </thead>
         <tbody>
@@ -33,10 +37,11 @@
               <td class="right">{{ "{:,.2f}".format(alert.evaluated_value or 0) }}</td>
               <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
               <td class="left">{{ alert.level }}</td>
+              <td class="left">{{ alert.status }}</td>
             </tr>
             {% endfor %}
           {% else %}
-            <tr class="no-data-row"><td colspan="5" class="no-data">No alerts available.</td></tr>
+            <tr class="no-data-row"><td colspan="6" class="no-data">No alerts available.</td></tr>
           {% endif %}
         </tbody>
       </table>
