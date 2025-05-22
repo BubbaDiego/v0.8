@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}XCom Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-4">
+  <h2 class="mb-4"><i class="fas fa-plug text-primary me-2"></i>XCom Settings</h2>
+
+  <div class="row g-4">
+
+    <!-- 🧾 LEFT: CONFIG FORM -->
+    <div class="col-md-6">
+      <form method="POST" action="{{ url_for('system.save_xcom_config') }}">
+
+        <!-- TWILIO CONFIG -->
+        <div class="accordion mb-4" id="twilioAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#twilioCollapse">
+                <i class="fab fa-twilio me-2 text-danger"></i>Twilio Settings
+              </button>
+            </h2>
+            <div id="twilioCollapse" class="accordion-collapse collapse">
+              <div class="accordion-body row g-3">
+                {% set twilio = xcom_config.get("twilio", {}) %}
+                <div class="col-md-6"><label class="form-label">Account SID</label>
+                  <input type="text" name="twilio[account_sid]" value="{{ twilio.account_sid or '' }}" class="form-control">
+                </div>
+                <div class="col-md-6"><label class="form-label">Auth Token</label>
+                  <div class="input-group">
+                    <input type="password" id="authTokenField" name="twilio[auth_token]" value="{{ twilio.auth_token or '' }}" class="form-control">
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleToken()">👁️</button>
+                  </div>
+                </div>
+                <div class="col-md-6"><label class="form-label">Flow SID</label>
+                  <input type="text" name="twilio[flow_sid]" value="{{ twilio.flow_sid or '' }}" class="form-control">
+                </div>
+                <div class="col-md-6"><label class="form-label">From Phone</label>
+                  <input type="text" name="twilio[default_from_phone]" value="{{ twilio.default_from_phone or '' }}" class="form-control">
+                </div>
+                <div class="col-md-6"><label class="form-label">To Phone</label>
+                  <input type="text" name="twilio[default_to_phone]" value="{{ twilio.default_to_phone or '' }}" class="form-control">
+                </div>
+
+                <!-- 🔍 DISPLAY VALUES -->
+                <div class="col-md-12 mt-2">
+                  <label class="form-label text-muted">🔍 Loaded Twilio Config (read-only)</label>
+                  <div class="p-2 border bg-light text-monospace small rounded">
+                    <div>Account SID: <strong>{{ twilio.account_sid or "—" }}</strong></div>
+                    <div>Flow SID: <strong>{{ twilio.flow_sid or "—" }}</strong></div>
+                    <div>From Phone: <strong>{{ twilio.default_from_phone or "—" }}</strong></div>
+                    <div>To Phone: <strong>{{ twilio.default_to_phone or "—" }}</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMAIL CONFIG -->
+        <div class="accordion mb-4" id="emailAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#emailCollapse">
+                <i class="fas fa-envelope me-2 text-secondary"></i>Email Settings
+              </button>
+            </h2>
+            <div id="emailCollapse" class="accordion-collapse collapse">
+              <div class="accordion-body row g-3">
+                {% set email = xcom_config.get("email", {}).get("smtp", {}) %}
+                <div class="col-md-4"><label class="form-label">SMTP Server</label>
+                  <input type="text" name="email[smtp][server]" value="{{ email.server or '' }}" class="form-control">
+                </div>
+                <div class="col-md-2"><label class="form-label">Port</label>
+                  <input type="number" name="email[smtp][port]" value="{{ email.port or '' }}" class="form-control">
+                </div>
+                <div class="col-md-3"><label class="form-label">Username</label>
+                  <input type="text" name="email[smtp][username]" value="{{ email.username or '' }}" class="form-control">
+                </div>
+                <div class="col-md-3"><label class="form-label">Password</label>
+                  <input type="password" name="email[smtp][password]" value="{{ email.password or '' }}" class="form-control">
+                </div>
+                <div class="col-md-6"><label class="form-label">Default Recipient</label>
+                  <input type="text" name="email[smtp][default_recipient]" value="{{ email.default_recipient or '' }}" class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SMS CONFIG -->
+        <div class="accordion mb-4" id="smsAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#smsCollapse">
+                <i class="fas fa-sms me-2 text-success"></i>SMS Settings
+              </button>
+            </h2>
+            <div id="smsCollapse" class="accordion-collapse collapse">
+              <div class="accordion-body row g-3">
+                {% set sms = xcom_config.get("sms", {}) %}
+                <div class="col-md-6"><label class="form-label">Carrier Gateway</label>
+                  <input type="text" name="sms[carrier_gateway]" value="{{ sms.carrier_gateway or '' }}" class="form-control">
+                </div>
+                <div class="col-md-6"><label class="form-label">Default Recipient</label>
+                  <input type="text" name="sms[default_recipient]" value="{{ sms.default_recipient or '' }}" class="form-control">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 💾 SAVE -->
+        <div class="d-flex justify-content-end mt-4">
+          <button class="btn btn-success px-4" type="submit">
+            <i class="fas fa-save me-2"></i>Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ✅ RIGHT: LIVE TESTING PANEL -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <i class="fas fa-vial me-2"></i>Test XCom
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Trigger live test messages through XCom routes.</p>
+          <div class="d-grid gap-3">
+
+            {% for mode, icon, label, color in [
+              ('sms', 'fas fa-sms', 'Send SMS', 'primary'),
+              ('email', 'fas fa-envelope', 'Send Email', 'secondary'),
+              ('system', 'fas fa-volume-up', 'Play System Sound', 'info'),
+              ('voice', 'fas fa-phone-alt', 'Trigger Voice Call', 'danger'),
+              ('death', '💀', 'Test DeathNail', 'dark')
+            ] %}
+            <form method="POST" action="{{ url_for('system.test_xcom') }}">
+              <input type="hidden" name="mode" value="{{ mode }}">
+              <button class="btn btn-outline-{{ color }} w-100" type="submit">
+                <i class="{{ icon }} me-2"></i>{{ label }}
+              </button>
+            </form>
+            {% endfor %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleToken() {
+  const field = document.getElementById("authTokenField");
+  field.type = field.type === "password" ? "text" : "password";
+}
+</script>
+{% endblock %}
