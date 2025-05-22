@@ -1,5 +1,4 @@
 import sys
-import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import json
@@ -13,6 +12,8 @@ from core.logging import log
 from positions.position_core import PositionCore
 from calc_core.calculation_core import CalculationCore
 from utils.route_decorators import route_log_alert
+from config.config_loader import load_config
+from core.constants import ALERT_LIMITS_PATH
 
 
 positions_bp = Blueprint("positions", __name__, template_folder="../templates/positions")
@@ -40,7 +41,7 @@ def list_positions():
         core = PositionCore(current_app.data_locker)
         positions = core.get_all_positions()
 
-        config_data = current_app.config_manager.load_config()
+        config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
         alert_dict = config_data.get("alert_ranges", {})
 
         def get_alert_class(value, low, med, high):

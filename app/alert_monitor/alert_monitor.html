@@ -9,6 +9,8 @@
 
 {% block extra_styles %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
   <link rel="stylesheet" href="{{ url_for('alerts_bp.static', filename='alert_monitor.css') }}">
 {% endblock %}
 
@@ -21,7 +23,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
-  {{ super() }}
   <script src="{{ url_for('static', filename='js/title_bar.js') }}" defer></script>
   <script src="{{ url_for('alerts_bp.static', filename='alert_monitor.js') }}"></script>
 {% endblock %}
