@@ -251,12 +251,17 @@ def get_dashboard_context(data_locker):
     monitor_items = [item for item in universal_items if item["title"] in monitor_titles]
     status_items = [item for item in universal_items if item["title"] not in monitor_titles]
 
-    # Existing graph/comp context...
-    portfolio_history = data_locker.portfolio.get_snapshots() or []
+    # Graph data is currently canned for demo purposes
     graph_data = {
-        "timestamps": [entry.get("snapshot_time") for entry in portfolio_history],
-        "values": [float(entry.get("total_value", 0)) for entry in portfolio_history],
-        "collateral": [float(entry.get("total_collateral", 0)) for entry in portfolio_history]
+        "timestamps": [
+            "2024-01-01T00:00:00Z",
+            "2024-02-01T00:00:00Z",
+            "2024-03-01T00:00:00Z",
+            "2024-04-01T00:00:00Z",
+            "2024-05-01T00:00:00Z",
+        ],
+        "values": [10000, 12000, 15000, 14000, 16000],
+        "collateral": [7000, 7500, 7800, 7600, 8200],
     }
 
     long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
