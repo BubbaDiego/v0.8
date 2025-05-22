@@ -3,6 +3,63 @@
 {% block page_title %}{% endblock %}
 
 {% block content %}
-<h1>Hedge Calculator</h1>
-<p>TODO: full hedge calculator content.</p>
+<div class="container mt-4">
+  <h1 class="mb-3">Hedge Calculator</h1>
+
+  <div class="row">
+    <div class="col-md-6">
+      <h3>Long Positions</h3>
+      {% if long_positions %}
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th class="text-end">Size</th>
+            <th class="text-end">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pos in long_positions %}
+          <tr>
+            <td>{{ pos.asset_type }}</td>
+            <td class="text-end">{{ pos.size }}</td>
+            <td class="text-end">{{ pos.value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p><strong>Total: {{ long_positions | sum(attribute='value') }}</strong></p>
+      {% else %}
+      <p>No long positions.</p>
+      {% endif %}
+    </div>
+
+    <div class="col-md-6">
+      <h3>Short Positions</h3>
+      {% if short_positions %}
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th class="text-end">Size</th>
+            <th class="text-end">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pos in short_positions %}
+          <tr>
+            <td>{{ pos.asset_type }}</td>
+            <td class="text-end">{{ pos.size }}</td>
+            <td class="text-end">{{ pos.value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p><strong>Total: {{ short_positions | sum(attribute='value') }}</strong></p>
+      {% else %}
+      <p>No short positions.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

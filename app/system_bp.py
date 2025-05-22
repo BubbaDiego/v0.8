@@ -329,17 +329,29 @@ def database_viewer():
 def hedge_calculator_page():
     """Render the hedge calculator page."""
     try:
-        core = PositionCore(current_app.data_locker)
+        dl = current_app.data_locker
+        core = PositionCore(dl)
         positions = core.get_all_positions() or []
 
         long_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
         short_positions = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
 
-        with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
-            theme_config = json.load(f)
+        # --- Theme profile ---
+        theme_config = dl.system.get_active_theme_profile()
+        if not theme_config:
+            with open(THEME_CONFIG_PATH, "r", encoding="utf-8") as f:
+                theme_config = json.load(f)
 
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
+        # --- Hedge & heat modifiers ---
+        hedge_mods = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
+        modifiers = {
+            "hedge_modifiers": hedge_mods,
+            "heat_modifiers": heat_mods,
+        }
+        if not hedge_mods and not heat_mods:
+            json_manager = current_app.json_manager
+            modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
 
         return render_template(
             "hedge_calculator.html",
