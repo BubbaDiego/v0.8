@@ -120,7 +120,11 @@
 
       <!-- Simplified output rows omitted for brevity -->
     </div>
-  </div>
 </div>
+</div>
+<script>
+  window.longPositionsData = {{ long_positions | tojson }};
+  window.shortPositionsData = {{ short_positions | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/hedge_calculator.js') }}"></script>
 {% endblock %}
