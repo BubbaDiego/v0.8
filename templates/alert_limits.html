@@ -1,4 +1,8 @@
-<script src="../../static/js/api_routes.js"></script>{% extends "base.html" %}
+{% extends "base.html" %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='js/api_routes.js') }}"></script>
+{% endblock %}
 
 {% block title %}Alert Limits Configuration{% endblock %}
 
@@ -142,9 +146,13 @@
   </div>
 </div>
 
-<!-- (continues...) -->
-{% endif %}
-{% endif %}
-{% endif %}
-{% endblock %}
+<div class="d-flex justify-content-end mt-3">
+  <button type="submit" class="btn btn-primary">
+    Save
+    <span class="save-spinner"></span>
+  </button>
+</div>
+
+</form>
+</div>
 {% endblock %}
