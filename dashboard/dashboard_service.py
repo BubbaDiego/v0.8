@@ -22,6 +22,8 @@ WALLET_IMAGE_MAP = {
     "ObiVault": "obivault.jpg",
     "R2Vault": "r2vault.jpg",
     "LandoVault": "landovault.jpg",
+    "VaderVault": "vadervault.jpg",
+    "LandoVaultz": "landovault.jpg",
 }
 DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
