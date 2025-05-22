@@ -132,11 +132,6 @@ body {
   color: var(--text) !important;
   transition: background 0.25s, color 0.25s;
 }
-.sonic-section-container {
-  background: transparent !important;
-=======
-}
-
 :root[data-theme="funky"] {
   --bg: #1e1e40;
   --text: #ffec99;
@@ -216,11 +211,14 @@ body {
 }
 
 /* === Sonic Dashboard Elements === */
-.sonic-content-panel,
-.sonic-section-container {
+.sonic-content-panel {
   background: var(--card-bg) !important;
   color: var(--text) !important;
   transition: background 0.25s, color 0.25s;
+}
+.sonic-section-container {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-radius: 1rem;
 }
 
 .layout-toggle-btn,

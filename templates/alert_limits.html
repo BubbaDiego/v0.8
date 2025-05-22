@@ -8,7 +8,7 @@
 
 
 {% block content %}
-<div class="container py-4 page-container">
+<div class="container py-4">
   <h1 class="mb-4">Alert Limits</h1>
   <p>This page will hold alert configuration options.</p>
 </div>
@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid pt-4 page-container">
+<div class="container-fluid pt-4">
 
 <form id="alertForm" method="POST" action="{{ url_for('alerts_bp.update_config') }}">
 
