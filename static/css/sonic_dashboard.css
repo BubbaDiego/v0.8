@@ -6,7 +6,7 @@
   margin: 2.5rem auto 2rem auto;      /* top, left/right auto, bottom spacing */
   padding: 0;
   max-width: 1200px;                 /* default max width unless layout mode overrides */
-  background: rgba(255, 255, 255, 0.6); /* translucent */
+  background: var(--container-bg, rgba(255, 255, 255, 0.6));
   border-radius: 1rem;
   border: none;
   display: flex;
