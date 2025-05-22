@@ -1,4 +1,8 @@
-<script src="../../static/js/api_routes.js"></script>{% extends "base.html" %}
+{% extends "base.html" %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='js/api_routes.js') }}"></script>
+{% endblock %}
 
 {% block title %}Alert Limits Configuration{% endblock %}
 
