@@ -17,6 +17,13 @@ from utils.fuzzy_wuzzy import fuzzy_match_key
 from calc_core.calculation_core import CalculationCore
 from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
 
+# Mapping of wallet names to icon filenames
+WALLET_IMAGE_MAP = {
+    "ObiVault": "obivault.jpg",
+    "R2Vault": "r2vault.jpg",
+    "LandoVault": "landovault.jpg",
+}
+DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
 
 def format_monitor_time(iso_str):
     if not iso_str:
@@ -194,7 +201,7 @@ def get_dashboard_context(data_locker):
 
     for pos in positions:
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
-        pos["wallet_image"] = wallet_name
+        pos["wallet_image"] = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
 
     core = SystemCore(data_locker)
     portfolio_limits = core.get_portfolio_thresholds()
