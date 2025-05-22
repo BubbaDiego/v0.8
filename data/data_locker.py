@@ -223,6 +223,13 @@ class DataLocker:
     def set_last_update_times(self, updates: dict):
         self.system.set_last_update_times(updates)
 
+    def get_last_update_times(self) -> dict:
+        """Return last update times for positions and prices as a dict."""
+        try:
+            return self.system.get_last_update_times().to_dict()
+        except Exception:
+            return {}
+
     def insert_or_update_price(self, asset_type, price, source="PriceMonitor"):
         from uuid import uuid4
         from datetime import datetime
