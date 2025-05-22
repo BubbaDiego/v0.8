@@ -92,6 +92,11 @@ body {
   transition: background 0.4s ease, color 0.4s ease;
 }
 
+/* Force a consistent text color for status cards */
+.status-card {
+  color: #222 !important;
+}
+
 .navbar,
 .title-bar {
   background: var(--title-bar-bg);
