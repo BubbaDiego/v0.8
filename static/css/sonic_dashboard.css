@@ -31,6 +31,11 @@
   position: relative;
 }
 
+/* Chart containers should span the full width of the panel */
+.full-chart {
+  width: 100%;
+}
+
 /* Container that holds the cards inside the panel */
 .card-flex {
   display: flex;

@@ -32,6 +32,8 @@ function renderLineChart(data) {
 
   const chartEl = document.querySelector('#lineChart');
   if (!chartEl) return;
+  chartEl.textContent = '';
+  chartEl.style.width = '100%';
   const chart = new ApexCharts(chartEl, options);
   chart.render();
 }
