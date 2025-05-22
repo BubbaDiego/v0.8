@@ -40,7 +40,6 @@ class DLMonitorLedgerManager:
             "metadata": json.dumps(metadata or {})
         }
 
-        print(f"🧠 [DEBUG] INSERTING ledger entry for: '{monitor_name}'")
 
         cursor = self.db.get_cursor()
         cursor.execute("""
@@ -64,7 +63,6 @@ class DLMonitorLedgerManager:
         """, (monitor_name,))
 
         row = cursor.fetchone()
-        print(f"🧠 [DEBUG] DB row for '{monitor_name}': {row}")
 
         if not row:
             return {}
@@ -73,11 +71,9 @@ class DLMonitorLedgerManager:
             "status": row[1],
             "metadata": row[2]
         }
-        print(f"[DEBUG] Ledger entry for {monitor_name}: {result}")
         return result
 
     def get_status(self, monitor_name: str) -> dict:
-        print(f"🧠 [DEBUG] FETCHING ledger status for: '{monitor_name}'")
 
         entry = self.get_last_entry(monitor_name)
         if not entry or not entry.get("timestamp"):
