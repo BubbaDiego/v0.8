@@ -9,15 +9,18 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_middle.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/alert_status.css') }}">
 {% endblock %}
 
 {% block content %}
 {% include "title_bar.html" %}
 <div class="sonic-section-container sonic-section-middle mt-3">
-  <div class="sonic-content-panel middle-left">
-    <div class="section-title">Alerts</div>
-    <div class="positions-table-wrapper">
-      <table class="positions-table alerts-table">
+  <div class="sonic-content-panel">
+    <div class="alert-status-flex">
+      <div class="alert-table">
+        <div class="section-title">Alerts</div>
+        <div class="positions-table-wrapper">
+          <table class="positions-table alerts-table">
         <thead>
           <tr>
             <th class="sortable left" data-col-index="0">Asset <span class="sort-indicator"></span></th>
@@ -45,11 +48,11 @@
           {% endif %}
         </tbody>
       </table>
-    </div>
-  </div>
-  <div class="sonic-content-panel middle-right">
-    <div class="section-title">Proximity to Alert</div>
-    <div id="alertBars">
+        </div>
+      </div>
+      <div class="alert-bars">
+        <div class="section-title">Proximity to Alert</div>
+        <div id="alertBars">
       {% if alerts %}
         {% for alert in alerts %}
           {% if alert.travel_percent is defined and alert.travel_percent is not none %}
@@ -79,6 +82,8 @@
       {% else %}
         <p style="color:orange;">⚠️ No alerts to display.</p>
       {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 </div>
