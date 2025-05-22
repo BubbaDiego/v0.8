@@ -3,6 +3,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import logging
 import asyncio
 from flask import current_app
+from config.config_loader import load_config
+from core.core_imports import ALERT_LIMITS_PATH
 
 from flask import Blueprint, jsonify, render_template, render_template_string
 from data.data_locker import DataLocker
@@ -129,14 +131,22 @@ def delete_all_alerts():
 
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
-    """Render the alert limits configuration page."""
-    # ❗ Alert thresholds are stored in the database via the DataLocker
-    # interface. For now we simply render the template with empty
-    # placeholders so the page loads without relying on JSON files.
+
+    """Render the alert limits configuration page with config data."""
+    try:
+        config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
+        alert_ranges = config_data.get("alert_ranges", {})
+        price_alerts = alert_ranges.get("price_alerts", {})
+        global_alert_config = config_data.get("global_alert_config", {})
+    except Exception as e:
+        logger.error(f"Failed to load alert configuration: {e}", exc_info=True)
+        price_alerts = {}
+        global_alert_config = {}
+
     return render_template(
         "alert_limits.html",
-        price_alerts={},
-        global_alert_config={},
+        price_alerts=price_alerts,
+        global_alert_config=global_alert_config,
     )
 
 
