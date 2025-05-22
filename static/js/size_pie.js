@@ -11,11 +11,6 @@ window.addEventListener('DOMContentLoaded', () => {
     series: isZero ? [1] : data,
     colors: isZero ? ['#ccc'] : ['#3498db', '#e74c3c'],
     legend: { position: 'bottom' },
-    title: {
-      text: 'Size Composition',
-      align: 'center',
-      style: { fontSize: '14px', fontWeight: 'bold' }
-    },
     tooltip: {
       y: {
         formatter: val => `${val}%`
