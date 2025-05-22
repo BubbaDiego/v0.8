@@ -129,7 +129,8 @@ def delete_all_alerts():
 
 @alerts_bp.route('/alert_config_page', methods=['GET'])
 def alert_config_page():
-    return "🚫 Alert Limits Page has been disabled.", 410
+    """Render the alert limits configuration page."""
+    return render_template("alert_limits.html")
 
 
 @alerts_bp.route('/monitor_page', methods=['GET'])

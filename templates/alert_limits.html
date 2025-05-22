@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='js/api_routes.js') }}"></script>
+{% endblock %}
+
+{% block title %}Alert Limits Configuration{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="mb-4">Alert Limits</h1>
+  <p>This page will hold alert configuration options.</p>
+</div>
+{% endblock %}
