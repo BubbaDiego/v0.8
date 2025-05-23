@@ -1,15 +1,4 @@
-.alert-status-flex {
-  display: flex;
-  gap: 2rem;
+.alert-table,
+.alert-bars {
   width: 100%;
-  justify-content: center;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.alert-status-flex .alert-table,
-.alert-status-flex .alert-bars {
-  flex: 1 1 320px;
-  min-width: 260px;
-  max-width: 100%;
 }
