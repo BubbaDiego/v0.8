@@ -6,7 +6,13 @@ from uuid import uuid4
 from datetime import datetime
 
 from data.models import Hedge
-from positions.hedge_manager import HedgeManager
+from typing import TYPE_CHECKING
+
+# Avoid circular dependency with :mod:`positions.hedge_manager` when this module
+# is imported. HedgeManager is only needed inside methods, so defer the import
+# until runtime or when type checking.
+if TYPE_CHECKING:  # pragma: no cover - used for type hints only
+    from positions.hedge_manager import HedgeManager
 from core.core_imports import log
 
 class HedgeCore:
@@ -19,10 +25,11 @@ class HedgeCore:
         """Build Hedge objects from current positions"""
         log.info("🔄 Updating hedges", source="HedgeCore")
         try:
+            from positions.hedge_manager import HedgeManager as _HedgeManager
             # Ensure hedge_buddy_id values are up-to-date
-            HedgeManager.find_hedges()
+            _HedgeManager.find_hedges()
             raw_positions = [dict(p) for p in self.dl.read_positions()]
-            hedge_manager = HedgeManager(raw_positions)
+            hedge_manager = _HedgeManager(raw_positions)
             hedges = hedge_manager.get_hedges()
             log.success(
                 f"✅ Built {len(hedges)} hedge(s) from {len(raw_positions)} positions",
