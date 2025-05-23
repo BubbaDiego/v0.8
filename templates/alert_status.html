@@ -50,7 +50,7 @@
             {% for alert in alerts %}
             <tr data-alert-id="{{ alert.id }}">
               <td class="left"><img class="asset-icon" src="{{ url_for('static', filename='images/' + alert.asset_image) }}" alt="{{ alert.asset }}"><span style="display:none">{{ alert.asset or 'N/A' }}</span></td>
-              <td class="left">{{ type_icons.get(alert.alert_type, '❓') }}</td>
+              <td class="left">{{ type_icons.get(alert.alert_type|lower, '❓') }}</td>
               <td class="left">{{ alert.alert_class }}</td>
               <td class="right">{{ "{:,.2f}".format(alert.evaluated_value or 0) }}</td>
               <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
