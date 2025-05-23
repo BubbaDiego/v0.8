@@ -26,6 +26,7 @@
 {% endblock %}
 
 {% block content %}
+{% include "title_bar.html" %}
 <div class="container-fluid pt-4">
   <h1 class="mb-4">Alert Limits</h1>
   <p>This page will hold alert configuration options.</p>
@@ -38,6 +39,12 @@
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="price-tab" data-bs-toggle="tab" data-bs-target="#price" type="button" role="tab">Price Alerts</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button" role="tab">Portfolio Alerts</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions" type="button" role="tab">Position Alerts</button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="global-tab" data-bs-toggle="tab" data-bs-target="#global" type="button" role="tab">Global Alerts</button>
@@ -61,6 +68,30 @@
             </div>
           </div>
           <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPortfolio">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePortfolio" aria-expanded="false" aria-controls="collapsePortfolio">
+                <i class="fas fa-wallet me-2"></i>Portfolio Alerts
+              </button>
+            </h2>
+            <div id="collapsePortfolio" class="accordion-collapse collapse" aria-labelledby="headingPortfolio" data-bs-parent="#alertLimitsAccordion">
+              <div class="accordion-body">
+                {% include "partials/portfolio_alerts_section.html" %}
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPositions">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePositions" aria-expanded="false" aria-controls="collapsePositions">
+                <i class="fas fa-bell me-2"></i>Position Alerts
+              </button>
+            </h2>
+            <div id="collapsePositions" class="accordion-collapse collapse" aria-labelledby="headingPositions" data-bs-parent="#alertLimitsAccordion">
+              <div class="accordion-body">
+                {% include "partials/positions_alerts_section.html" %}
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
             <h2 class="accordion-header" id="headingGlobal">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGlobal" aria-expanded="false" aria-controls="collapseGlobal">
                 <i class="fas fa-globe me-2"></i>Global Alerts
@@ -78,6 +109,16 @@
       <!-- Price Tab -->
       <div class="tab-pane fade" id="price" role="tabpanel" aria-labelledby="price-tab">
         {% include "partials/price_alerts_section.html" %}
+      </div>
+
+      <!-- Portfolio Tab -->
+      <div class="tab-pane fade" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
+        {% include "partials/portfolio_alerts_section.html" %}
+      </div>
+
+      <!-- Positions Tab -->
+      <div class="tab-pane fade" id="positions" role="tabpanel" aria-labelledby="positions-tab">
+        {% include "partials/positions_alerts_section.html" %}
       </div>
 
       <!-- Global Tab -->
