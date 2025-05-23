@@ -15,8 +15,6 @@ Dependencies:
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import uuid
-from uuid import uuid4
 from data.database import DatabaseManager
 from data.dl_alerts import DLAlertManager
 from data.dl_prices import DLPriceManager
@@ -35,7 +33,7 @@ class DataLocker:
         self.ledger = DLMonitorLedgerManager(self.db)
 
 from core.core_imports import log
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 class DataLocker:
@@ -53,8 +51,6 @@ class DataLocker:
         self.ledger = DLMonitorLedgerManager(self.db)
         self.modifiers = DLModifierManager(self.db)
 
-        self.ensure_alert_threshold_table()
-        self.seed_default_thresholds()
         self.initialize_database()
 
 
@@ -251,63 +247,6 @@ class DataLocker:
     def get_wallet_by_name(self, wallet_name: str):
         return self.wallets.get_wallet_by_name(wallet_name)
 
-    def ensure_alert_threshold_table(self):
-        try:
-            cursor = self.db.get_cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS alert_thresholds (
-                    id TEXT PRIMARY KEY,
-                    alert_type TEXT NOT NULL,
-                    alert_class TEXT NOT NULL,
-                    metric_key TEXT NOT NULL,
-                    condition TEXT NOT NULL,
-                    low REAL NOT NULL,
-                    medium REAL NOT NULL,
-                    high REAL NOT NULL,
-                    enabled BOOLEAN DEFAULT 1,
-                    last_modified TEXT DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            self.db.commit()
-            log.success("✅ alert_thresholds table ready", source="DataLocker")
-        except Exception as e:
-            log.error(f"❌ Failed to init alert_thresholds table: {e}", source="DataLocker")
-
-    def seed_default_thresholds(self):
-        existing = self.db.get_cursor().execute("SELECT COUNT(*) FROM alert_thresholds").fetchone()[0]
-        if existing > 0:
-            return  # Already seeded
-
-        sample_thresholds = [
-            {
-                "id": str(uuid.uuid4()),
-                "alert_type": "TotalValue",
-                "alert_class": "Portfolio",
-                "metric_key": "total_value",
-                "condition": "ABOVE",
-                "low": 10000,
-                "medium": 25000,
-                "high": 50000,
-                "enabled": True,
-                "last_modified": datetime.utcnow().isoformat()
-            },
-            # Add more as needed...
-        ]
-
-        cursor = self.db.get_cursor()
-        for t in sample_thresholds:
-            cursor.execute("""
-                INSERT INTO alert_thresholds (
-                    id, alert_type, alert_class, metric_key,
-                    condition, low, medium, high, enabled, last_modified
-                ) VALUES (
-                    :id, :alert_type, :alert_class, :metric_key,
-                    :condition, :low, :medium, :high, :enabled, :last_modified
-                )
-            """, t)
-
-        self.db.commit()
-        log.success("✅ Seeded default thresholds", source="DataLocker")
 
     def get_all_tables_as_dict(self) -> dict:
         """Return all user tables and their rows as a dictionary."""
