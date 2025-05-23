@@ -22,6 +22,9 @@ The [Sonic Data module](data/sonic_data_module_spec.md) defines the core data mo
 ### Calculation Core
 The [Calculation Core module](calc_core/calculation_module_spec.md) houses risk calculations and hedge utilities. It exposes pure math services, loads modifier weights, updates position metrics, and groups hedges for analysis.
 
+### Monitor Core
+The [Monitor module](monitor/monitor_module_spec.md) drives periodic tasks and health checks. It registers individual monitors and exposes CLI and API entrypoints for running them.
+
 ---
 
 Each linked specification contains more detailed design notes, functional requirements, and example workflows.
