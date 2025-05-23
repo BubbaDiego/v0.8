@@ -15,3 +15,13 @@ execution.
 
 ## Hedge Calculator
 The hedge calculator allows adjusting trade modifiers. Modifiers are saved by sending a POST request to `/sonic_labs/sonic_sauce` with JSON payloads for `hedge_modifiers` and `heat_modifiers`.
+
+## Threshold Seeder
+Default alert thresholds can be populated (or refreshed) using the seeder script:
+
+```bash
+python -m data.threshold_seeder
+```
+
+Run it from the project root on Windows or Linux. Existing thresholds will be
+updated to match the defaults defined in the script.
