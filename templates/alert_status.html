@@ -57,7 +57,12 @@
               <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
               <td class="left">{{ alert.level }}</td>
               <td class="left">{{ alert.status }}</td>
-              <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename=alert.wallet_image if alert.wallet_image else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
+              {% set wallet_img = alert.wallet_image %}
+              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://')) %}
+                <td class="left"><img class="wallet-icon" src="{{ wallet_img }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
+              {% else %}
+                <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename=wallet_img if wallet_img else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
+              {% endif %}
             </tr>
             {% endfor %}
           {% else %}
@@ -75,8 +80,13 @@
       {% if alerts %}
         {% for alert in alerts %}
           {% if alert.travel_percent is defined and alert.travel_percent is not none %}
-          <div class="liq-row" data-alert-id="{{ alert.id }}">
-            <img class="wallet-icon" src="{{ url_for('static', filename=alert.wallet_image if alert.wallet_image else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}" />
+            <div class="liq-row" data-alert-id="{{ alert.id }}">
+              {% set wallet_img = alert.wallet_image %}
+              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://')) %}
+              <img class="wallet-icon" src="{{ wallet_img }}" alt="{{ alert.wallet_name or alert.asset }}" />
+              {% else %}
+              <img class="wallet-icon" src="{{ url_for('static', filename=wallet_img if wallet_img else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}" />
+              {% endif %}
             <div class="liq-progress-bar">
               <div class="liq-bar-container">
                 <div class="liq-midline"></div>
