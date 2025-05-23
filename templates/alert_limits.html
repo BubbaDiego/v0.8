@@ -27,8 +27,14 @@
     }
 
     .alert-limits-panel {
-      max-width: 800px;
+
       width: 100%;
+      max-width: 1100px;
+    }
+    body.wide-mode .alert-limits-panel,
+    body.fitted-mode .alert-limits-panel {
+      max-width: 1100px;
+
     }
   </style>
 {% endblock %}
