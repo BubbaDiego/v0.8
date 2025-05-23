@@ -5,6 +5,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from flask import current_app
 from core.logging import log
 
+
+def _resolve_env(value, env_key):
+    """Return the value or fallback to environment variable if empty or a placeholder."""
+    if value is None or value == "":
+        return os.getenv(env_key)
+    if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+        return os.getenv(value[2:-1])
+    return value
+
 class XComConfigService:
     def __init__(self, dl_sys):
         self.dl_sys = dl_sys  # Not used directly anymore
@@ -39,6 +48,25 @@ class XComConfigService:
                     "default_to_phone": os.getenv("TWILIO_TO_PHONE"),
                     "default_from_phone": os.getenv("TWILIO_FROM_PHONE"),
                 }
+
+            # Resolve placeholders using environment variables
+            if name == "email":
+                smtp = provider.get("smtp", {})
+                smtp["server"] = _resolve_env(smtp.get("server"), "SMTP_SERVER")
+                port_val = _resolve_env(smtp.get("port"), "SMTP_PORT")
+                smtp["port"] = int(port_val) if port_val else None
+                smtp["username"] = _resolve_env(smtp.get("username"), "SMTP_USERNAME")
+                smtp["password"] = _resolve_env(smtp.get("password"), "SMTP_PASSWORD")
+                smtp["default_recipient"] = _resolve_env(smtp.get("default_recipient"), "SMTP_DEFAULT_RECIPIENT")
+                provider["smtp"] = smtp
+
+            if name == "twilio":
+                provider["account_sid"] = _resolve_env(provider.get("account_sid"), "TWILIO_ACCOUNT_SID")
+                provider["auth_token"] = _resolve_env(provider.get("auth_token"), "TWILIO_AUTH_TOKEN")
+                provider["flow_sid"] = _resolve_env(provider.get("flow_sid"), "TWILIO_FLOW_SID")
+                provider["default_to_phone"] = _resolve_env(provider.get("default_to_phone"), "TWILIO_TO_PHONE")
+                provider["default_from_phone"] = _resolve_env(provider.get("default_from_phone"), "TWILIO_FROM_PHONE")
+
             return provider
         except Exception as e:
             log.error(f"Failed to load provider config for '{name}': {e}", source="XComConfigService")
