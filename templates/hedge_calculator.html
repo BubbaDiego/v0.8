@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Hedge Calculator{% endblock %}
 
-{% block head %}
+{% block extra_styles %}
+{{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/hedge_calculator.css') }}">
 {% endblock %}
@@ -30,7 +31,8 @@
       </button>
     </div>
     <div class="card-body">
-      <!-- Row 1: Input Boxes for Long & Short Positions -->
+
+      <!-- Row 1: Input Boxes -->
       <div id="positionInputRow" class="row mb-4">
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3" style="background-color: #f7f7f7;">
@@ -120,7 +122,19 @@
         </div>
       </div>
 
-      <!-- Row 3: Simulation Sliders -->
+      <!-- Row 3: Approach Toggle -->
+      <div id="approachToggleRow" class="row mb-4">
+        <div class="col text-center">
+          <div class="btn-group" role="group" aria-label="Hedge Approach">
+            <input type="radio" class="btn-check" name="hedgeApproach" id="approachConservative" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="approachConservative">Conservative</label>
+            <input type="radio" class="btn-check" name="hedgeApproach" id="approachAggressive" autocomplete="off">
+            <label class="btn btn-outline-primary" for="approachAggressive">Aggressive</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Simulation Sliders -->
       <div id="projectedOutputRow" class="row mb-4">
         <div class="col-md-6 slider-box mb-3">
           <label for="priceSlider" class="form-label"><strong>Simulated Price</strong></label>
@@ -143,7 +157,7 @@
         </div>
       </div>
 
-      <!-- Row 4: Output Boxes -->
+      <!-- Row 5: Output Boxes -->
       <div id="outputRow" class="row mb-4">
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3 reduced-height position-details-section">
@@ -159,7 +173,7 @@
         </div>
       </div>
 
-      <!-- Row 5: Recommendation Box -->
+      <!-- Row 6: Recommendation Box -->
       <div id="recommendationRow" class="row mb-4">
         <div class="col text-center">
           <div class="recommendation-box">
@@ -169,7 +183,7 @@
       </div>
 
     </div>
-</div>
+  </div>
 </div>
 <script>
   window.longPositionsData = {{ long_positions | tojson }};
@@ -177,3 +191,4 @@
 </script>
 <script src="{{ url_for('static', filename='js/hedge_calculator.js') }}"></script>
 {% endblock %}
+
