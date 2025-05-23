@@ -43,6 +43,7 @@
             <th class="sortable right" data-col-index="4">Trigger <span class="sort-indicator"></span></th>
             <th class="sortable left" data-col-index="5">Level <span class="sort-indicator"></span></th>
             <th class="sortable left" data-col-index="6">Status <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="7">Wallet <span class="sort-indicator"></span></th>
           </tr>
         </thead>
         <tbody>
@@ -56,10 +57,11 @@
               <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
               <td class="left">{{ alert.level }}</td>
               <td class="left">{{ alert.status }}</td>
+              <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.wallet_image or alert.asset_image)) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
             </tr>
             {% endfor %}
           {% else %}
-            <tr class="no-data-row"><td colspan="7" class="no-data">No alerts available.</td></tr>
+            <tr class="no-data-row"><td colspan="8" class="no-data">No alerts available.</td></tr>
           {% endif %}
         </tbody>
       </table>
