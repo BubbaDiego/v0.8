@@ -9,16 +9,6 @@ class HedgeCore:
     def __init__(self, data_locker):
         self.dl = data_locker
 
-    def link_hedges(self):
-        """Scan the DB and set hedge_buddy_id for qualifying groups"""
-        log.info("🔗 Linking hedges", source="HedgeCore")
-        try:
-            groups = HedgeManager.find_hedges()
-            log.success(f"✅ Linked {len(groups)} hedge group(s)", source="HedgeCore")
-            return groups
-        except Exception as e:
-            log.error(f"❌ Link hedges failed: {e}", source="HedgeCore")
-            return []
 
     def update_hedges(self):
         """Build Hedge objects from current positions"""
