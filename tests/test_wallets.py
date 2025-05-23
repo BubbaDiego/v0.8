@@ -63,3 +63,22 @@ def test_create_wallet_encrypted(tmp_path):
     assert row is not None
     assert row[0] != "secret"
     assert decrypt_key(row[0]) == "secret"
+
+
+def test_list_wallet_plaintext_private_key(tmp_path):
+    service = setup_service()
+
+    conn = sqlite3.connect(TEST_DB)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO wallets (name, public_address, private_address, image_path, balance, tags, is_active, type)
+        VALUES (?, ?, ?, ?, ?, '', 1, 'personal')
+        """,
+        ("plain", "0x123", "plaintext", "", 0.0),
+    )
+    conn.commit()
+
+    wallets = service.list_wallets()
+    names = [w.name for w in wallets]
+    assert "plain" in names
