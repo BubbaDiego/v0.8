@@ -155,4 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shortSel && shortSel.value) {
     loadShortPosition();
   }
+  const priceSlider = document.getElementById('priceSlider');
+  if (priceSlider) {
+    priceSlider.addEventListener('input', sliderChanged);
+  }
+  const leverageSlider = document.getElementById('leverageSlider');
+  if (leverageSlider) {
+    leverageSlider.addEventListener('input', updateProjectedHeatIndex);
+  }
 });
