@@ -150,6 +150,18 @@ class DataLocker:
                     pnl_after_fees_usd REAL
                 )
             """,
+            "positions_totals_history": """
+                CREATE TABLE IF NOT EXISTS positions_totals_history (
+                    id TEXT PRIMARY KEY,
+                    snapshot_time TEXT,
+                    total_size REAL,
+                    total_value REAL,
+                    total_collateral REAL,
+                    avg_leverage REAL,
+                    avg_travel_percent REAL,
+                    avg_heat_index REAL
+                )
+            """,
             "modifiers": """
             CREATE TABLE IF NOT EXISTS modifiers (
                 key TEXT PRIMARY KEY,
