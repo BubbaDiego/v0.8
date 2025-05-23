@@ -1,14 +1,26 @@
+"""Seed default alert thresholds into the database.
+
+Run this file from the project root:
+
+```
+python -m data.threshold_seeder
+```
+
+The database location is resolved via :mod:`core.constants.DB_PATH` so the
+script works on both Windows and Linux environments.
+"""
+
 from datetime import datetime, timezone
 from uuid import uuid4
 from data.models import AlertThreshold
 from data.dl_thresholds import DLThresholdManager
 
-# Optional: import for CLI support
 import os
 import sys
 
-# 💾 Add your DB connection
-DB_PATH = r"C:\v0.8\data\mother_brain.db"
+from core.constants import DB_PATH as CONST_DB_PATH
+
+DB_PATH = str(CONST_DB_PATH)
 
 class AlertThresholdSeeder:
     def __init__(self, db):
