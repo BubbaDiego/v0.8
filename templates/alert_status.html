@@ -57,7 +57,7 @@
               <td class="right">{{ "{:,.2f}".format(alert.trigger_value or 0) }}</td>
               <td class="left">{{ alert.level }}</td>
               <td class="left">{{ alert.status }}</td>
-              <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.wallet_image or alert.asset_image)) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
+              <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename=alert.wallet_image if alert.wallet_image else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
             </tr>
             {% endfor %}
           {% else %}
@@ -76,7 +76,7 @@
         {% for alert in alerts %}
           {% if alert.travel_percent is defined and alert.travel_percent is not none %}
           <div class="liq-row" data-alert-id="{{ alert.id }}">
-            <img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.wallet_image or alert.asset_image)) }}" alt="{{ alert.wallet_name or alert.asset }}" />
+            <img class="wallet-icon" src="{{ url_for('static', filename=alert.wallet_image if alert.wallet_image else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}" />
             <div class="liq-progress-bar">
               <div class="liq-bar-container">
                 <div class="liq-midline"></div>

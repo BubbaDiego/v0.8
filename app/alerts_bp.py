@@ -199,13 +199,20 @@ def alert_status_page():
             a["asset_image"] = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
 
             meta = resolve_wallet_metadata(SimpleNamespace(**a), dl)
-            wallet_path = meta.get("wallet_image")
-            if wallet_path:
-                wallet_img = os.path.basename(wallet_path)
+            wallet_path = meta.get("wallet_image") or ""
+
+            wallet_name = meta.get("wallet_name")
+            if wallet_name in WALLET_IMAGE_MAP:
+                wallet_img = os.path.join("images", WALLET_IMAGE_MAP[wallet_name])
+            elif wallet_path.startswith("/static/"):
+                wallet_img = wallet_path[len("/static/"):]
+            elif wallet_path:
+                wallet_img = wallet_path.lstrip("/")
             else:
-                wallet_img = DEFAULT_WALLET_IMAGE
-            a["wallet_image"] = WALLET_IMAGE_MAP.get(meta.get("wallet_name"), wallet_img)
-            a["wallet_name"] = meta.get("wallet_name")
+                wallet_img = os.path.join("images", DEFAULT_WALLET_IMAGE)
+
+            a["wallet_image"] = wallet_img
+            a["wallet_name"] = wallet_name
 
             enriched.append(a)
         alerts = enriched
