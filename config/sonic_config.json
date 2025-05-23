@@ -40,13 +40,17 @@
       "recipient_number": "6199804758"
     }
   },
+
   "twilio_config": {
+
     "account_sid": "${TWILIO_ACCOUNT_SID}",
     "auth_token": "${TWILIO_AUTH_TOKEN}",
     "flow_sid": "${TWILIO_FLOW_SID}",
     "to_phone": "${TWILIO_TO_PHONE}",
     "from_phone": "${TWILIO_FROM_PHONE}"
+
   },
+
   "theme_config": {
     "selected_profile": "profile4",
     "profiles": {}
