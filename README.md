@@ -12,3 +12,6 @@ python scripts/twilio_run.py
 The script loads credentials from the `.env` file (or environment variables) and
 uses `scripts/twilio_test.py` to perform the authentication and optional flow
 execution.
+
+## Hedge Calculator
+The hedge calculator allows adjusting trade modifiers. Modifiers are saved by sending a POST request to `/sonic_labs/sonic_sauce` with JSON payloads for `hedge_modifiers` and `heat_modifiers`.
