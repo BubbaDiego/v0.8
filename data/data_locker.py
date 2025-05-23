@@ -26,6 +26,7 @@ from data.dl_system_data import DLSystemDataManager
 from data.dl_monitor_ledger import DLMonitorLedgerManager
 from data.dl_modifiers import DLModifierManager
 from data.dl_hedges import DLHedgeManager
+from core.constants import SONIC_SAUCE_PATH
 
 class DataLocker:
     def __init__(self, db_path):
@@ -52,7 +53,7 @@ class DataLocker:
         self.modifiers = DLModifierManager(self.db)
 
         self.initialize_database()
-
+        self._seed_modifiers_if_empty()
 
         log.info("All DL managers bootstrapped successfully.", source="DataLocker")
 
@@ -246,6 +247,19 @@ class DataLocker:
 
     def get_wallet_by_name(self, wallet_name: str):
         return self.wallets.get_wallet_by_name(wallet_name)
+
+    def _seed_modifiers_if_empty(self):
+        """Seed modifiers table from sonic_sauce.json if empty."""
+        cursor = self.db.get_cursor()
+        count = cursor.execute("SELECT COUNT(*) FROM modifiers").fetchone()[0]
+        if count == 0:
+            try:
+                with open(SONIC_SAUCE_PATH, "r", encoding="utf-8") as f:
+                    data = f.read()
+                self.modifiers.import_from_json(data)
+                log.success("📦 Modifiers seeded from sonic_sauce.json", source="DataLocker")
+            except Exception as e:
+                log.error(f"❌ Failed seeding modifiers: {e}", source="DataLocker")
 
 
     def get_all_tables_as_dict(self) -> dict:

@@ -5,7 +5,6 @@ from flask import Blueprint, render_template, jsonify, current_app, request
 import json
 from positions.position_sync_service import PositionSyncService  # noqa: F401
 from positions.position_core_service import PositionCoreService  # noqa: F401
-from utils.json_manager import JsonType
 from core.core_imports import DB_PATH, retry_on_locked
 from positions.hedge_manager import HedgeManager
 
@@ -45,17 +44,6 @@ def hedge_calculator():
         modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
 
 
-        if not hedge_mods or not heat_mods:
-            try:
-                json_manager = current_app.json_manager
-                fallback = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE) or {}
-                hedge_mods = hedge_mods or fallback.get("hedge_modifiers", {})
-                heat_mods = heat_mods or fallback.get("heat_modifiers", {})
-                modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
-            except Exception:
-                pass
-
-
         return render_template(
             "hedge_calculator.html",
             theme=theme_config,
@@ -72,9 +60,10 @@ def hedge_calculator():
 @sonic_labs_bp.route("/sonic_sauce", methods=["GET"])
 def get_sonic_sauce():
     try:
-        json_manager = current_app.json_manager
-        modifiers = json_manager.load("sonic_sauce.json", json_type=JsonType.SONIC_SAUCE)
-        return jsonify(modifiers), 200
+        dl = current_app.data_locker
+        hedge_mods = dl.modifiers.get_all_modifiers("hedge_modifiers")
+        heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
+        return jsonify({"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}), 200
     except Exception as e:
         current_app.logger.error(f"Error loading sonic sauce: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
@@ -82,9 +71,15 @@ def get_sonic_sauce():
 @sonic_labs_bp.route("/sonic_sauce", methods=["POST"])
 def update_sonic_sauce():
     try:
-        data = request.get_json()
-        json_manager = current_app.json_manager
-        json_manager.save("sonic_sauce.json", data, json_type=JsonType.SONIC_SAUCE)
+        data = request.get_json() or {}
+        if not isinstance(data, dict):
+            return jsonify({"error": "Invalid payload"}), 400
+        dl = current_app.data_locker
+        for group, mods in data.items():
+            if not isinstance(mods, dict):
+                continue
+            for key, value in mods.items():
+                dl.modifiers.set_modifier(key, float(value), group=group)
         return jsonify({"success": True}), 200
     except Exception as e:
         current_app.logger.error(f"Error saving sonic sauce: {e}", exc_info=True)

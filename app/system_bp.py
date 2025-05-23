@@ -25,7 +25,6 @@ from data.models import AlertThreshold
 from wallets.wallet_schema import WalletIn
 from positions.position_core import PositionCore
 from positions.hedge_manager import HedgeManager
-from utils.json_manager import JsonType
 
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -361,6 +360,31 @@ def database_viewer():
         return render_template("db_viewer.html", datasets={})
 
 
+@system_bp.route("/modifiers/<group>", methods=["GET"])
+def get_modifiers(group):
+    """Return all modifiers for a group."""
+    try:
+        mods = current_app.data_locker.modifiers.get_all_modifiers(group)
+        return jsonify(mods)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@system_bp.route("/modifiers/<group>", methods=["POST"])
+def update_modifiers(group):
+    """Update modifiers for a group."""
+    try:
+        payload = request.get_json() or {}
+        if not isinstance(payload, dict):
+            return jsonify({"error": "Invalid payload"}), 400
+        dl = current_app.data_locker
+        for key, value in payload.items():
+            dl.modifiers.set_modifier(key, float(value), group=group)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @system_bp.route("/hedge_calculator", methods=["GET"])
 def hedge_calculator_page():
     """Render the hedge calculator page."""
@@ -402,22 +426,6 @@ def hedge_calculator_page():
         hedge_mods = dl.modifiers.get_all_modifiers("hedge_modifiers")
         heat_mods = dl.modifiers.get_all_modifiers("heat_modifiers")
         modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
-
-        # Fallback to sonic_sauce.json if either group is missing
-        if not hedge_mods or not heat_mods:
-            try:
-                json_manager = current_app.json_manager
-                fallback = (
-                    json_manager.load(
-                        "sonic_sauce.json", json_type=JsonType.SONIC_SAUCE
-                    )
-                    or {}
-                )
-                hedge_mods = hedge_mods or fallback.get("hedge_modifiers", {})
-                heat_mods = heat_mods or fallback.get("heat_modifiers", {})
-                modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
-            except Exception:
-                pass
 
         return render_template(
             "hedge_calculator.html",
