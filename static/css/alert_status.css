@@ -23,11 +23,11 @@
 }
 
 .positions-table thead th {
-  background: #222e3a;
-  color: #fff;
+  background: var(--title-bar-bg);
+  color: var(--panel-title);
   font-weight: 700;
   padding: 0.7em 0.6em;
-  border-bottom: 2px solid #c0d7f5;
+  border-bottom: 2px solid var(--panel-border);
   user-select: none;
   cursor: pointer;
   vertical-align: middle;
@@ -40,17 +40,17 @@
 
 .positions-table tbody td {
   background: var(--container-bg);
-  color: #111;
+  color: var(--text);
   padding: 0.7em 0.6em;
-  border-bottom: 1px solid #e6ecf8;
+  border-bottom: 1px solid var(--panel-border);
   vertical-align: middle;
 }
 
 .positions-table tfoot th {
-  background: #f6fafd;
-  color: #222;
+  background: var(--accent);
+  color: var(--text);
   font-weight: bold;
-  border-top: 2px solid #c0d7f5;
+  border-top: 2px solid var(--panel-border);
   text-align: right;
 }
 .positions-table tfoot th.left { text-align: left; }
@@ -58,26 +58,19 @@
 .sort-indicator {
   font-size: 1em;
   margin-left: 4px;
-  color: #fffbe6;
+  color: var(--panel-title);
   opacity: 0.8;
 }
-th.sorted-asc .sort-indicator { color: #ffe97a; }
-th.sorted-desc .sort-indicator { color: #ffe97a; }
+th.sorted-asc .sort-indicator { color: var(--primary); }
+th.sorted-desc .sort-indicator { color: var(--primary); }
 
 .no-data {
   text-align: center;
-  color: #888;
+  color: var(--text);
   padding: 1.2rem;
   font-style: italic;
 }
-@media (prefers-color-scheme: dark), :root[data-theme="dark"] {
-  .positions-table tbody td {
-    color: #ffffff;
-  }
-}
-:root[data-theme="dark"] .positions-table tbody td {
-  color: #ffffff !important;
-}
+
 
 /* Align bars rows with table rows */
 .alert-bars #alertBars {
@@ -88,6 +81,6 @@ th.sorted-desc .sort-indicator { color: #ffe97a; }
 .alert-bars .liq-row {
   padding: 0.7em 0.6em;
   margin: 0;
-  border-bottom: 1px solid #e6ecf8;
+  border-bottom: 1px solid var(--panel-border);
   background: var(--container-bg);
 }
