@@ -25,13 +25,22 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .alert-limits-panel {
+      width: 100%;
+      max-width: 1100px;
+    }
+    body.wide-mode .alert-limits-panel,
+    body.fitted-mode .alert-limits-panel {
+      max-width: 1100px;
+    }
   </style>
 {% endblock %}
 
 {% block content %}
 {% include "title_bar.html" %}
 <div class="sonic-section-container sonic-section-middle mt-3">
-  <div class="sonic-content-panel">
+  <div class="sonic-content-panel alert-limits-panel">
   <h1 class="mb-4">Alert Limits</h1>
   <p>This page will hold alert configuration options.</p>
 
