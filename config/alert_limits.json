@@ -40,6 +40,15 @@
         "condition": "ABOVE",
         "trigger_value": 133.9
       }
+    },
+    "portfolio_alerts": {
+      "total_value": { "low": 5000, "medium": 25000, "high": 50000, "enabled": true },
+      "total_size": { "low": 1, "medium": 5, "high": 10, "enabled": true }
+    },
+    "positions_alerts": {
+      "heat_index": { "low": 10, "medium": 20, "high": 30, "enabled": true },
+      "travel_percent": { "low": 5, "medium": 10, "high": 20, "enabled": true },
+      "profit": { "low": 5, "medium": 15, "high": 25, "enabled": true }
     }
   },
   "notifications": {

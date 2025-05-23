@@ -142,15 +142,21 @@ def alert_config_page():
         config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
         alert_ranges = config_data.get("alert_ranges", {})
         price_alerts = alert_ranges.get("price_alerts", {})
+        portfolio_alerts = alert_ranges.get("portfolio_alerts", {})
+        positions_alerts = alert_ranges.get("positions_alerts", {})
         global_alert_config = config_data.get("global_alert_config", {})
     except Exception as e:
         logger.error(f"Failed to load alert configuration: {e}", exc_info=True)
         price_alerts = {}
+        portfolio_alerts = {}
+        positions_alerts = {}
         global_alert_config = {}
 
     return render_template(
         "alert_limits.html",
         price_alerts=price_alerts,
+        portfolio_alerts=portfolio_alerts,
+        positions_alerts=positions_alerts,
         global_alert_config=global_alert_config,
     )
 
