@@ -19,6 +19,9 @@ The [Portfolio position module](portfolio/position_module_spec.md) focuses on ma
 ### Data
 The [Sonic Data module](data/sonic_data_module_spec.md) defines the core data models and the DataLocker database layer used across the system. It provides persistence, schema management, and overall data integrity enforcement.
 
+### Calculation Core
+The [Calculation Core module](calc_core/calculation_module_spec.md) houses risk calculations and hedge utilities. It exposes pure math services, loads modifier weights, updates position metrics, and groups hedges for analysis.
+
 ---
 
 Each linked specification contains more detailed design notes, functional requirements, and example workflows.
