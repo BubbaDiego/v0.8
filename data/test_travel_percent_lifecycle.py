@@ -65,9 +65,7 @@ def set_price(dl, asset, price):
 def config_loader():
     return {
         "alert_ranges": {
-            "travelpercentliquid": {"low": 10, "medium": 25, "high": 50}
-        },
-        "alert_limits": {
+            "travelpercentliquid": {"low": 10, "medium": 25, "high": 50},
             "travel_percent_liquid_ranges": {
                 "low": 10,
                 "medium": 25,

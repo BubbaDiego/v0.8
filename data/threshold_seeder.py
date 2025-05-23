@@ -7,11 +7,13 @@ python -m data.threshold_seeder
 ```
 
 The database location is resolved via :mod:`core.constants.DB_PATH` so the
+
 script works on both Windows and Linux environments. Running the module again
 will update any existing thresholds to these default values.
 
 You can also execute the file directly (``python data/threshold_seeder.py``);
 the module will adjust ``sys.path`` accordingly.
+
 """
 
 from datetime import datetime, timezone
@@ -24,9 +26,11 @@ import sys
 
 from core.constants import DB_PATH as CONST_DB_PATH
 
+
 # Allow running this file directly by ensuring the project root is on sys.path.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 DB_PATH = str(CONST_DB_PATH)
 

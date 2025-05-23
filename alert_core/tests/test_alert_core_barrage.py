@@ -30,11 +30,9 @@ alert_core = AlertCore(dl, lambda: {
         "profit": {"low": 10, "medium": 100, "high": 500},
         "heatindex": {"low": 2, "medium": 5, "high": 9},
         "travelpercentliquid": {"low": 10, "medium": 25, "high": 50},
-    },
-    "alert_limits": {
         "profit_ranges": {"low": 10, "medium": 100, "high": 500, "enabled": True},
         "heat_index_ranges": {"low": 2, "medium": 5, "high": 9, "enabled": True},
-        "travel_percent_liquid_ranges": {"low": 10, "medium": 25, "high": 50, "enabled": True},
+        "travel_percent_liquid_ranges": {"low": 10, "medium": 25, "high": 50, "enabled": True}
     }
 })
 

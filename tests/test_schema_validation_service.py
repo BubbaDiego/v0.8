@@ -10,9 +10,9 @@ TEST_BROKEN_JSON_FILE = "tests/mock_broken_json.json"
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_mock_files():
-    # Valid mock alert_limits
+    # Valid mock alert_ranges
     valid_data = {
-        "alert_limits": {
+        "alert_ranges": {
             "liquidation_distance_ranges": {},
             "travel_percent_liquid_ranges": {},
             "heat_index_ranges": {},
@@ -32,7 +32,7 @@ def setup_mock_files():
     }
 
     invalid_schema_data = {
-        "alert_limits": {
+        "alert_ranges": {
             "liquidation_distance_ranges": {},
             "travel_percent_liquid_ranges": {},
             "heat_index_ranges": {}
@@ -50,7 +50,7 @@ def setup_mock_files():
         }
     }
 
-    broken_json_content = """{ "alert_limits": { "liquidation_distance_ranges": {} }"""  # Missing closing }
+    broken_json_content = """{ \"alert_ranges\": { \"liquidation_distance_ranges\": {} }"""  # Missing closing }
 
     os.makedirs("tests", exist_ok=True)
     with open(TEST_VALID_FILE, "w") as f:
@@ -69,13 +69,13 @@ def setup_mock_files():
     os.remove(TEST_INVALID_SCHEMA_FILE)
     os.remove(TEST_BROKEN_JSON_FILE)
 
-def test_valid_alert_limits():
+def test_valid_alert_ranges():
     assert SchemaValidationService.validate_schema(TEST_VALID_FILE, SchemaValidationService.ALERT_LIMITS_SCHEMA, name="Mock Valid Limits")
 
-def test_invalid_schema_alert_limits():
+def test_invalid_schema_alert_ranges():
     assert not SchemaValidationService.validate_schema(TEST_INVALID_SCHEMA_FILE, SchemaValidationService.ALERT_LIMITS_SCHEMA, name="Mock Invalid Schema")
 
-def test_missing_alert_limits_file():
+def test_missing_alert_ranges_file():
     assert not SchemaValidationService.validate_schema(TEST_MISSING_FILE, SchemaValidationService.ALERT_LIMITS_SCHEMA, name="Mock Missing File")
 
 def test_broken_json_file():
