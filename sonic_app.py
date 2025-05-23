@@ -6,7 +6,10 @@ Main Flask app for Sonic Dashboard.
 
 import os
 import sys
+from dotenv import load_dotenv
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+load_dotenv()
 
 from flask import Flask, redirect, url_for, current_app, jsonify
 from flask_socketio import SocketIO
@@ -64,14 +67,14 @@ app.register_blueprint(settings_bp)
 with app.app_context():
     providers = app.data_locker.system.get_var("xcom_providers") or {}
     providers["email"] = {
-        "enabled": False, #True,
+        "enabled": False,  # True,
         "smtp": {
-            "server": "smtp.gmail.com",
-            "port": 587,
-            "username": "bubba.diego@gmail.com",
-            "password": "pzix taan afbe igxb",
-            "default_recipient": "bubba.diego@gmail.com"
-        }
+            "server": os.getenv("SMTP_SERVER"),
+            "port": int(os.getenv("SMTP_PORT", "0")) if os.getenv("SMTP_PORT") else None,
+            "username": os.getenv("SMTP_USERNAME"),
+            "password": os.getenv("SMTP_PASSWORD"),
+            "default_recipient": os.getenv("SMTP_DEFAULT_RECIPIENT"),
+        },
     }
     app.data_locker.system.set_var("xcom_providers", providers)
     print("✅ Default email provider set in xcom_providers")
