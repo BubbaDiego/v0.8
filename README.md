@@ -65,3 +65,13 @@ By default the server listens on `0.0.0.0:5000`. Open
 `--monitor` flag if you want to also launch the local monitor process in a
 separate console.
 
+
+## Initializing the Database
+
+To create the SQLite database and all required tables, run:
+
+```bash
+python scripts/init_db.py
+```
+
+The script will create `mother_brain.db` in the `data` directory (or the path set via the `DB_PATH` environment variable) and ensure every table exists.
