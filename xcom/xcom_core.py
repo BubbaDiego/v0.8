@@ -10,7 +10,7 @@ from xcom.sms_service import SMSService
 from xcom.voice_service import VoiceService
 from xcom.sound_service import SoundService
 from data.data_locker import DataLocker
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 class XComCore:
     def __init__(self, dl_sys_data_manager):

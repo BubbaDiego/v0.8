@@ -6,7 +6,7 @@ from data.data_locker import DataLocker
 from positions.position_core import PositionCore
 from core.core_imports import DB_PATH
 from datetime import datetime, timezone
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 class PositionMonitor(BaseMonitor):
     """

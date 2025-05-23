@@ -5,7 +5,7 @@ class BaseMonitor:
         self.timer_config_path = timer_config_path
 
     def run_cycle(self):
-        from utils.console_logger import ConsoleLogger as log
+        from core.logging import log
         from data.data_locker import DataLocker
         from core.core_imports import DB_PATH
 

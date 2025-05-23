@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from xcom.email_service import EmailService
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 class SMSService:
     def __init__(self, config: dict):

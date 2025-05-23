@@ -79,7 +79,7 @@ class DLWalletManager:
             row = cursor.fetchone()
             return dict(row) if row else None
         except Exception as e:
-            from console_logger import ConsoleLogger as log
+            from core.logging import log
             log.error(f"DLWalletManager failed to get wallet '{name}': {e}", source="DLWalletManager")
             return None
 
