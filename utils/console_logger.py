@@ -1,7 +1,16 @@
+"""Console logging utilities with color and contextual control.
+
+This module exposes the :class:`ConsoleLogger` which prints color coded
+messages and allows modules to be muted or enabled.  v2 introduces a
+``highlight`` method for eye catching output and context managers for
+temporarily overriding module or group logging settings.
+"""
+
 import json
 import time
 import inspect
 from datetime import datetime
+from contextlib import contextmanager
 from utils.fuzzy_wuzzy import fuzzy_match_key
 
 
@@ -23,6 +32,7 @@ class ConsoleLogger:
         "confidence": "\033[96m",  # 🧊 Cyan
         "debug": "\033[38;5;208m", # 🧡 Orange-ish
         "death": "\033[95m",       # 💀 Purple-pink
+        "highlight": "\033[38;5;99m", # ✨ Bright pink
         "endc": "\033[0m",         # ⛔ Reset
     }
 
@@ -34,6 +44,7 @@ class ConsoleLogger:
         "confidence": "🐻",
         "debug": "🐞",
         "death": "💀",
+        "highlight": "✨",
     }
 
     @staticmethod
@@ -136,6 +147,11 @@ class ConsoleLogger:
         cls._print("death", message, source, payload)
 
     @classmethod
+    def highlight(cls, message: str, source: str = None, payload: dict = None):
+        """Print a message in a distinctive highlight color."""
+        cls._print("highlight", message, source, payload)
+
+    @classmethod
     def start_timer(cls, label: str):
         cls.timers[label] = time.time()
 
@@ -166,6 +182,28 @@ class ConsoleLogger:
     @classmethod
     def enable_group(cls, group: str):
         cls.group_log_control[group] = True
+
+    @classmethod
+    @contextmanager
+    def temporary_module(cls, module: str, enabled: bool):
+        """Temporarily override logging state for ``module``."""
+        previous = cls.module_log_control.get(module, True)
+        cls.module_log_control[module] = enabled
+        try:
+            yield
+        finally:
+            cls.module_log_control[module] = previous
+
+    @classmethod
+    @contextmanager
+    def temporary_group(cls, group: str, enabled: bool):
+        """Temporarily override logging state for ``group``."""
+        previous = cls.group_log_control.get(group, True)
+        cls.group_log_control[group] = enabled
+        try:
+            yield
+        finally:
+            cls.group_log_control[group] = previous
 
     @classmethod
     def set_trace_modules(cls, modules: list):
