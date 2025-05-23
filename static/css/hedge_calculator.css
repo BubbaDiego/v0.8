@@ -50,10 +50,3 @@
 .slider-box {
     height: 180px; /* pick a height that accommodates the slider & labels */
 }
-/* Make all text bold in the first two rows (Positions + Modifiers) */
-#positionInputRow * {
-    font-weight: bold !important;
-}
-#modifierRow * {
-    font-weight: bold !important;
-}
