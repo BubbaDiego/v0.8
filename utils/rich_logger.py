@@ -202,3 +202,13 @@ class RichLogger:
         hijacked.propagate = False
         hijacked.setLevel(logging.INFO)
         self.info(f"🕵️ Logger '{target_logger_name}' hijacked", source="LoggerControl")
+
+    def print_dashboard_link(self, host: str = "127.0.0.1", port: int = 5001, route: str = "/dashboard"):
+        """Print a clickable hyperlink to the Sonic Dashboard in supported terminals."""
+        url = f"http://{host}:{port}{route}"
+        try:
+            hyperlink = f"\033]8;;{url}\033\\🔗 Open Sonic Dashboard\033]8;;\033\\"
+            print(f"\n🌐 Sonic Dashboard: {hyperlink}\n")
+        except Exception:
+            # Fallback to plain URL if ANSI hyperlinks aren't supported
+            print(f"\n🌐 Sonic Dashboard: {url}\n")
