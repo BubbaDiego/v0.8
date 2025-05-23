@@ -1,0 +1,104 @@
+<!-- Hedge Calculator Configuration Section -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/hedge_calculator_config.css') }}">
+<!-- Rows 1-3 from hedge_calculator.html -->
+<div id="positionInputRow" class="row mb-4">
+  <div class="col-md-6 mb-3">
+    <div class="border rounded p-3" style="background-color: #f7f7f7;">
+      <h5 class="text-center">📈 Long Position</h5>
+      <div class="mb-2">
+        <label for="longSelect" class="form-label"><strong>Select Long Position</strong></label>
+        <select id="longSelect" class="form-select" onchange="loadLongPosition()">
+          <option value="" disabled {% if not default_long_id %}selected{% endif %}>-- Choose a Position --</option>
+          {% for pos in long_positions %}
+          <option value="{{ pos.id }}" {% if pos.id == default_long_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-2">
+        <label for="longEntry" class="form-label"><strong>Entry Price ($):</strong></label>
+        <input type="number" id="longEntry" class="form-control" step="any" readonly />
+      </div>
+      <div class="mb-2">
+        <label for="longSize" class="form-label"><strong>Position Size (USD):</strong></label>
+        <input type="number" id="longSize" class="form-control" step="any" />
+      </div>
+      <input type="hidden" id="longCollateral" />
+      <input type="hidden" id="longLiqPrice" />
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <div class="border rounded p-3" style="background-color: #f7f7f7;">
+      <h5 class="text-center">📉 Short Position</h5>
+      <div class="mb-2">
+        <label for="shortSelect" class="form-label"><strong>Select Short Position</strong></label>
+        <select id="shortSelect" class="form-select" onchange="loadShortPosition()">
+          <option value="" disabled {% if not default_short_id %}selected{% endif %}>-- Choose a Position --</option>
+          {% for pos in short_positions %}
+          <option value="{{ pos.id }}" {% if pos.id == default_short_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-2">
+        <label for="shortEntry" class="form-label"><strong>Entry Price ($):</strong></label>
+        <input type="number" id="shortEntry" class="form-control" step="any" readonly />
+      </div>
+      <div class="mb-2">
+        <label for="shortSize" class="form-label"><strong>Position Size (USD):</strong></label>
+        <input type="number" id="shortSize" class="form-control" step="any" />
+      </div>
+      <input type="hidden" id="shortCollateral" />
+      <input type="hidden" id="shortLiqPrice" />
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: Modifier Boxes -->
+<div id="modifierRow" class="row mb-4">
+  <div class="col-md-6 mb-3">
+    <div class="border rounded p-3" style="background-color: #f7f7f7;">
+      <h5 class="text-center"><strong>⚙️ Hedge Modifiers 🔧</strong></h5>
+      <div class="mb-3">
+        <label for="feePercentage" class="form-label"><strong>💲 Fee (% of total size):</strong></label>
+        <input type="number" id="feePercentage" class="form-control" step="any" value="{{ modifiers.hedge_modifiers.feePercentage }}" />
+      </div>
+      <div class="mb-3">
+        <label for="targetMarginInput" class="form-label"><strong>📏 Target Safety Margin (%)</strong></label>
+        <input type="number" id="targetMarginInput" class="form-control" step="0.1" value="{{ modifiers.hedge_modifiers.targetMargin }}">
+      </div>
+      <div class="mb-3">
+        <label for="adjustmentFactorInput" class="form-label"><strong>🔧 Adjustment Factor</strong></label>
+        <input type="number" id="adjustmentFactorInput" class="form-control" step="0.1" value="{{ modifiers.hedge_modifiers.adjustmentFactor }}">
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <div class="border rounded p-3" style="background-color: #f7f7f7;">
+      <h5 class="text-center"><strong>⚙️ Heat Modifiers 🔧</strong></h5>
+      <div class="mb-3">
+        <label for="distanceWeightInput" class="form-label"><strong>📏 Distance Weight</strong></label>
+        <input type="number" id="distanceWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.distanceWeight }}" />
+      </div>
+      <div class="mb-3">
+        <label for="leverageWeightInput" class="form-label"><strong>📊 Leverage Weight</strong></label>
+        <input type="number" id="leverageWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.leverageWeight }}" />
+      </div>
+      <div class="mb-3">
+        <label for="collateralWeightInput" class="form-label"><strong>💰 Collateral Weight</strong></label>
+        <input type="number" id="collateralWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.collateralWeight }}" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Row 3: Approach Toggle -->
+<div id="approachToggleRow" class="row mb-4">
+  <div class="col text-center">
+    <div class="btn-group" role="group" aria-label="Hedge Approach">
+      <input type="radio" class="btn-check" name="hedgeApproach" id="approachConservative" autocomplete="off" checked>
+      <label class="btn btn-outline-primary" for="approachConservative">Conservative</label>
+      <input type="radio" class="btn-check" name="hedgeApproach" id="approachAggressive" autocomplete="off">
+      <label class="btn btn-outline-primary" for="approachAggressive">Aggressive</label>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/hedge_calculator_config.js') }}"></script>
