@@ -20,7 +20,7 @@ class DatabaseManager:
                 self.conn.execute("PRAGMA journal_mode=WAL;")
             except sqlite3.DatabaseError as e:
                 # Handle corruption or non-database files gracefully
-                if "file is not a database" in str(e):
+                if "file is not a database" in str(e) or "database disk image is malformed" in str(e):
                     self.conn.close()
                     # Remove the bad file and recreate a fresh database
                     try:
