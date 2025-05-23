@@ -13,6 +13,9 @@ Dependencies:
 """
 
 
+from wallets.encryption import encrypt_key, decrypt_key
+
+
 class DLWalletManager:
     def __init__(self, db):
         self.db = db
@@ -21,17 +24,20 @@ class DLWalletManager:
     def create_wallet(self, wallet: dict):
         try:
             cursor = self.db.get_cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO wallets (
                     name, public_address, private_address, image_path, balance
                 ) VALUES (?, ?, ?, ?, ?)
-            """, (
-                wallet["name"],
-                wallet["public_address"],
-                wallet["private_address"],
-                wallet.get("image_path", ""),
-                wallet.get("balance", 0.0)
-            ))
+            """,
+                (
+                    wallet["name"],
+                    wallet["public_address"],
+                    encrypt_key(wallet.get("private_address")),
+                    wallet.get("image_path", ""),
+                    wallet.get("balance", 0.0),
+                ),
+            )
             self.db.commit()  # ✅ not self.db.db
             log.success(f"Wallet created: {wallet['name']}", source="DLWalletManager")
         except Exception as e:
@@ -42,6 +48,8 @@ class DLWalletManager:
             cursor = self.db.get_cursor()
             cursor.execute("SELECT * FROM wallets")
             wallets = [dict(row) for row in cursor.fetchall()]
+            for w in wallets:
+                w["private_address"] = decrypt_key(w.get("private_address"))
             log.debug(f"Retrieved {len(wallets)} wallets", source="DLWalletManager")
             return wallets
         except Exception as e:
@@ -60,7 +68,7 @@ class DLWalletManager:
                 WHERE name = ?
             """, (
                 wallet["public_address"],
-                wallet["private_address"],
+                encrypt_key(wallet.get("private_address")),
                 wallet.get("image_path", ""),
                 wallet.get("balance", 0.0),
                 name
@@ -77,7 +85,11 @@ class DLWalletManager:
             cursor = self.db.get_cursor()
             cursor.execute("SELECT * FROM wallets WHERE name = ?", (name,))
             row = cursor.fetchone()
-            return dict(row) if row else None
+            if row:
+                data = dict(row)
+                data["private_address"] = decrypt_key(data.get("private_address"))
+                return data
+            return None
         except Exception as e:
             from core.logging import log
             log.error(f"DLWalletManager failed to get wallet '{name}': {e}", source="DLWalletManager")
