@@ -9,6 +9,13 @@
     <a class="btn btn-light nav-icon-btn" href="/system/xcom_config" title="XCom Config"><span>🔌</span></a>
   </div>
   <div class="title-bar-center flex-grow-1 text-center" style="font-size:1.3rem;font-weight:bold;letter-spacing:0.04em;">
+    <div id="refreshDial" class="refresh-dial" title="UI auto-refresh">
+      <svg viewBox="0 0 36 36">
+        <circle class="bg" cx="18" cy="18" r="16" />
+        <circle class="progress" cx="18" cy="18" r="16" />
+      </svg>
+      <span class="timer-number"></span>
+    </div>
   </div>
     <div class="title-bar-actions d-flex align-items-center gap-3">
       <div class="config-bar d-flex align-items-center gap-2">
@@ -40,4 +47,5 @@
       </div>
     </div>
   </div>
-</nav>
+  </nav>
+  <script src="{{ url_for('static', filename='js/refresh_timer.js') }}" defer></script>
