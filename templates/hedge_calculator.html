@@ -2,10 +2,12 @@
 {% block title %}Hedge Calculator{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/hedge_calculator.css') }}">
 {% endblock %}
 
 {% block content %}
+{% include "title_bar.html" %}
 <div class="container-fluid">
   <!-- Display Mode Radio Buttons -->
   <div class="d-flex justify-content-center mb-3" id="displayModeControls">
