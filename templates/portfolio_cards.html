@@ -8,7 +8,7 @@
             <div class="icon">{{ item.icon }}</div>
             <div class="value">{{ item.value }}</div>
           </div>
-          <div class="flip-card-back">
+          <div class="flip-card-back status-card {{ item.color }}">
             {% set thresholds = portfolio_limits.get(item.title.lower().replace(' ', '_'), {}) %}
             <div class="thresholds">
               <div><span class="dot green"></span> Low: {{ thresholds.low }}</div>
