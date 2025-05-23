@@ -25,6 +25,7 @@ The [Calculation Core module](calc_core/calculation_module_spec.md) houses risk 
 
 ### Hedge Core
 The [Hedge Core module](hedge_core/hedge_core_module_spec.md) links long and short positions into hedge groups and aggregates their metrics.
+The [HedgeCalcServices specification](hedge_core/hedge_calc_services_spec.md) details calculations for dynamic hedging and rebalance suggestions.
 
 ### Monitor Core
 The [Monitor module](monitor/monitor_module_spec.md) drives periodic tasks and health checks. It registers individual monitors and exposes CLI and API entrypoints for running them.
