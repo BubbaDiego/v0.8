@@ -7,7 +7,7 @@ from price_monitor import PriceMonitor
 from operations_monitor import OperationsMonitor
 from position_monitor import PositionMonitor
 from latency_monitor import LatencyMonitor
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 app = Flask(__name__)
 

@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import os
 import json
 from datetime import datetime, timezone
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 class LedgerService:
     def __init__(self, ledger_dir="monitor"):

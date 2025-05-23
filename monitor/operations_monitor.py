@@ -11,7 +11,7 @@ import time
 
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 from core.constants import DB_PATH
 
 

@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import json
 from enum import Enum
 from typing import Optional
-from utils.console_logger import ConsoleLogger
+from utils.rich_logger import RichLogger
 import re
 from difflib import get_close_matches
 from core.core_imports import ALERT_LIMITS_PATH
@@ -23,7 +23,7 @@ class JsonType(Enum):
 
 class JsonManager:
     def __init__(self, logger=None):
-        self.logger = logger or ConsoleLogger()
+        self.logger = logger or RichLogger()
 
     def load(self, file_path: str, json_type: JsonType = None):
         """Load and return the JSON data from the specified file path."""

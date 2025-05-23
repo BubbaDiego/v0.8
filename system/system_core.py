@@ -4,7 +4,6 @@ from alert_core.threshold_service import ThresholdService
 from system.wallet_service import WalletService
 from system.theme_service import ThemeService
 from xcom.xcom_core import XComCore
-from utils.console_logger import ConsoleLogger
 from system.death_nail_service import DeathNailService
 from core.logging import log
 

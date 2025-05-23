@@ -5,7 +5,7 @@ import json
 import os
 from datetime import datetime
 from xcom.sound_service import SoundService
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 
 class DeathNailService:

@@ -4,7 +4,7 @@ import requests
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from twilio.rest import Client
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 from flask import current_app
 
@@ -14,7 +14,7 @@ class VoiceService:
         self.config = config
 
     import requests
-    from utils.console_logger import ConsoleLogger as log
+    from core.logging import log
     from flask import current_app
 
     def call(self, recipient: str, message: str) -> bool:
