@@ -443,12 +443,11 @@ def hedge_calculator_page():
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():
     dl = current_app.data_locker
-    config = (
-        dl.system.get_active_theme_profile()
-        .get("communication", {})
-        .get("providers", {})
-    )
-    return render_template("system/xcom_config.html", xcom_config=config)
+    profile = dl.system.get_active_theme_profile() or {}
+    providers = profile.get("communication", {}).get("providers")
+    if not providers:
+        providers = dl.system.get_var("xcom_providers") or {}
+    return render_template("system/xcom_config.html", xcom_config=providers)
 
 
 @system_bp.route("/xcom_config/save", methods=["POST"])
@@ -492,6 +491,11 @@ def save_xcom_config():
                 }
             }
         }
+
+        # Store providers globally for use outside of theme profiles
+        dl.system.set_var(
+            "xcom_providers", new_config["communication"]["providers"]
+        )
 
         # ✅ Get active profile name safely
         profile_name = core.get_active_profile_name()
