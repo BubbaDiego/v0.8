@@ -1,7 +1,8 @@
 # v0.8
 
 For an overview of the key modules and architecture, see
-[SPECIFICATIONS.md](SPECIFICATIONS.md).
+[SPECIFICATIONS.md](SPECIFICATIONS.md). This now includes the
+[Monitor Core specification](monitor/monitor_module_spec.md).
 
 ## Twilio Testing
 
