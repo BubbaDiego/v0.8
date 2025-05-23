@@ -50,3 +50,18 @@ python -m data.threshold_seeder
 Run it from the project root on Windows or Linux. Existing thresholds will be
 updated to match the defaults defined in the script.
 
+## Running `sonic_app.py`
+
+The Flask dashboard can be started directly from the project root. Ensure that
+all required environment variables above are set (either in a `.env` file or in
+your shell) and then run:
+
+```bash
+python sonic_app.py
+```
+
+By default the server listens on `0.0.0.0:5000`. Open
+`http://127.0.0.1:5000/` in your browser to access the dashboard. Use the
+`--monitor` flag if you want to also launch the local monitor process in a
+separate console.
+
