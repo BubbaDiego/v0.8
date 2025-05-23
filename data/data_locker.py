@@ -262,6 +262,27 @@ class DataLocker:
         if hasattr(self.positions, "delete_positions_for_wallet"):
             self.positions.delete_positions_for_wallet(wallet_name)
 
+    # ---- Portfolio convenience wrappers ----
+    def get_portfolio_history(self):
+        """Return all portfolio snapshot entries."""
+        return self.portfolio.get_snapshots()
+
+    def add_portfolio_entry(self, entry: dict):
+        """Insert a snapshot entry into the portfolio history."""
+        self.portfolio.add_entry(entry)
+
+    def update_portfolio_entry(self, entry_id: str, fields: dict):
+        """Update a portfolio history entry by its ID."""
+        self.portfolio.update_entry(entry_id, fields)
+
+    def get_portfolio_entry_by_id(self, entry_id: str):
+        """Fetch a portfolio history entry by ID."""
+        return self.portfolio.get_entry_by_id(entry_id)
+
+    def delete_portfolio_entry(self, entry_id: str):
+        """Delete a portfolio history entry."""
+        self.portfolio.delete_entry(entry_id)
+
     def _seed_modifiers_if_empty(self):
         """Seed modifiers table from sonic_sauce.json if empty."""
         cursor = self.db.get_cursor()
