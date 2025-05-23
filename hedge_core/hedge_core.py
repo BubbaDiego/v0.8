@@ -1,6 +1,11 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from typing import List, Optional
+from uuid import uuid4
+from datetime import datetime
+
+from data.models import Hedge
 from positions.hedge_manager import HedgeManager
 from core.core_imports import log
 
