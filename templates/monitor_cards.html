@@ -41,6 +41,12 @@
                   </li>
                 {% endfor %}
               </ul>
+            {% elif item.title == "Xcom" %}
+              <ul class="mini-list">
+                {% for xc in xcom_monitor_history %}
+                  <li>{{ xc.comm_type }} from {{ xc.source }} @ {{ xc.timestamp }}</li>
+                {% endfor %}
+              </ul>
             {% endif %}
           </div>
         </div>
