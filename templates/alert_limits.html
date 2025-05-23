@@ -8,6 +8,7 @@
 
 {% block extra_styles %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
   <style>
     .save-spinner {
       display: none;
