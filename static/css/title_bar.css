@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.18rem 0.55rem;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   min-width: 42px;
   min-height: 42px;
   border-radius: 10px;
@@ -39,7 +39,7 @@
 .layout-toggle-btn {
   border-radius: 10px;
   border: 1.5px solid #d2cdf7;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   padding: 0.18rem 0.55rem;
 }
 .theme-toggle-group {
@@ -51,7 +51,7 @@
   border: 1.5px solid #d2cdf7;
   border-radius: 10px;
   padding: 0.18rem 0.55rem;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   background: #fff;
   color: #444;
   cursor: pointer;
