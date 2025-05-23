@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from flask import current_app
 from core.logging import log
 
@@ -20,12 +21,23 @@ class XComConfigService:
                 provider = {
                     "enabled": True,
                     "smtp": {
-                        "server": "smtp.gmail.com",
-                        "port": 587,
-                        "username": "bubba.diego@gmail.com",
-                        "password": "pzix taan afbe igxb",
-                        "default_recipient": "bubba.diego@gmail.com"
-                    }
+                        "server": os.getenv("SMTP_SERVER"),
+                        "port": int(os.getenv("SMTP_PORT", "0")) if os.getenv("SMTP_PORT") else None,
+                        "username": os.getenv("SMTP_USERNAME"),
+                        "password": os.getenv("SMTP_PASSWORD"),
+                        "default_recipient": os.getenv("SMTP_DEFAULT_RECIPIENT"),
+                    },
+                }
+
+            # Fallback for Twilio if missing/empty
+            if name == "twilio" and not provider:
+                provider = {
+                    "enabled": True,
+                    "account_sid": os.getenv("TWILIO_ACCOUNT_SID"),
+                    "auth_token": os.getenv("TWILIO_AUTH_TOKEN"),
+                    "flow_sid": os.getenv("TWILIO_FLOW_SID"),
+                    "default_to_phone": os.getenv("TWILIO_TO_PHONE"),
+                    "default_from_phone": os.getenv("TWILIO_FROM_PHONE"),
                 }
             return provider
         except Exception as e:

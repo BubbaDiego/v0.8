@@ -17,6 +17,27 @@ The script loads credentials from the `.env` file (or environment variables) and
 uses `scripts/twilio_test.py` to perform the authentication and optional flow
 execution.
 
+## Required Environment Variables
+
+The application expects several environment variables for email and Twilio
+integration. Create a `.env` file or export them in your shell before running
+the app:
+
+```
+SMTP_SERVER=your.smtp.server
+SMTP_PORT=587
+SMTP_USERNAME=you@example.com
+SMTP_PASSWORD=your_password
+SMTP_DEFAULT_RECIPIENT=you@example.com
+
+TWILIO_ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_FROM_PHONE=+15555555555
+TWILIO_TO_PHONE=+15555555555
+# Optional
+TWILIO_FLOW_SID=FWXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
 ## Hedge Calculator
 
 ## Threshold Seeder
