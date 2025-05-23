@@ -17,9 +17,14 @@ uses `scripts/twilio_test.py` to perform the authentication and optional flow
 execution.
 
 ## Hedge Calculator
-The hedge calculator interface is split into two parts:
 
-* `hedge_calculator_config.html/js/css` – position selection and modifier inputs.
-* `hedge_calculator_results.html` with `hedge_calculator_results.js` – price slider and output display.
+## Threshold Seeder
+Default alert thresholds can be populated (or refreshed) using the seeder script:
 
-Modifiers are saved by sending a POST request to `/sonic_labs/sonic_sauce` with JSON payloads for `hedge_modifiers` and `heat_modifiers`.
+```bash
+python -m data.threshold_seeder
+```
+
+Run it from the project root on Windows or Linux. Existing thresholds will be
+updated to match the defaults defined in the script.
+
