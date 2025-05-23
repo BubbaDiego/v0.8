@@ -4,13 +4,13 @@
       "email": {
         "enabled": true,
         "smtp": {
-          "server": "smtp.gmail.com",
-          "port": 587,
-          "username": "bubba.diego@gmail.com",
-          "password": "pzix taan afbe igxb",
-          "default_recipient": "bubba.diego@gmail.com"
+          "server": "${SMTP_SERVER}",
+          "port": "${SMTP_PORT}",
+          "username": "${SMTP_USERNAME}",
+          "password": "${SMTP_PASSWORD}",
+          "default_recipient": "${SMTP_DEFAULT_RECIPIENT}"
         }
-      },     
+      },
       "api_config": {
         "coingecko_api_enabled":    "ENABLE",
         "coinmarketcap_api_enabled":"ENABLE",
@@ -60,7 +60,7 @@
     },
     "coinmarketcap": {
       "enabled": true,
-      "api_key": "c51c0c22-1bf3-4674-86bf-36f39a912d1a"
+      "api_key": "${COINMARKETCAP_API_KEY}"
     },
     "coinpaprika": {
       "enabled": true
