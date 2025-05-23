@@ -173,20 +173,22 @@ class RichLogger:
     def enable_all(cls):
         cls.logging_enabled = True
 
-    @classmethod
-    def init_status(cls):
-        muted = [k for k, v in cls.module_log_control.items() if not v]
-        enabled = [k for k, v in cls.module_log_control.items() if v]
+
+    def init_status(self):
+        """Log the current logger configuration and suppression status."""
+        muted = [k for k, v in self.module_log_control.items() if not v]
+        enabled = [k for k, v in self.module_log_control.items() if v]
         msg = "\n"
         if muted:
             msg += f"    🔒 Muted Modules:      {', '.join(muted)}\n"
         if enabled:
             msg += f"    🔊 Enabled Modules:    {', '.join(enabled)}\n"
-        if cls.group_map:
+
+        if self.group_map:
             msg += "    🧠 Groups:\n"
-            for group, modules in cls.group_map.items():
+            for group, modules in self.group_map.items():
                 msg += f"        {group:<10} ➜ {', '.join(modules)}\n"
-        cls.info("🧩 RichLogger initialized.", source="Logger")
+        self.info("🧩 RichLogger initialized.", source="Logger")
         print(msg.strip())
 
     def hijack_logger(self, target_logger_name: str):
