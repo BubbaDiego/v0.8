@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}📈 Portfolio History{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include "title_bar.html" %}
+<div class="container pt-4">
+  <h1 class="mb-4">📈 Portfolio History</h1>
+  {% if percent_change is not none %}
+    <p class="lead">Overall Change: {{ percent_change|round(2) }}%</p>
+  {% endif %}
+  <table class="table table-striped align-middle mt-3">
+    <thead>
+      <tr>
+        <th>Snapshot Time</th>
+        <th>Total Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in portfolio_data %}
+      <tr>
+        <td>{{ entry.snapshot_time }}</td>
+        <td>{{ "{:,.2f}".format(entry.total_value) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
