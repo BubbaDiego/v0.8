@@ -37,9 +37,9 @@ def test_portfolio_alerts_EE_multirun():
     # ✅ Step 1: Load config
     try:
         config = load_config(str(ALERT_LIMITS_PATH))
-        alert_limits = config.get("alert_limits", config)
-        log.info(f"Loaded alert_limits keys: {list(alert_limits.keys())}", source="ConfigLoader")
-        assert "total_portfolio_limits" in alert_limits, "Missing 'total_portfolio_limits' in config"
+        alert_ranges = config.get("alert_ranges", config)
+        log.info(f"Loaded alert_ranges keys: {list(alert_ranges.keys())}", source="ConfigLoader")
+        assert "total_portfolio_limits" in alert_ranges, "Missing 'total_portfolio_limits' in config"
         log.success("✅ Alert configuration loaded and validated", source="ConfigLoader")
     except Exception as e:
         raise AssertionError(f"❌ Failed to load alert config: {e}")

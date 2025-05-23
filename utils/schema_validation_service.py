@@ -19,7 +19,7 @@ class SchemaValidationService:
     ALERT_LIMITS_SCHEMA = {
         "type": "object",
         "properties": {
-            "alert_limits": {
+            "alert_ranges": {
                 "type": "object",
                 "properties": {
                     "liquidation_distance_ranges": {"type": "object"},
@@ -59,7 +59,7 @@ class SchemaValidationService:
                 }
             }
         },
-        "required": ["alert_limits", "cooldowns", "notifications"]
+        "required": ["alert_ranges", "cooldowns", "notifications"]
     }
 
     @staticmethod
@@ -85,8 +85,8 @@ class SchemaValidationService:
             return False
 
     @classmethod
-    def validate_alert_limits(cls):
-        return cls.validate_schema(cls.ALERT_LIMITS_FILE, cls.ALERT_LIMITS_SCHEMA, name="Alert Limits")
+    def validate_alert_ranges(cls):
+        return cls.validate_schema(cls.ALERT_LIMITS_FILE, cls.ALERT_LIMITS_SCHEMA, name="Alert Ranges")
 
     @classmethod
     def batch_validate(cls):
@@ -95,7 +95,7 @@ class SchemaValidationService:
         results = []
 
         validations = [
-            ("Alert Limits", cls.ALERT_LIMITS_FILE, cls.ALERT_LIMITS_SCHEMA)
+            ("Alert Ranges", cls.ALERT_LIMITS_FILE, cls.ALERT_LIMITS_SCHEMA)
             # Future: add more configs here
         ]
 
