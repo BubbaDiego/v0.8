@@ -120,7 +120,54 @@
         </div>
       </div>
 
-      <!-- Simplified output rows omitted for brevity -->
+      <!-- Row 3: Simulation Sliders -->
+      <div id="projectedOutputRow" class="row mb-4">
+        <div class="col-md-6 slider-box mb-3">
+          <label for="priceSlider" class="form-label"><strong>Simulated Price</strong></label>
+          <input type="range" class="form-range" id="priceSlider" step="0.01" oninput="sliderChanged()">
+          <div class="d-flex justify-content-between">
+            <small id="tickLeft">$0</small>
+            <small id="tickRight">$0</small>
+          </div>
+          <div class="position-relative" style="height:20px;">
+            <span id="entryMarkerLong" class="position-absolute text-success small"></span>
+            <span id="entryMarkerShort" class="position-absolute text-danger small"></span>
+            <span id="currentMarker" class="position-absolute text-primary small"></span>
+          </div>
+          <button class="btn btn-sm btn-secondary mt-2" onclick="resetPriceToCurrent()">Reset Price</button>
+        </div>
+        <div class="col-md-6 slider-box mb-3">
+          <label for="leverageSlider" class="form-label"><strong>Projected Leverage</strong></label>
+          <input type="range" class="form-range" id="leverageSlider" min="1" max="20" step="0.1" oninput="updateProjectedHeatIndex()">
+          <div id="leverageValue" class="mt-2">Leverage: 1x</div>
+        </div>
+      </div>
+
+      <!-- Row 4: Output Boxes -->
+      <div id="outputRow" class="row mb-4">
+        <div class="col-md-6 mb-3">
+          <div class="border rounded p-3 reduced-height position-details-section">
+            <h5 class="text-center">Long Position Output</h5>
+            <p id="longPnL">P&L: 0</p>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="border rounded p-3 reduced-height position-details-section">
+            <h5 class="text-center">Short Position Output</h5>
+            <p id="shortPnL">P&L: 0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5: Recommendation Box -->
+      <div id="recommendationRow" class="row mb-4">
+        <div class="col text-center">
+          <div class="recommendation-box">
+            <span id="recommendationText">Recommendation will appear here.</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 </div>
 </div>
