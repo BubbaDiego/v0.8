@@ -1,79 +1,57 @@
 # xcom/voice_service.py
-import sys
-import requests
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from twilio.rest import Client
-from core.logging import log
+import sys
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import requests  # noqa: F401  # retained for backward compatibility
+from twilio.rest import Client
+from twilio.twiml.voice_response import VoiceResponse
+
+from core.logging import log
 from flask import current_app
+
 
 
 class VoiceService:
     def __init__(self, config: dict):
         self.config = config
 
-    import requests
-    from core.logging import log
-    from flask import current_app
-
     def call(self, recipient: str, message: str) -> bool:
+        """Initiate a Twilio voice call using ``message`` as spoken text."""
         try:
-            account_sid = self.config.get("account_sid")
-            auth_token = self.config.get("auth_token")
-            flow_sid = self.config.get("flow_sid")
-            from_phone = self.config.get("default_from_phone")
-            to_phone = recipient or self.config.get("default_to_phone")
+            account_sid = self.config.get("account_sid") or os.getenv("TWILIO_ACCOUNT_SID")
+            auth_token = self.config.get("auth_token") or os.getenv("TWILIO_AUTH_TOKEN")
+            from_phone = self.config.get("default_from_phone") or os.getenv("TWILIO_FROM_PHONE")
+            to_phone = recipient or self.config.get("default_to_phone") or os.getenv("TWILIO_TO_PHONE")
 
-            if not all([account_sid, auth_token, flow_sid, from_phone, to_phone]):
-                raise ValueError("Missing required Twilio voice config")
+            if not all([account_sid, auth_token, from_phone, to_phone]):
+                log.error("Missing Twilio voice configuration", source="VoiceService")
+                return False
 
-            url = f"https://studio.twilio.com/v2/Flows/{flow_sid}/Executions"
-            payload = {
-                "To": to_phone,
-                "From": from_phone
-            }
+            client = Client(account_sid, auth_token)
+            vr = VoiceResponse()
+            vr.say(message or "Hello from XCom.", voice="alice")
 
-            headers = {"Accept-Charset": "utf-8"}
+            call = client.calls.create(twiml=str(vr), to=to_phone, from_=from_phone)
 
-            response = requests.post(
-                url,
-                data=payload,
-                headers=headers,
-                auth=(account_sid, auth_token)
+            log.info(
+                "🔍 Twilio Voice request debug",
+                payload={"sid": call.sid, "to": to_phone, "from": from_phone},
+                source="VoiceService",
             )
 
-            # 🔍 Full verbose logging
-            log.info("🔍 Twilio Voice request debug", payload={
-                "url": url,
-                "payload": payload,
-                "auth_sid": account_sid,
-                "status_code": response.status_code,
-                "response_text": response.text
-            }, source="VoiceService")
-
-            if response.status_code == 201:
-                return True
-
-            # If we get 401 or other
-            if response.status_code == 401:
-                if hasattr(current_app, "system_core"):
-                    current_app.system_core.death({
-                        "message": "Twilio Voice Call failed: 401 Unauthorized",
-                        "payload": {
-                            "status_code": 401,
-                            "provider": "twilio",
-                            "flow_sid": flow_sid,
-                            "to": to_phone,
-                            "from": from_phone,
-                            "response_text": response.text
-                        },
-                        "level": "HIGH"
-                    })
-
-            return False
+            return True
 
         except Exception as e:
             log.error(f"Voice call failed: {e}", source="VoiceService")
+            if hasattr(current_app, "system_core"):
+                current_app.system_core.death(
+                    {
+                        "message": f"Twilio Voice Call failed: {e}",
+                        "payload": {"provider": "twilio", "to": to_phone, "from": from_phone},
+                        "level": "HIGH",
+                    }
+                )
             return False
 
