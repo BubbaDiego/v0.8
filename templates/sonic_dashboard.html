@@ -95,6 +95,9 @@
         setTimeout(() => toast.remove(), 600);
       }, 2500);
     }
+    function refreshDashboardPanels() {
+      window.location.reload();
+    }
     document.addEventListener("DOMContentLoaded", function () {
       document.querySelectorAll(".cyclone-btn").forEach(btn => {
         btn.addEventListener("click", function () {
@@ -109,8 +112,12 @@
           }
           if (!api) return;
           fetch(api, {method:"POST"}).then(resp => resp.json()).then(result => {
-            if (result.success) showToast(`✅ ${label} complete!`, 'success');
-            else showToast(`❌ ${label} failed: ${result.error || result.message}`, 'error');
+            if (result.success) {
+              showToast(`✅ ${label} complete!`, 'success');
+              refreshDashboardPanels();
+            } else {
+              showToast(`❌ ${label} failed: ${result.error || result.message}`, 'error');
+            }
           }).catch(err => showToast(`❌ ${label} failed: ${err.message}`, 'error'));
         });
       });
