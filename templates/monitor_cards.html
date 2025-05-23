@@ -12,7 +12,7 @@
               </div>
               <div class="led-dot {{ item.color }}"></div>
             </div>
-          <div class="flip-card-back">
+          <div class="flip-card-back status-card monitor-style {{ item.color }}">
             {% if item.title == "Price" %}
               <strong>Status:</strong>
               {% if item.color == 'green' %}✅{% elif item.color == 'yellow' %}⚠️{% else %}❌{% endif %}
