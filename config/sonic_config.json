@@ -41,11 +41,11 @@
     }
   },
   "twilio_config": {
-    "account_sid": "ACb606788ada5dccbfeeebed0f440099b3",
-    "auth_token": "ca16911e2a3c25f618a634c9fe34e368",
-    "flow_sid": "FW5b3bf49ee04af4d23a118b613bbc0df2",
-    "to_phone": "+16199804758",
-    "from_phone": "+18336913467"
+    "account_sid": "${TWILIO_ACCOUNT_SID}",
+    "auth_token": "${TWILIO_AUTH_TOKEN}",
+    "flow_sid": "${TWILIO_FLOW_SID}",
+    "to_phone": "${TWILIO_TO_PHONE}",
+    "from_phone": "${TWILIO_FROM_PHONE}"
   },
   "theme_config": {
     "selected_profile": "profile4",
