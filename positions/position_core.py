@@ -6,7 +6,7 @@ from core.core_imports import log
 from positions.position_store import PositionStore
 from positions.position_enrichment_service import PositionEnrichmentService
 from positions.position_enrichment_service import validate_enriched_position
-from positions.hedge_manager import HedgeManager
+from hedge_core.hedge_core import HedgeCore
 from calc_core.calc_services import CalcServices
 from datetime import datetime
 
@@ -57,13 +57,19 @@ class PositionCore:
         log.banner("🔗 Generating Hedges via PositionCore")
 
         try:
-            positions = self.store.get_all()
-            log.info("📥 Loaded positions for hedge scan", source="PositionCore", payload={"count": len(positions)})
+            core = HedgeCore(self.dl)
+            groups = core.link_hedges()
+            log.info(
+                f"📥 Linked {len(groups)} hedge group(s)",
+                source="PositionCore",
+            )
 
-            hedge_manager = HedgeManager(positions)
-            hedges = hedge_manager.get_hedges()
-
-            log.success("✅ Hedge generation complete", source="PositionCore", payload={"hedge_count": len(hedges)})
+            hedges = core.build_hedges()
+            log.success(
+                "✅ Hedge generation complete",
+                source="PositionCore",
+                payload={"hedge_count": len(hedges)},
+            )
             return hedges
 
         except Exception as e:
