@@ -200,12 +200,15 @@ def alert_status_page():
 
             meta = resolve_wallet_metadata(SimpleNamespace(**a), dl)
             wallet_path = meta.get("wallet_image") or ""
+            wallet_path = wallet_path.replace("\\", "/").strip()
 
             wallet_name = meta.get("wallet_name")
             if wallet_name in WALLET_IMAGE_MAP:
                 wallet_img = os.path.join("images", WALLET_IMAGE_MAP[wallet_name])
             elif wallet_path.startswith("/static/"):
                 wallet_img = wallet_path[len("/static/"):]
+            elif wallet_path.startswith("static/"):
+                wallet_img = wallet_path[len("static/"):]
             elif wallet_path:
                 wallet_img = wallet_path.lstrip("/")
             else:
