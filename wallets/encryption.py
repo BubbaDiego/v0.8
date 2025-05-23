@@ -1,5 +1,6 @@
 import os
 import base64
+import binascii
 from itertools import cycle
 
 _KEY = os.getenv("WALLET_ENCRYPTION_KEY", "simplekey").encode()
@@ -17,8 +18,13 @@ def encrypt_key(plain: str | None) -> str | None:
 
 
 def decrypt_key(enc: str | None) -> str | None:
+    """Decrypt a value if it appears to be encoded, otherwise return as-is."""
     if enc is None:
         return None
-    data = base64.b64decode(enc)
-    dec = _xor(data)
-    return dec.decode()
+    try:
+        data = base64.b64decode(enc)
+        dec = _xor(data)
+        return dec.decode()
+    except (binascii.Error, ValueError):
+        # Value was not base64-encoded; treat as plain text
+        return enc
