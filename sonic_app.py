@@ -19,6 +19,11 @@ from system.system_core import SystemCore
 from monitor.monitor_core import MonitorCore
 from cyclone.cyclone_engine import Cyclone
 
+# --- Logging Setup ---
+log.banner("SONIC DASHBOARD STARTUP")
+log.enable_all()
+configure_console_log()
+
 # --- Flask Setup ---
 app = Flask(__name__)
 app.debug = False
@@ -30,12 +35,6 @@ app.data_locker = DataLocker(str(DB_PATH))
 app.system_core = SystemCore(app.data_locker)
 app.monitor_core = MonitorCore()
 app.cyclone = Cyclone(monitor_core=app.monitor_core)
-
-# --- Logging Setup ---
-log.banner("SONIC DASHBOARD STARTUP")
-log.enable_all()
-log.init_status()
-configure_console_log()
 
 # --- Blueprints ---
 from app.positions_bp import positions_bp

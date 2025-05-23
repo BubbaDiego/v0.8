@@ -73,7 +73,9 @@ class OperationsMonitor(BaseMonitor):
         return {"post_success": success, "duration_seconds": duration}
 
 if __name__ == "__main__":
+    from core.core_imports import configure_console_log
     log.banner("🚀 SELF-RUN: OperationsMonitor")
+    configure_console_log()
 
     monitor = OperationsMonitor()
     result = monitor._do_work()

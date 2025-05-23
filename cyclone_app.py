@@ -6,10 +6,11 @@ from rich.prompt import Prompt
 from rich.table import Table
 from cyclone.cyclone_engine import Cyclone
 from monitor.monitor_core import MonitorCore
+from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 
 console = Console()
+configure_console_log()
 dl = DataLocker(str(DB_PATH))
 monitor_core = MonitorCore()
 cyclone = Cyclone(monitor_core)

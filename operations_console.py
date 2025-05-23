@@ -4,6 +4,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from utils.console_logger import ConsoleLogger as log
+from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
 from xcom.xcom_core import XComCore
 from monitor.monitor_core import MonitorCore
@@ -11,8 +12,8 @@ from monitor.monitor_registry import MonitorRegistry
 from monitor.price_monitor import PriceMonitor
 from data.dl_system_data import DLSystemDataManager
 
-from core.constants import DB_PATH
-from data.data_locker import DataLocker
+
+configure_console_log()
 
 dl = DataLocker(str(DB_PATH))  # Same DB as Sonic Dashboard
 xcom = XComCore(dl.system)
