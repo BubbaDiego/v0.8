@@ -25,6 +25,7 @@ from prices.price_sync_service import PriceSyncService
 from cyclone.cyclone_maintenance_service import CycloneMaintenanceService
 from cyclone.cyclone_wallet_service import CycloneWalletService
 from data.dl_monitor_ledger import DLMonitorLedgerManager
+from hedge_core.hedge_core import HedgeCore
 
 
 global_data_locker = DataLocker(str(DB_PATH))  # There can be only one
@@ -82,6 +83,7 @@ class Cyclone:
         self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
+        self.hedge_core = HedgeCore(self.data_locker)
 
         # PATCH: Create a system_core instance for death screams
         self.system_core = SystemCore(self.data_locker)
@@ -133,6 +135,7 @@ class Cyclone:
             "evaluate_alerts": self.run_alert_evaluation,
             "cleanse_ids": self.run_cleanse_ids,
             "link_hedges": self.run_link_hedges,
+            "update_hedges": self.run_update_hedges,
         }
 
         steps = steps or list(available_steps.keys())
@@ -168,10 +171,10 @@ class Cyclone:
         await self.portfolio_runner.create_portfolio_alerts()
 
     async def run_link_hedges(self):
-        self.position_core.link_hedges()
+        self.hedge_core.link_hedges()
 
     async def run_update_hedges(self):
-        await self.position_core.update_hedges()
+        await asyncio.to_thread(self.hedge_core.update_hedges)
 
     async def run_alert_evaluation(self):
         await self.alert_core.run_alert_evaluation()
