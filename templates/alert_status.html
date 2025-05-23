@@ -58,7 +58,7 @@
         {% for alert in alerts %}
           {% if alert.travel_percent is defined and alert.travel_percent is not none %}
           <div class="liq-row" data-alert-id="{{ alert.id }}">
-            <img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.asset|lower) + '_logo.png') }}" alt="{{ alert.asset }}" />
+            <img class="wallet-icon" src="{{ url_for('static', filename='images/' + (alert.wallet_image or alert.asset_image)) }}" alt="{{ alert.wallet_name or alert.asset }}" />
             <div class="liq-progress-bar">
               <div class="liq-bar-container">
                 <div class="liq-midline"></div>

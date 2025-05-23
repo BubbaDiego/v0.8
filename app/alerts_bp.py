@@ -2,9 +2,13 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import logging
 import asyncio
+import os
+from types import SimpleNamespace
 from flask import current_app
 from config.config_loader import load_config
 from core.core_imports import ALERT_LIMITS_PATH
+from alert_core.alert_utils import resolve_wallet_metadata
+from dashboard.dashboard_service import WALLET_IMAGE_MAP, DEFAULT_WALLET_IMAGE
 
 from flask import Blueprint, jsonify, render_template, render_template_string, request, session
 from data.data_locker import DataLocker
@@ -172,9 +176,36 @@ def alert_status_page():
     alerts = []
     try:
         dl = current_app.data_locker
-        alerts = dl.alerts.get_all_alerts()
+        raw_alerts = dl.alerts.get_all_alerts() or []
+
+        ASSET_IMAGE_MAP = {
+            "BTC": "btc_logo.png",
+            "ETH": "eth_logo.png",
+            "SOL": "sol_logo.png",
+        }
+        DEFAULT_ASSET_IMAGE = "unknown.png"
+
+        enriched = []
+        for a in raw_alerts:
+            asset = a.get("asset") or a.get("asset_type")
+            a["asset"] = asset
+            asset_key = str(asset or "").upper()
+            a["asset_image"] = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
+
+            meta = resolve_wallet_metadata(SimpleNamespace(**a), dl)
+            wallet_path = meta.get("wallet_image")
+            if wallet_path:
+                wallet_img = os.path.basename(wallet_path)
+            else:
+                wallet_img = DEFAULT_WALLET_IMAGE
+            a["wallet_image"] = WALLET_IMAGE_MAP.get(meta.get("wallet_name"), wallet_img)
+            a["wallet_name"] = meta.get("wallet_name")
+
+            enriched.append(a)
+        alerts = enriched
     except Exception as e:
         logger.error(f"Failed to load alerts for status page: {e}", exc_info=True)
+
     return render_template('alert_status.html', alerts=alerts)
 
 
