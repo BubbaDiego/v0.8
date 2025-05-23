@@ -95,4 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (leverageSlider) {
     leverageSlider.addEventListener('input', updateProjectedHeatIndex);
   }
+  const longSizeInput = document.getElementById('longSize');
+  if (longSizeInput) {
+    longSizeInput.addEventListener('input', sliderChanged);
+  }
+  const shortSizeInput = document.getElementById('shortSize');
+  if (shortSizeInput) {
+    shortSizeInput.addEventListener('input', sliderChanged);
+  }
 });
