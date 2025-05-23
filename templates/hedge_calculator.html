@@ -1,13 +1,71 @@
 {% extends "base.html" %}
 {% block title %}Hedge Calculator{% endblock %}
+{% block page_title %}{% endblock %} {# Remove outer heading #}
 
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/hedge_calculator.css') }}">
+{% block extra_styles %}
+<style>
+  /* Increase leverage font size and bold the text */
+  #leverageValue {
+      font-size: 1.5rem;
+      font-weight: bold;
+  }
+  /* Reduce height of the output position boxes by 20%
+     (Assuming original height ~375px, now fixed at 300px) */
+  .reduced-height {
+      height: 300px;
+  }
+  /* Make the text on the right side a bit larger (was 0.8rem) */
+  .position-details-section {
+      font-size: 1rem; /* increased from 0.8rem */
+      text-align: left;
+  }
+  /* Improve spacing in text paragraphs */
+  .position-details-section p {
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+  }
+  /* The "Sim Heat" box style (same style as Heat box, but purple BG) */
+  .sim-heat-box {
+      position: absolute;
+      top: 50%; /* vertically center */
+      right: 10px;
+      transform: translateY(-50%);
+      background-color: #f3e8ff; /* subtle purple background */
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 1.2rem; /* match Heat box size */
+      font-weight: bold;
+      color: #333;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  /* Recommendation boxes styling (blue boxes) */
+  .recommendation-box {
+      background-color: #cce5ff;
+      color: #004085;
+      border: 1px solid #b8daff;
+      padding: 10px;
+      border-radius: 5px;
+  }
+  /* Collateral value style in the Projected Leverage Box */
+  .collateral-value {
+      font-weight: bold;
+      color: green;
+  }
+  /* Make both slider boxes the same height */
+  .slider-box {
+      height: 180px; /* pick a height that accommodates the slider & labels */
+  }
+  /* Make all text bold in the first two rows (Positions + Modifiers) */
+  #positionInputRow * {
+      font-weight: bold !important;
+  }
+  #modifierRow * {
+      font-weight: bold !important;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-{% include "title_bar.html" %}
 <div class="container-fluid">
   <!-- Display Mode Radio Buttons -->
   <div class="d-flex justify-content-center mb-3" id="displayModeControls">
@@ -23,6 +81,7 @@
 
   <!-- Main Card for Hedge Calculator -->
   <div class="card shadow mb-4">
+    <!-- Overall Card Header with Save Button -->
     <div class="card-header position-relative" style="background-color: var(--card-title-color);">
       <h4 class="mb-0 text-center" style="color: var(--text-color);">🦔 Hedge Calculator</h4>
       <button id="saveModifiers" class="btn btn-sm btn-outline-secondary position-absolute" style="top: 10px; right: 10px;" title="Save Modifiers">
@@ -32,15 +91,16 @@
     <div class="card-body">
       <!-- Row 1: Input Boxes for Long & Short Positions -->
       <div id="positionInputRow" class="row mb-4">
+        <!-- Long Position Input Box -->
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3" style="background-color: #f7f7f7;">
             <h5 class="text-center">📈 Long Position</h5>
             <div class="mb-2">
               <label for="longSelect" class="form-label"><strong>Select Long Position</strong></label>
               <select id="longSelect" class="form-select" onchange="loadLongPosition()">
-                <option value="" disabled {% if not default_long_id %}selected{% endif %}>-- Choose a Position --</option>
+                <option value="" disabled selected>-- Choose a Position --</option>
                 {% for pos in long_positions %}
-                <option value="{{ pos.id }}" {% if pos.id == default_long_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+                <option value="{{ pos.id }}">{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -52,19 +112,21 @@
               <label for="longSize" class="form-label"><strong>Position Size (USD):</strong></label>
               <input type="number" id="longSize" class="form-control" step="any" />
             </div>
+            <!-- Hidden fields -->
             <input type="hidden" id="longCollateral" />
             <input type="hidden" id="longLiqPrice" />
           </div>
         </div>
+        <!-- Short Position Input Box -->
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3" style="background-color: #f7f7f7;">
             <h5 class="text-center">📉 Short Position</h5>
             <div class="mb-2">
               <label for="shortSelect" class="form-label"><strong>Select Short Position</strong></label>
               <select id="shortSelect" class="form-select" onchange="loadShortPosition()">
-                <option value="" disabled {% if not default_short_id %}selected{% endif %}>-- Choose a Position --</option>
+                <option value="" disabled selected>-- Choose a Position --</option>
                 {% for pos in short_positions %}
-                <option value="{{ pos.id }}" {% if pos.id == default_short_id %}selected{% endif %}>{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
+                <option value="{{ pos.id }}">{{ pos.asset_type }} - Entry: ${{ pos.entry_price }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -76,6 +138,7 @@
               <label for="shortSize" class="form-label"><strong>Position Size (USD):</strong></label>
               <input type="number" id="shortSize" class="form-control" step="any" />
             </div>
+            <!-- Hidden fields -->
             <input type="hidden" id="shortCollateral" />
             <input type="hidden" id="shortLiqPrice" />
           </div>
@@ -84,96 +147,267 @@
 
       <!-- Row 2: Modifier Boxes -->
       <div id="modifierRow" class="row mb-4">
+        <!-- Hedge Modifiers Box -->
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3" style="background-color: #f7f7f7;">
             <h5 class="text-center"><strong>⚙️ Hedge Modifiers 🔧</strong></h5>
             <div class="mb-3">
               <label for="feePercentage" class="form-label"><strong>💲 Fee (% of total size):</strong></label>
               <input type="number" id="feePercentage" class="form-control" step="any" value="{{ modifiers.hedge_modifiers.feePercentage }}" />
+              <small class="form-text text-muted">The fee percentage applied to the total position size.</small>
             </div>
             <div class="mb-3">
               <label for="targetMarginInput" class="form-label"><strong>📏 Target Safety Margin (%)</strong></label>
               <input type="number" id="targetMarginInput" class="form-control" step="0.1" value="{{ modifiers.hedge_modifiers.targetMargin }}">
+              <small class="form-text text-muted">Desired safety margin. For example, 15 means a 15% buffer above liquidation.</small>
             </div>
             <div class="mb-3">
               <label for="adjustmentFactorInput" class="form-label"><strong>🔧 Adjustment Factor</strong></label>
               <input type="number" id="adjustmentFactorInput" class="form-control" step="0.1" value="{{ modifiers.hedge_modifiers.adjustmentFactor }}">
+              <small class="form-text text-muted">Scales the recommended additional position size.</small>
             </div>
           </div>
         </div>
+        <!-- Heat Modifiers Box -->
         <div class="col-md-6 mb-3">
           <div class="border rounded p-3" style="background-color: #f7f7f7;">
             <h5 class="text-center"><strong>⚙️ Heat Modifiers 🔧</strong></h5>
             <div class="mb-3">
               <label for="distanceWeightInput" class="form-label"><strong>📏 Distance Weight</strong></label>
               <input type="number" id="distanceWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.distanceWeight }}" />
+              <small class="form-text text-muted">Weight for the distance to liquidation factor.</small>
             </div>
             <div class="mb-3">
               <label for="leverageWeightInput" class="form-label"><strong>📊 Leverage Weight</strong></label>
               <input type="number" id="leverageWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.leverageWeight }}" />
+              <small class="form-text text-muted">Weight for the leverage factor.</small>
             </div>
             <div class="mb-3">
               <label for="collateralWeightInput" class="form-label"><strong>💰 Collateral Weight</strong></label>
               <input type="number" id="collateralWeightInput" class="form-control" step="0.01" value="{{ modifiers.heat_modifiers.collateralWeight }}" />
+              <small class="form-text text-muted">Weight for the collateral ratio factor.</small>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Row 3: Simulation Sliders -->
-      <div id="projectedOutputRow" class="row mb-4">
-        <div class="col-md-6 slider-box mb-3">
-          <label for="priceSlider" class="form-label"><strong>Simulated Price</strong></label>
-          <input type="range" class="form-range" id="priceSlider" step="0.01" oninput="sliderChanged()">
-          <div class="d-flex justify-content-between">
-            <small id="tickLeft">$0</small>
-            <small id="tickRight">$0</small>
-          </div>
-          <div class="position-relative" style="height:20px;">
-            <span id="entryMarkerLong" class="position-absolute text-success small"></span>
-            <span id="entryMarkerShort" class="position-absolute text-danger small"></span>
-            <span id="currentMarker" class="position-absolute text-primary small"></span>
-          </div>
-          <button class="btn btn-sm btn-secondary mt-2" onclick="resetPriceToCurrent()">Reset Price</button>
-        </div>
-        <div class="col-md-6 slider-box mb-3">
-          <label for="leverageSlider" class="form-label"><strong>Projected Leverage</strong></label>
-          <input type="range" class="form-range" id="leverageSlider" min="1" max="20" step="0.1" oninput="updateProjectedHeatIndex()">
-          <div id="leverageValue" class="mt-2">Leverage: 1x</div>
-        </div>
-      </div>
+      <!-- START container for the "6 boxes + toggle" -->
+      <div class="rounded-3 p-3 mb-4" style="background-color: #eff1f6;">
 
-      <!-- Row 4: Output Boxes -->
-      <div id="outputRow" class="row mb-4">
-        <div class="col-md-6 mb-3">
-          <div class="border rounded p-3 reduced-height position-details-section">
-            <h5 class="text-center">Long Position Output</h5>
-            <p id="longPnL">P&L: 0</p>
+        <!-- Row: Price Slider and Projected Leverage Slider Side by Side -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <!-- Simulated Price Box -->
+            <div id="priceSliderRow" class="border rounded p-3 slider-box" style="background-color: #f7f7f7;">
+              <div class="d-flex justify-content-center mb-2">
+                <h5 class="text-center"><strong>💵 Simulated Price</strong></h5>
+              </div>
+              <div class="position-relative" style="min-height: 100px;">
+                <input type="range" id="priceSlider" step="0.1" class="form-range" oninput="sliderChanged()">
+                <div id="currentMarker" class="position-absolute" style="top: -35px; left: 0; font-size: 1rem; font-weight: bold; background-color: rgba(0,0,0,0.5); color: #fff; padding: 4px 6px; border-radius: 4px; pointer-events: none;">
+                  Price: $0.00
+                </div>
+                <button id="resetPriceButton" onclick="resetPriceToCurrent()" title="Reset to current price" style="position: absolute; top: -35px; right: 10px; background: none; border: none; font-size: 1.2rem; cursor: pointer;">
+                  💲
+                </button>
+                <div id="entryMarkerLong" class="position-absolute" style="top: -65px; left: 0; font-size: 0.85rem; font-weight: bold; background-color: rgba(0,0,0,0.5); color: #fff; padding: 3px 5px; border-radius: 4px; pointer-events: none;">
+                  Long Entry: $0.00
+                </div>
+                <div id="entryMarkerShort" class="position-absolute" style="top: 30px; left: 0; font-size: 0.85rem; font-weight: bold; background-color: rgba(0,0,0,0.5); color: #fff; padding: 3px 5px; border-radius: 4px; pointer-events: none;">
+                  Short Entry: $0.00
+                </div>
+                <div class="d-flex justify-content-between" style="margin-top: -5px;">
+                  <span id="tickLeft" style="font-size:1.2rem; font-weight:bold; line-height:1;"></span>
+                  <span id="tickRight" style="font-size:1.2rem; font-weight:bold; line-height:1;"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <!-- Projected Leverage Slider Box -->
+            <div id="leverageSliderRow" class="border rounded p-3 slider-box" style="background-color: #f7f7f7;">
+              <div class="d-flex justify-content-center mb-2">
+                <h5 class="text-center"><strong>Projected Leverage</strong></h5>
+              </div>
+              <input type="range" id="leverageSlider" min="1" max="100" step="0.1" value="10" class="form-range" oninput="updateProjectedHeatIndex()">
+              <div class="text-center" style="margin-top: -2px;">
+                <span id="leverageValue">Leverage: 10x</span>
+              </div>
+              <div class="text-center" style="margin-top: -2px;">
+                <span id="longSizeComposition">
+                  Long Addition: <span class="collateral-value">Collateral: $0.00</span>, Notional: $0.00
+                </span><br>
+                <span id="shortSizeComposition">
+                  Short Addition: <span class="collateral-value">Collateral: $0.00</span>, Notional: $0.00
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col-md-6 mb-3">
-          <div class="border rounded p-3 reduced-height position-details-section">
-            <h5 class="text-center">Short Position Output</h5>
-            <p id="shortPnL">P&L: 0</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- Row 5: Recommendation Box -->
-      <div id="recommendationRow" class="row mb-4">
-        <div class="col text-center">
-          <div class="recommendation-box">
-            <span id="recommendationText">Recommendation will appear here.</span>
+        <!-- Row: Approach Toggle -->
+        <div id="approachToggleRow" class="row mb-4">
+          <div class="col-12">
+            <div class="d-flex justify-content-center align-items-center">
+              <label class="me-2"><strong>Approach:</strong></label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="approach" id="approachAverage" value="average" checked>
+                <label class="form-check-label" for="approachAverage">Average Down</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="approach" id="approachPyramid" value="pyramid">
+                <label class="form-check-label" for="approachPyramid">Pyramid</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="approach" id="approachEquilibrium" value="equilibrium">
+                <label class="form-check-label" for="approachEquilibrium">Equilibrium</label>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- Row: Recommendation Boxes -->
+        <div id="recommendationRow" class="row mb-4">
+          <div class="col-md-6">
+            <div id="longRecommendationBox" class="recommendation-box text-center">
+              <strong>Long Recommendation:</strong> N/A
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="shortRecommendationBox" class="recommendation-box text-center">
+              <strong>Short Recommendation:</strong> N/A
+            </div>
+          </div>
+        </div>
+
+        <!-- Row: Output Section for Current Positions -->
+        <div id="outputRow" class="row">
+          <div class="col-md-6">
+            <div id="longOutputCard" class="card shadow-sm position-relative reduced-height">
+              <div id="longHeatBox" style="position:absolute; top:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-size:1.2rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                🔥 Heat: <span id="longHeatIndex">0</span>
+                <div id="longHeatDetails" style="font-size: 0.8rem; margin-top: 4px;">
+                  DTL: <span id="longHeatDTL">0</span> | Lev: <span id="longHeatLev">0</span>x | CR: <span id="longHeatCR">0</span>%
+                </div>
+              </div>
+              <div id="longSimHeatBox" class="sim-heat-box">
+                🔥 Sim Heat: <span id="longSimHeatIndex">0</span>
+                <div id="longSimHeatDetails" style="font-size: 0.8rem; margin-top: 4px;">
+                  DTL: <span id="longSimHeatDTL">0</span> | Lev: <span id="longSimHeatLev">0</span>x | CR: <span id="longSimHeatCR">0</span>% | Collateral: $<span id="longSimHeatCollateral">0.00</span>
+                </div>
+              </div>
+              <div id="longTravelBox" style="position:absolute; bottom:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-size:1.2rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                Travel: <span id="longTravelPercent">0%</span>
+              </div>
+              <div class="card-body fs-5">
+                <h6 class="text-center fw-bold" style="font-size:1.5rem;">📈 Long Position</h6>
+                <div class="position-details-section">
+                  <p id="longSimPrice"><strong>Simulated Price: $-</strong></p>
+                  <p id="longCollateralDisplay"><strong>Collateral: $-</strong></p>
+                  <p id="longValue"><strong>Position Value: $-</strong></p>
+                  <p id="longPnL"><strong>P&L: $-</strong></p>
+                  <p id="longSLTP"><strong>Recommended: -</strong></p>
+                  <p id="longCurrentSize"><strong>Current Size: $-</strong></p>
+                  <p id="longSafetyMargin"><strong>Safety Margin: --</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="shortOutputCard" class="card shadow-sm position-relative reduced-height">
+              <div id="shortHeatBox" style="position:absolute; top:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-size:1.2rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                🔥 Heat: <span id="shortHeatIndex">0</span>
+                <div id="shortHeatDetails" style="font-size: 0.8rem; margin-top: 4px;">
+                  DTL: <span id="shortHeatDTL">0</span> | Lev: <span id="shortHeatLev">0</span>x | CR: <span id="shortHeatCR">0</span>%
+                </div>
+              </div>
+              <div id="shortSimHeatBox" class="sim-heat-box">
+                🔥 Sim Heat: <span id="shortSimHeatIndex">0</span>
+                <div id="shortSimHeatDetails" style="font-size: 0.8rem; margin-top: 4px;">
+                  DTL: <span id="shortSimHeatDTL">0</span> | Lev: <span id="shortSimHeatLev">0</span>x | CR: <span id="shortSimHeatCR">0</span>% | Collateral: $<span id="shortSimHeatCollateral">0.00</span>
+                </div>
+              </div>
+              <div id="shortTravelBox" style="position:absolute; bottom:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-size:1.2rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                Travel: <span id="shortTravelPercent">0%</span>
+              </div>
+              <div class="card-body fs-5">
+                <h6 class="text-center fw-bold" style="font-size:1.5rem;">📉 Short Position</h6>
+                <div class="position-details-section">
+                  <p id="shortSimPrice"><strong>Simulated Price: $-</strong></p>
+                  <p id="shortCollateralDisplay"><strong>Collateral: $-</strong></p>
+                  <p id="shortValue"><strong>Position Value: $-</strong></p>
+                  <p id="shortPnL"><strong>P&L: $-</strong></p>
+                  <p id="shortSLTP"><strong>Recommended: -</strong></p>
+                  <p id="shortCurrentSize"><strong>Current Size: $-</strong></p>
+                  <p id="shortSafetyMargin"><strong>Safety Margin: --</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row: Projected Output Section for Positions -->
+        <div id="projectedOutputRow" class="row mt-4">
+          <div class="col-md-6">
+            <div id="projectedLongOutputCard" class="card shadow-sm position-relative reduced-height">
+              <div id="projectedLongHeatBox" style="position:absolute; top:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                🔥 Projected Heat: <span id="projectedLongHeatIndex">0</span>
+              </div>
+              <div id="projectedLongTravelBox" style="position:absolute; bottom:10px; right:10px; background-color:#fff; border-radius:10px; padding:4px 8px; font-size:0.9rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                Projected Travel: <span id="projectedLongTravelPercent">0%</span>
+              </div>
+              <div class="card-body fs-5">
+                <h6 class="text-center fw-bold" style="font-size:1.5rem;">📈 Projected Long Position</h6>
+                <div class="position-details-section">
+                  <p id="projectedLongSimPrice"><strong>Simulated Price: $-</strong></p>
+                  <p id="projectedLongCollateralDisplay"><strong>Collateral: $-</strong></p>
+                  <p id="projectedLongValue"><strong>Position Value: $-</strong></p>
+                  <p id="projectedLongPnL"><strong>P&L: $-</strong></p>
+                  <p id="projectedLongSLTP"><strong>Proposed New Size: $-</strong></p>
+                  <p id="projectedLongSafetyMargin"><strong>Safety Margin: --</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div id="projectedShortOutputCard" class="card shadow-sm position-relative reduced-height">
+              <div id="projectedShortHeatBox" style="position:absolute; top:10px; right:10px; background-color:#fff; border-radius:10px; padding:8px 12px; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                🔥 Projected Heat: <span id="projectedShortHeatIndex">0</span>
+              </div>
+              <div id="projectedShortTravelBox" style="position:absolute; bottom:10px; right:10px; background-color:#fff; border-radius:10px; padding:4px 8px; font-size:0.9rem; font-weight:bold; color:#333; box-shadow:0 2px 4px rgba(0,0,0,0.2);">
+                Projected Travel: <span id="projectedShortTravelPercent">0%</span>
+              </div>
+              <div class="card-body fs-5">
+                <h6 class="text-center fw-bold" style="font-size:1.5rem;">📉 Projected Short Position</h6>
+                <div class="position-details-section">
+                  <p id="projectedShortSimPrice"><strong>Simulated Price: $-</strong></p>
+                  <p id="projectedShortCollateralDisplay"><strong>Collateral: $-</strong></p>
+                  <p id="projectedShortValue"><strong>Position Value: $-</strong></p>
+                  <p id="projectedShortPnL"><strong>P&L: $-</strong></p>
+                  <p id="projectedShortSLTP"><strong>Proposed New Size: $-</strong></p>
+                  <p id="projectedShortSafetyMargin"><strong>Safety Margin: --</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+      <!-- END container for the 6 boxes + toggle -->
 
     </div>
+  </div>
 </div>
-</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/js/OverlayScrollbars.min.js"></script>
+<script src='{{ url_for('static', filename='AdminLTE/dist/js/adminlte.js') }}'></script>
 <script>
-  window.longPositionsData = {{ long_positions | tojson }};
-  window.shortPositionsData = {{ short_positions | tojson }};
+  const longPositions = {{ long_positions|tojson }};
+  const shortPositions = {{ short_positions|tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/hedge_calculator.js') }}"></script>
 {% endblock %}
