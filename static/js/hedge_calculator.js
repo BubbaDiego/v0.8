@@ -111,26 +111,23 @@ function sliderChanged(){
 }
 
 document.getElementById('saveModifiers').addEventListener('click', async () => {
-  const hedge = {
-    feePercentage: parseFloat(document.getElementById('feePercentage').value) || 0,
-    targetMargin: parseFloat(document.getElementById('targetMarginInput').value) || 0,
-    adjustmentFactor: parseFloat(document.getElementById('adjustmentFactorInput').value) || 0
-  };
-  const heat = {
-    distanceWeight: parseFloat(document.getElementById('distanceWeightInput').value) || 0,
-    leverageWeight: parseFloat(document.getElementById('leverageWeightInput').value) || 0,
-    collateralWeight: parseFloat(document.getElementById('collateralWeightInput').value) || 0
+  const payload = {
+    hedge_modifiers: {
+      feePercentage: parseFloat(document.getElementById('feePercentage').value) || 0,
+      targetMargin: parseFloat(document.getElementById('targetMarginInput').value) || 0,
+      adjustmentFactor: parseFloat(document.getElementById('adjustmentFactorInput').value) || 0
+    },
+    heat_modifiers: {
+      distanceWeight: parseFloat(document.getElementById('distanceWeightInput').value) || 0,
+      leverageWeight: parseFloat(document.getElementById('leverageWeightInput').value) || 0,
+      collateralWeight: parseFloat(document.getElementById('collateralWeightInput').value) || 0
+    }
   };
   try {
-    await fetch('/system/modifiers/hedge_modifiers', {
+    await fetch('/sonic_labs/sonic_sauce', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(hedge)
-    });
-    await fetch('/system/modifiers/heat_modifiers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(heat)
+      body: JSON.stringify(payload)
     });
     alert('Modifiers saved');
   } catch (err) {
