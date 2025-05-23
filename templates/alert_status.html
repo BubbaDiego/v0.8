@@ -117,6 +117,17 @@ document.addEventListener("DOMContentLoaded", function() {
   const tbody = table.querySelector("tbody");
   const barsContainer = document.getElementById("alertBars");
 
+  function syncRowHeights() {
+    const rows = tbody.querySelectorAll("tr[data-alert-id]");
+    rows.forEach(row => {
+      const id = row.getAttribute('data-alert-id');
+      const bar = barsContainer.querySelector(`[data-alert-id="${id}"]`);
+      if (bar) {
+        bar.style.height = row.getBoundingClientRect().height + 'px';
+      }
+    });
+  }
+
   let currentSort = { col: 0, dir: "asc" };
 
   function sortTable(colIndex, dir) {
@@ -142,6 +153,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const bar = barsContainer.querySelector(`[data-alert-id="${alertId}"]`);
       if (bar) barsContainer.appendChild(bar);
     });
+    syncRowHeights();
     headers.forEach((th, i) => {
       th.classList.remove("sorted-asc", "sorted-desc");
       th.querySelector(".sort-indicator").textContent = "";
@@ -162,6 +174,8 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   sortTable(currentSort.col, currentSort.dir);
+  window.addEventListener('resize', syncRowHeights);
+  syncRowHeights();
 });
 </script>
 <script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>

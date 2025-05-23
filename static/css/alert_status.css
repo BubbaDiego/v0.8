@@ -83,4 +83,5 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
   margin: 0;
   border-bottom: 1px solid var(--panel-border);
   background: var(--container-bg);
+  box-sizing: border-box;
 }
