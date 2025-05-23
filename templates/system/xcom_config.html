@@ -2,8 +2,11 @@
 
 {% block title %}XCom Settings{% endblock %}
 
-{% block head %}
+{% block extra_styles %}
+{{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -163,4 +166,9 @@ function toggleToken() {
   field.type = field.type === "password" ? "text" : "password";
 }
 </script>
+{% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
+{% endblock %}
 {% endblock %}
