@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from data.data_locker import DataLocker
 from xcom.xcom_core import XComCore
 from core.constants import DB_PATH
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 
 # ---- NEW: Import your Flask app ----
 from sonic_app import app   # Adjust import if needed

@@ -5,7 +5,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 from data.alert import AlertType, Alert, Condition
 from alerts.alert_enrichment_service import AlertEnrichmentService
 from alerts.alert_evaluation_service import AlertEvaluationService

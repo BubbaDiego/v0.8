@@ -27,5 +27,5 @@ def log_travel_percent_comparison(alert_id, jupiter_value, calculated_value, for
             f.write(log_line)
 
     except Exception as e:
-        from core.console_logger import ConsoleLogger as log
+        from core.logging import log
         log.error(f"💥 TravelPercent log error: {e}", source="TravelLogger")

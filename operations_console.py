@@ -3,7 +3,7 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from utils.console_logger import ConsoleLogger as log
+from core.logging import log
 from data.data_locker import DataLocker
 from xcom.xcom_core import XComCore
 from monitor.monitor_core import MonitorCore
