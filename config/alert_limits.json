@@ -1,5 +1,5 @@
 {
-  "alert_limits": {
+  "alert_ranges": {
     "liquidation_distance_ranges": {
       "enabled": true,
       "low": 10.0,

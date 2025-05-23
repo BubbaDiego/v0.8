@@ -19,8 +19,8 @@ def test_heat_index_limits_validation():
 
     # === Load Config ===
     config = load_config(str(ALERT_LIMITS_PATH))
-    alert_limits = config.get("alert_limits", config)
-    tpl = alert_limits.get("total_portfolio_limits", {})
+    alert_ranges = config.get("alert_ranges", config)
+    tpl = alert_ranges.get("total_portfolio_limits", {})
     assert "total_heat_limits" in tpl, "❌ 'total_heat_limits' missing in config"
 
     thresholds = tpl["total_heat_limits"]
