@@ -248,6 +248,20 @@ class DataLocker:
     def get_wallet_by_name(self, wallet_name: str):
         return self.wallets.get_wallet_by_name(wallet_name)
 
+    # Wallet convenience wrappers used by repositories
+    def read_wallets(self):
+        return self.wallets.get_wallets()
+
+    def create_wallet(self, wallet: dict):
+        self.wallets.create_wallet(wallet)
+
+    def update_wallet(self, name: str, wallet: dict):
+        self.wallets.update_wallet(name, wallet)
+
+    def delete_positions_for_wallet(self, wallet_name: str):
+        if hasattr(self.positions, "delete_positions_for_wallet"):
+            self.positions.delete_positions_for_wallet(wallet_name)
+
     def _seed_modifiers_if_empty(self):
         """Seed modifiers table from sonic_sauce.json if empty."""
         cursor = self.db.get_cursor()
