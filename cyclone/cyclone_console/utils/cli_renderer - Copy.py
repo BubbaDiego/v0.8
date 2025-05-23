@@ -3,8 +3,8 @@
 import typer
 from rich.console import Console
 from cyclone_engine import Cyclone
+from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 
 from cyclone_console.utils.cli_renderer import banner, print_success, print_warning, print_error
 from cyclone_console.utils.confirm_prompt import confirm_action
@@ -12,6 +12,7 @@ from cyclone_console.utils.confirm_prompt import confirm_action
 app = typer.Typer(help="🧹 System operations: wipe, reset, maintenance")
 
 console = Console()
+configure_console_log()
 cyclone = Cyclone()
 dl = DataLocker(str(DB_PATH))
 

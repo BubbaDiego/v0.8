@@ -173,6 +173,7 @@ class RichLogger:
     def enable_all(cls):
         cls.logging_enabled = True
 
+
     def init_status(self):
         """Log the current logger configuration and suppression status."""
         muted = [k for k, v in self.module_log_control.items() if not v]
@@ -182,6 +183,7 @@ class RichLogger:
             msg += f"    🔒 Muted Modules:      {', '.join(muted)}\n"
         if enabled:
             msg += f"    🔊 Enabled Modules:    {', '.join(enabled)}\n"
+
         if self.group_map:
             msg += "    🧠 Groups:\n"
             for group, modules in self.group_map.items():

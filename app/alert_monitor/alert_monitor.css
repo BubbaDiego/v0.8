@@ -87,8 +87,6 @@ h2 {
   box-shadow: none;
 }
 .asset-icon {
-  width: 34px;
-  height: 34px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid #ccc;

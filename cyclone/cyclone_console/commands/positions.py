@@ -3,14 +3,15 @@
 import typer
 from rich.table import Table
 from rich.console import Console
+from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 from cyclone.cyclone_position_service import CyclonePositionService
 from core.logging import log
 
 app = typer.Typer(help="📊 Position lifecycle commands")
 
 console = Console()
+configure_console_log()
 dl = DataLocker(str(DB_PATH))
 service = CyclonePositionService(dl)
 

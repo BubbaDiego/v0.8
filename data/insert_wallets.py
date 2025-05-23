@@ -4,7 +4,7 @@ import sqlite3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from core.core_imports import DB_PATH
+from core.core_imports import DB_PATH, configure_console_log
 from data.data_locker import DataLocker
 
 def ensure_wallets_table(db):
@@ -25,6 +25,7 @@ def ensure_wallets_table(db):
     print("✅ Wallets table is ready.")
 
 # ✅ Initialize connection
+configure_console_log()
 dl = DataLocker(str(DB_PATH))
 ensure_wallets_table(dl.db)
 
