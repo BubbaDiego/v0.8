@@ -5,6 +5,8 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/hedge_calculator.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -26,6 +28,9 @@
   <div class="card shadow mb-4">
     <div class="card-header position-relative" style="background-color: var(--card-title-color);">
       <h4 class="mb-0 text-center" style="color: var(--text-color);">🦔 Hedge Calculator</h4>
+      <button id="toggleConfig" class="btn btn-sm btn-outline-secondary position-absolute" style="top: 10px; right: 50px;" title="Hide Config">
+        <i class="fa-solid fa-eye-slash"></i>
+      </button>
       <button id="saveModifiers" class="btn btn-sm btn-outline-secondary position-absolute" style="top: 10px; right: 10px;" title="Save Modifiers">
         <i class="fa-solid fa-floppy-disk"></i>
       </button>
@@ -40,6 +45,12 @@
   window.longPositionsData = {{ long_positions | tojson }};
   window.shortPositionsData = {{ short_positions | tojson }};
 </script>
+
+{% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
+{% endblock %}
 
 {% endblock %}
 

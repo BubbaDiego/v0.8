@@ -84,3 +84,14 @@ document.getElementById('saveModifiers').addEventListener('click', async () => {
     alert('Failed to save modifiers');
   }
 });
+
+const toggleBtn = document.getElementById('toggleConfig');
+const configSection = document.getElementById('configSection');
+if (toggleBtn && configSection) {
+  toggleBtn.addEventListener('click', () => {
+    const hidden = configSection.style.display === 'none';
+    configSection.style.display = hidden ? '' : 'none';
+    toggleBtn.title = hidden ? 'Hide Config' : 'Show Config';
+    toggleBtn.innerHTML = hidden ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+  });
+}
