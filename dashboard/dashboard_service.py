@@ -6,6 +6,7 @@ from core.logging import log
 from positions.position_core import PositionCore
 from data.data_locker import DataLocker
 from utils.json_manager import JsonManager, JsonType
+from xcom.xcom_core import get_latest_xcom_monitor_entry
 #from monitor.ledger_service import LedgerService
 
 from data.data_locker import DataLocker
@@ -168,29 +169,10 @@ def get_latest_operations_monitor_history(dl):
 
 def get_latest_xcom_monitor_history(dl):
     try:
-        entry = dl.ledger.get_last_entry("xcom_monitor")
-        if not entry: return []
-        meta = entry.get("metadata")
-        if isinstance(meta, str):
-            meta = json.loads(meta)
-        results = meta.get("results", {}) or {}
-
-        comm_types = [("sms", "sms"), ("voice", "voice"), ("email", "email"), ("sound", "sound")]
-        comm_type = "system"
-        for key, value in comm_types:
-            if results.get(key):
-                comm_type = key
-                break
-        if comm_type == "system" and meta.get("level", "").lower() == "high":
-            comm_type = "alert"
-        # Use explicit initiator if present, else fallback
-        source = meta.get("initiator") or "system"
-        ts = format_short_time(entry.get("timestamp"))
-        return [{
-            "comm_type": comm_type,
-            "source": source,
-            "timestamp": ts
-        }]
+        entry = get_latest_xcom_monitor_entry(dl)
+        if not entry:
+            return []
+        return [entry]
     except Exception:
         return []
 
