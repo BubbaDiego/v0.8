@@ -1,5 +1,8 @@
 # v0.8
 
+For an overview of the key modules and architecture, see
+[SPECIFICATIONS.md](SPECIFICATIONS.md).
+
 ## Twilio Testing
 
 To verify your Twilio credentials or trigger a Studio Flow, copy `.env.example` to
