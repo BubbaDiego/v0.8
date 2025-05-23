@@ -4,12 +4,13 @@ import typer
 from rich.table import Table
 from rich.console import Console
 from cyclone.cyclone_alert_service import CycloneAlertService
+from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
 
 app = typer.Typer(help="🔔 Alert tools: view, enrich, evaluate")
 
 console = Console()
+configure_console_log()
 dl = DataLocker(str(DB_PATH))
 service = CycloneAlertService(dl)
 

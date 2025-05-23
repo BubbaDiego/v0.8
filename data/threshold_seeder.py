@@ -65,7 +65,9 @@ class AlertThresholdSeeder:
 # 🧠 Standalone Runner
 if __name__ == "__main__":
     try:
+        from core.core_imports import configure_console_log
         from data.data_locker import DataLocker
+        configure_console_log()
         print(f"🧪 Connecting to DB: {DB_PATH}")
         dl = DataLocker(DB_PATH)
         seeder = AlertThresholdSeeder(dl.db)
