@@ -79,13 +79,20 @@ function updateTable(data) {
     const tr = document.createElement('tr');
     const value = typeof row.value === 'number' ? row.value.toFixed(2) : row.value;
     const travel = typeof row.travel_percent === 'number' ? row.travel_percent.toFixed(2) : row.travel_percent;
+    const liq = typeof row.liquidation_distance === 'number' ? row.liquidation_distance.toFixed(2) : row.liquidation_distance;
     const heat = typeof row.heat_index === 'number' ? row.heat_index.toFixed(2) : row.heat_index;
-    tr.innerHTML = `<td>${type}</td><td>${value}</td><td>${travel}</td><td>${heat}</td>`;
+    tr.innerHTML = `<td>${type}</td><td>${value}</td><td>${travel}</td><td>${liq}</td><td>${heat}</td>`;
     body.appendChild(tr);
   });
   if (data.totals) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<th>Total</th><th>${data.totals.total_value}</th><th>${data.totals.avg_travel_percent.toFixed(2)}</th><th>${data.totals.avg_heat_index.toFixed(2)}</th>`;
+    const liqDistances = ['long', 'short']
+      .map(t => data[t])
+      .filter(r => r && r.liquidation_distance !== undefined)
+      .map(r => parseFloat(r.liquidation_distance))
+      .filter(v => !isNaN(v));
+    const avgLiq = liqDistances.length ? (liqDistances.reduce((a, b) => a + b, 0) / liqDistances.length).toFixed(2) : '-';
+    tr.innerHTML = `<th>Total</th><th>${data.totals.total_value}</th><th>${data.totals.avg_travel_percent.toFixed(2)}</th><th>${avgLiq}</th><th>${data.totals.avg_heat_index.toFixed(2)}</th>`;
     body.appendChild(tr);
   }
 }
