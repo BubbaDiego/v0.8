@@ -41,7 +41,7 @@ class SystemCore:
             "total_value": ("TotalValue", "Portfolio", "ABOVE"),
             "total_size": ("TotalSize", "Portfolio", "ABOVE"),
             "avg_travel_percent": ("AvgTravelPercent", "Portfolio", "ABOVE"),
-            "value_to_collateral_ratio": ("ValueToCollateralRatio", "Portfolio", "ABOVE"),
+            "value_to_collateral_ratio": ("ValueToCollateralRatio", "Portfolio", "BELOW"),
             "total_heat": ("TotalHeat", "Portfolio", "ABOVE")
         }
 

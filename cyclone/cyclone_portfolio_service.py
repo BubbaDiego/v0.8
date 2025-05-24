@@ -22,16 +22,16 @@ async def create_portfolio_alerts(self):
     log.info("Creating portfolio alerts", source="CyclonePortfolio")
 
     metrics = [
-        (AlertType.TotalValue, "total_value", 50000),
-        (AlertType.TotalSize, "total_size", 1.0),
-        (AlertType.AvgLeverage, "avg_leverage", 2.0),
-        (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0),
-        (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2),
-        (AlertType.TotalHeat, "total_heat", 25.0),
+        (AlertType.TotalValue, "total_value", 50000, Condition.ABOVE),
+        (AlertType.TotalSize, "total_size", 1.0, Condition.ABOVE),
+        (AlertType.AvgLeverage, "avg_leverage", 2.0, Condition.ABOVE),
+        (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0, Condition.ABOVE),
+        (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2, Condition.BELOW),
+        (AlertType.TotalHeat, "total_heat", 25.0, Condition.ABOVE),
     ]
 
     created = 0
-    for alert_type, metric_desc, trigger_value in metrics:
+    for alert_type, metric_desc, trigger_value, condition in metrics:
         try:
             log.debug(f"⏳ Preparing alert for: {metric_desc}", source="CyclonePortfolio")
 
@@ -43,7 +43,7 @@ async def create_portfolio_alerts(self):
                 "asset": "PORTFOLIO",
                 "asset_type": "ALL",
                 "trigger_value": trigger_value,
-                "condition": Condition.ABOVE.value,
+                "condition": condition.value,
                 "notification_type": "SMS",
                 "level": "Normal",
                 "last_triggered": None,

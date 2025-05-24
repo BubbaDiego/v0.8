@@ -310,10 +310,10 @@ def seed_all_thresholds():
 
         definitions = [
             # === Portfolio Metrics
-            ("TotalValue", "Portfolio", "total_value", 10000, 25000, 50000),
-            ("TotalSize", "Portfolio", "total_size", 10000, 50000, 100000),
-            ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10),
-            ("AvgTravelPercent", "Portfolio", "avg_travel_percent", -10, -5, 0),
+            ("TotalValue", "Portfolio", "total_value", 10000, 25000, 50000, "ABOVE"),
+            ("TotalSize", "Portfolio", "total_size", 10000, 50000, 100000, "ABOVE"),
+            ("AvgLeverage", "Portfolio", "avg_leverage", 2, 5, 10, "ABOVE"),
+            ("AvgTravelPercent", "Portfolio", "avg_travel_percent", -10, -5, 0, "ABOVE"),
             (
                 "ValueToCollateralRatio",
                 "Portfolio",
@@ -321,25 +321,26 @@ def seed_all_thresholds():
                 1.1,
                 1.5,
                 2.0,
+                "BELOW",
             ),
-            ("TotalHeat", "Portfolio", "total_heat_index", 30, 60, 90),
+            ("TotalHeat", "Portfolio", "total_heat_index", 30, 60, 90, "ABOVE"),
             # === Position Metrics
-            ("Profit", "Position", "profit", 10, 25, 50),
-            ("HeatIndex", "Position", "heat_index", 30, 60, 90),
-            ("TravelPercentLiquid", "Position", "travel_percent_liquid", -20, -10, 0),
-            ("LiquidationDistance", "Position", "liquidation_distance", 10, 5, 2),
+            ("Profit", "Position", "profit", 10, 25, 50, "ABOVE"),
+            ("HeatIndex", "Position", "heat_index", 30, 60, 90, "ABOVE"),
+            ("TravelPercentLiquid", "Position", "travel_percent_liquid", -20, -10, 0, "BELOW"),
+            ("LiquidationDistance", "Position", "liquidation_distance", 10, 5, 2, "BELOW"),
             # === Market Metrics
-            ("PriceThreshold", "Market", "current_price", 20000, 30000, 40000),
+            ("PriceThreshold", "Market", "current_price", 20000, 30000, 40000, "ABOVE"),
         ]
 
         created = 0
-        for alert_type, alert_class, metric_key, low, med, high in definitions:
+        for alert_type, alert_class, metric_key, low, med, high, condition in definitions:
             threshold = AlertThreshold(
                 id=str(uuid4()),
                 alert_type=alert_type,
                 alert_class=alert_class,
                 metric_key=metric_key,
-                condition="ABOVE",
+                condition=condition,
                 low=low,
                 medium=med,
                 high=high,
