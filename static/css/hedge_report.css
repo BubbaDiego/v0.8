@@ -1,53 +1,64 @@
-/***********************
-Remove gutters so the two cards/tables meet flush in the middle
-***********************/
-.row.g-0 {
-  margin-right: 0;
-  margin-left: 0;
+.positions-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  min-height: 200px;
 }
 
-/* Cards: remove default border-radius, stretch to 100% so center edges meet seamlessly */
-.card-no-gap {
-  border-radius: 0 !important;
-  height: 100%;
+.positions-table {
+  background: var(--container-bg);
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
 }
 
-/* Make icons & text align inline when needed */
-.icon-inline {
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
+.positions-table thead th {
+  background: var(--title-bar-bg);
+  color: var(--panel-title);
+  font-weight: 700;
+  padding: 0.7em 0.6em;
+  border-bottom: 2px solid var(--panel-border);
+  user-select: none;
+  cursor: pointer;
+  vertical-align: middle;
 }
 
-/* Both card headers are centered and dark blue + bold */
-.card-header.text-center h3.card-title {
-  color: #003366;  /* Dark blue */
+.positions-table th.left,
+.positions-table td.left { text-align: left; }
+.positions-table th.right,
+.positions-table td.right { text-align: right; }
+
+.positions-table tbody td {
+  background: var(--container-bg);
+  color: var(--text);
+  padding: 0.7em 0.6em;
+  border-bottom: 1px solid var(--panel-border);
+  vertical-align: middle;
+}
+
+.positions-table tfoot td {
+  background: var(--accent);
+  color: var(--text);
   font-weight: bold;
-  margin-bottom: 0;
+  border-top: 2px solid var(--panel-border);
+  text-align: right;
 }
+.positions-table tfoot td.left { text-align: left; }
 
-/* Subtle background colors for each card */
-.card-short {
-  background: #edf4ff;  /* Light bluish for SHORT */
+.sort-indicator {
+  font-size: 1em;
+  margin-left: 4px;
+  color: var(--panel-title);
+  opacity: 0.8;
 }
-.card-long {
-  background: #fffaed;  /* Light yellowish for LONG */
-}
+th.sorted-asc .sort-indicator,
+th.sorted-desc .sort-indicator { color: var(--primary); }
 
-/* Force the entire table (header/body/footer) to share the card's background color */
-#short-table thead th,
-#short-table tbody td,
-#short-table tfoot td {
-  background-color: #edf4ff !important;
-}
-#long-table thead th,
-#long-table tbody td,
-#long-table tfoot td {
-  background-color: #fffaed !important;
-}
-
-/* Center the totals row text */
-tfoot tr.text-center > td {
-  text-align: center !important;
+.no-data {
+  text-align: center;
+  color: var(--text);
+  padding: 1.2rem;
+  font-style: italic;
 }
