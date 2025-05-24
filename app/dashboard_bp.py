@@ -133,24 +133,9 @@ def get_alert_icon(alert_type):
 @route_log_alert
 def api_graph_data():
     """Return portfolio snapshot totals for the history line chart."""
-    dl = current_app.data_locker
-    portfolio_history = dl.portfolio.get_snapshots() or []
-
-    timestamps = []
-    values = []
-    collateral = []
-
-    # Collect the actual totals from each snapshot without accumulating
-    for entry in portfolio_history:
-        timestamps.append(entry.get("snapshot_time"))
-        values.append(float(entry.get("total_value", 0)))
-        collateral.append(float(entry.get("total_collateral", 0)))
-
-    return jsonify({
-        "timestamps": timestamps,
-        "values": values,
-        "collateral": collateral,
-    })
+    context = get_dashboard_context(current_app.data_locker)
+    graph = context.get("graph_data", {})
+    return jsonify(graph)
 
 # ---------------------------------
 # API: Size Composition Pie (Real positions)
