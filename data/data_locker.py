@@ -51,6 +51,7 @@ class DataLocker:
         self.initialize_database()
         self._seed_modifiers_if_empty()
         self._seed_wallets_if_empty()
+        self._seed_thresholds_if_empty()
 
         log.debug("All DL managers bootstrapped successfully.", source="DataLocker")
 
@@ -353,6 +354,22 @@ class DataLocker:
                     )
                 except Exception as e:
                     log.error(f"❌ Failed seeding wallets: {e}", source="DataLocker")
+
+    def _seed_thresholds_if_empty(self):
+        """Seed alert_thresholds table with defaults if empty."""
+        cursor = self.db.get_cursor()
+        count = cursor.execute("SELECT COUNT(*) FROM alert_thresholds").fetchone()[0]
+        if count == 0:
+            try:
+                from data.threshold_seeder import AlertThresholdSeeder
+                seeder = AlertThresholdSeeder(self.db)
+                created, updated = seeder.seed_all()
+                log.debug(
+                    f"Alert thresholds seeded: {created} created, {updated} updated",
+                    source="DataLocker",
+                )
+            except Exception as e:
+                log.error(f"❌ Failed seeding alert thresholds: {e}", source="DataLocker")
 
 
     def get_all_tables_as_dict(self) -> dict:
