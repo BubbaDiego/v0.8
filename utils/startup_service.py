@@ -1,9 +1,25 @@
 from core.constants import (
-    DB_PATH, CONFIG_PATH, ALERT_LIMITS_PATH, BASE_DIR
+    DB_PATH,
+    CONFIG_PATH,
+    ALERT_LIMITS_PATH,
+    BASE_DIR,
 )
-#from utils.path_audit import check_for_mother_brain
+# from utils.path_audit import check_for_mother_brain
 import os
 from pathlib import Path
+import sqlite3
+
+from utils.config_loader import save_config
+from core.core_imports import log
+
+
+def maybe_create_mother_brain(db_path: str) -> None:
+    """Ensure the SQLite database file exists."""
+    if not os.path.exists(db_path):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        conn = sqlite3.connect(db_path)
+        conn.close()
+        log.info(f"📄 Created database: {db_path}", source="StartUpService")
 
 class StartUpService:
 
@@ -47,8 +63,6 @@ class StartUpService:
                     "thresholds": {}
                 }
             }
-from utils.config_loader import save_config
-from core.core_imports import log
             save_config("alert_limitsz.json", default)
             log.success("✅ Default alert_limitsz.json created.", source="StartUpCheck")
         else:
@@ -63,4 +77,4 @@ from core.core_imports import log
 
 # --- Allow Standalone Run ---
 if __name__ == "__main__":
-    StartUpCheck.run_all()
+    StartUpService.run_all()
