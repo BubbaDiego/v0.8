@@ -1,6 +1,6 @@
 /* Parallax effect for Sonic Dashboard page */
 body.dashboard-parallax {
-  background-image: url('/static/images/wally.jg');
+  background-image: url('/static/images/Wally.png');
   background-attachment: fixed;
   background-size: cover;
   background-position: center;
