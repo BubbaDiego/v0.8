@@ -3,6 +3,7 @@ console.log('layout_mode.js loaded');
 const LAYOUT_MODES = ['wide-mode', 'fitted-mode', 'mobile-mode'];
 const LAYOUT_ICONS = ['🖥️', '💻', '📱'];
 let layoutCurrent = 0;
+
 function setLayoutMode(idx) {
   document.body.classList.remove(...LAYOUT_MODES);
   document.body.classList.add(LAYOUT_MODES[idx]);
@@ -10,6 +11,7 @@ function setLayoutMode(idx) {
   if (icon) icon.innerText = LAYOUT_ICONS[idx];
   localStorage.setItem('sonicLayoutMode', idx);
 }
+
 document.addEventListener('DOMContentLoaded', function() {
   const btn = document.getElementById('layoutModeToggle');
   layoutCurrent = Number(localStorage.getItem('sonicLayoutMode')) || 0;

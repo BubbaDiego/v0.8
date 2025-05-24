@@ -42,11 +42,6 @@
   font-size: 1.6rem;          /* 🔍 Larger toggle icon */
   padding: 0.18rem 0.55rem;
 }
-.theme-toggle-group {
-  display: inline-flex;
-  gap: 0.22rem;
-  vertical-align: middle;
-}
 .theme-btn {
   border: 1.5px solid #d2cdf7;
   border-radius: 10px;
