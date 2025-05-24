@@ -37,13 +37,14 @@
         <thead>
           <tr>
             <th class="sortable left" data-col-index="0">Asset <span class="sort-indicator"></span></th>
-            <th class="sortable left" data-col-index="1">Type <span class="sort-indicator"></span></th>
-            <th class="sortable left" data-col-index="2">Class <span class="sort-indicator"></span></th>
-            <th class="sortable right" data-col-index="3">Current <span class="sort-indicator"></span></th>
-            <th class="sortable right" data-col-index="4">Trigger <span class="sort-indicator"></span></th>
-            <th class="sortable left" data-col-index="5">Level <span class="sort-indicator"></span></th>
-            <th class="sortable left" data-col-index="6">Status <span class="sort-indicator"></span></th>
-            <th class="sortable left" data-col-index="7">Wallet <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="1">Position <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="2">Type <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="3">Class <span class="sort-indicator"></span></th>
+            <th class="sortable right" data-col-index="4">Current <span class="sort-indicator"></span></th>
+            <th class="sortable right" data-col-index="5">Trigger <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="6">Level <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="7">Status <span class="sort-indicator"></span></th>
+            <th class="sortable left" data-col-index="8">Wallet <span class="sort-indicator"></span></th>
           </tr>
         </thead>
         <tbody>
@@ -53,10 +54,11 @@
               <td class="left">
                 <span class="icon-inline">
                   <img class="asset-icon" src="{{ url_for('static', filename='images/' + alert.asset_image) }}" alt="{{ alert.asset }}">
-                  {{ alert.asset or 'N/A' }}{% if alert.position_type %} ({{ alert.position_type|title }}){% endif %}
+                  {{ alert.asset or 'N/A' }}
                 </span>
                 <span style="display:none">{{ alert.asset or 'N/A' }}</span>
               </td>
+              <td class="left">{{ alert.position_type or 'N/A' }}</td>
               <td class="left">{{ type_icons.get(alert.alert_type|lower, '❓') }}</td>
               <td class="left">{{ alert.alert_class }}</td>
               <td class="right">{{ "{:,.2f}".format(alert.evaluated_value or 0) }}</td>
@@ -72,7 +74,7 @@
             </tr>
             {% endfor %}
           {% else %}
-            <tr class="no-data-row"><td colspan="8" class="no-data">No alerts available.</td></tr>
+            <tr class="no-data-row"><td colspan="9" class="no-data">No alerts available.</td></tr>
           {% endif %}
         </tbody>
       </table>
