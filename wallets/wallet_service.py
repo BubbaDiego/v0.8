@@ -60,3 +60,6 @@ class WalletService:
                 self.repo.add_wallet(WalletIn(**w.__dict__))
                 imported_count += 1
         return imported_count
+
+    def save_balance(self, name: str, balance: float) -> bool:
+        return self.repo.update_balance(name, balance)

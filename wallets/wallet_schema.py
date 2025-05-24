@@ -21,6 +21,7 @@ class WalletIn(BaseModel):
     public_address: str = Field(..., example="0xABC123...", description="Public wallet address")
     private_address: Optional[str] = Field(None, description="Optional private key (only for dev)")
     image_path: Optional[str] = Field(None, example="/static/img/vader.png")
+    network: str = Field("solana", description="Blockchain network")
     balance: float = Field(0.0, ge=0.0)
     tags: List[str] = Field(default_factory=list)
     is_active: bool = True
@@ -35,3 +36,4 @@ class WalletOut(BaseModel):
     tags: List[str]
     is_active: bool
     type: WalletType
+    network: str

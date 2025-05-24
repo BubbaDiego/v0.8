@@ -27,8 +27,8 @@ class DLWalletManager:
             cursor.execute(
                 """
                 INSERT INTO wallets (
-                    name, public_address, private_address, image_path, balance
-                ) VALUES (?, ?, ?, ?, ?)
+                    name, public_address, private_address, image_path, balance, network
+                ) VALUES (?, ?, ?, ?, ?, ?)
             """,
                 (
                     wallet["name"],
@@ -36,6 +36,7 @@ class DLWalletManager:
                     encrypt_key(wallet.get("private_address")),
                     wallet.get("image_path", ""),
                     wallet.get("balance", 0.0),
+                    wallet.get("network", "solana"),
                 ),
             )
             self.db.commit()  # ✅ not self.db.db
@@ -50,6 +51,8 @@ class DLWalletManager:
             wallets = [dict(row) for row in cursor.fetchall()]
             for w in wallets:
                 w["private_address"] = decrypt_key(w.get("private_address"))
+                if "network" not in w:
+                    w["network"] = "solana"
             log.debug(f"Retrieved {len(wallets)} wallets", source="DLWalletManager")
             return wallets
         except Exception as e:
@@ -59,20 +62,25 @@ class DLWalletManager:
     def update_wallet(self, name: str, wallet: dict):
         try:
             cursor = self.db.get_cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE wallets SET
                     public_address = ?,
                     private_address = ?,
                     image_path = ?,
-                    balance = ?
+                    balance = ?,
+                    network = ?
                 WHERE name = ?
-            """, (
-                wallet["public_address"],
-                encrypt_key(wallet.get("private_address")),
-                wallet.get("image_path", ""),
-                wallet.get("balance", 0.0),
-                name
-            ))
+                """,
+                (
+                    wallet["public_address"],
+                    encrypt_key(wallet.get("private_address")),
+                    wallet.get("image_path", ""),
+                    wallet.get("balance", 0.0),
+                    wallet.get("network", "solana"),
+                    name,
+                ),
+            )
             self.db.commit()
             log.info(f"Wallet updated: {name}", source="DLWalletManager")
         except Exception as e:
@@ -88,6 +96,8 @@ class DLWalletManager:
             if row:
                 data = dict(row)
                 data["private_address"] = decrypt_key(data.get("private_address"))
+                if "network" not in data:
+                    data["network"] = "solana"
                 return data
             return None
         except Exception as e:

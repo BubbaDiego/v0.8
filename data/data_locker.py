@@ -70,7 +70,8 @@ class DataLocker:
                     balance REAL DEFAULT 0.0,
                     tags TEXT DEFAULT '',
                     is_active BOOLEAN DEFAULT 1,
-                    type TEXT DEFAULT 'personal'
+                    type TEXT DEFAULT 'personal',
+                    network TEXT DEFAULT 'solana'
                 )
             """,
             "alerts": """

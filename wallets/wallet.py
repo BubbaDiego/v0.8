@@ -31,6 +31,7 @@ class Wallet:
     public_address: str                    # 🌐 On-chain public address (used in queries)
     private_address: Optional[str] = None  # 🔒 Optional private key (DEV/TEST only)
     image_path: Optional[str] = None       # 🖼️ Avatar for UI representation
+    network: str = "solana"                # 🌐 Blockchain network identifier
     balance: float = 0.0                   # 💰 Current USD balance (optional sync)
     tags: List[str] = field(default_factory=list)  # 🏷️ Arbitrary tags (e.g. ["test", "hedge"])
     is_active: bool = True                 # ✅ Status flag — soft delete/use toggle

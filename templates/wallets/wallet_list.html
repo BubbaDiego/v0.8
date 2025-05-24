@@ -30,6 +30,7 @@
           <th>🖼️</th>
           <th>🧠 Name</th>
           <th>📬 Address</th>
+          <th>🌐 Network</th>
           <th>💰 Balance</th>
           <th>🏷️ Tags</th>
           <th>📂 Type</th>
@@ -49,7 +50,8 @@
           </td>
           <td>{{ wallet.name }}</td>
           <td>{{ wallet.public_address }}</td>
-          <td>${{ wallet.balance }}</td>
+          <td>{{ wallet.network }}</td>
+          <td>{{ wallet.balance }} SOL</td>
           <td>{{ wallet.tags|join(', ') }}</td>
           <td>{{ wallet.type }}</td>
           <td>{{ "✔️" if wallet.is_active else "❌" }}</td>
@@ -62,6 +64,7 @@
                     data-name="{{ wallet.name }}"
                     data-public="{{ wallet.public_address }}"
                     data-private="{{ wallet.private_address }}"
+                    data-network="{{ wallet.network }}"
                     data-balance="{{ wallet.balance }}"
                     data-tags="{{ wallet.tags|join(', ') }}"
                     data-type="{{ wallet.type }}"
@@ -69,6 +72,9 @@
                     data-image="{{ wallet.image_path }}">
               ✏️
             </button>
+            <form action="{{ url_for('system.refresh_wallet', name=wallet.name) }}" method="post" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-secondary">🔄</button>
+            </form>
           </td>
         </tr>
         {% endfor %}
@@ -114,15 +120,19 @@
               <label class="form-label">Tags:</label>
               <input type="text" name="tags" id="edit_tags" class="form-control">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Type:</label>
-              <select name="type" id="edit_type" class="form-select">
-                <option value="personal">Personal</option>
-                <option value="bot">Bot</option>
-                <option value="exchange">Exchange</option>
-                <option value="test">Test</option>
-              </select>
-            </div>
+           <div class="col-md-6">
+             <label class="form-label">Type:</label>
+             <select name="type" id="edit_type" class="form-select">
+               <option value="personal">Personal</option>
+               <option value="bot">Bot</option>
+               <option value="exchange">Exchange</option>
+               <option value="test">Test</option>
+             </select>
+           </div>
+           <div class="col-md-6">
+             <label class="form-label">Network:</label>
+             <input type="text" name="network" id="edit_network" class="form-control">
+           </div>
             <div class="col-md-6">
               <label class="form-label">Image Path:</label>
               <input type="text" name="image_path" id="edit_image" class="form-control">
@@ -155,6 +165,7 @@
       document.getElementById('edit_public').value = btn.dataset.public;
       document.getElementById('edit_private').value = btn.dataset.private;
       document.getElementById('edit_balance').value = btn.dataset.balance;
+      document.getElementById('edit_network').value = btn.dataset.network;
       document.getElementById('edit_tags').value = btn.dataset.tags;
       document.getElementById('edit_type').value = btn.dataset.type;
       document.getElementById('edit_image').value = btn.dataset.image;

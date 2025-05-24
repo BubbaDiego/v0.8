@@ -116,6 +116,7 @@ def add_wallet():
             public_address=form.get("public_address"),
             private_address=form.get("private_address"),
             image_path=image_path,
+            network=form.get("network", "solana"),
             balance=float(form.get("balance", 0.0)),
             tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
             is_active=form.get("is_active", "off") == "on",
@@ -175,6 +176,7 @@ def update_wallet(name):
             public_address=form.get("public_address"),
             private_address=form.get("private_address"),
             image_path=form.get("image_path"),
+            network=form.get("network", "solana"),
             balance=float(form.get("balance", 0.0)),
             tags=[t.strip() for t in form.get("tags", "").split(",") if t.strip()],
             is_active="is_active" in form,
@@ -185,6 +187,20 @@ def update_wallet(name):
         flash(f"💾 Updated wallet '{name}'", "success")
     except Exception as e:
         flash(f"❌ Failed to update wallet '{name}': {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+
+# 🔄 Refresh wallet balance from blockchain
+@system_bp.route("/wallets/refresh/<name>", methods=["POST"])
+def refresh_wallet(name):
+    try:
+        balance = get_core().refresh_wallet_balance(name)
+        if balance is not None:
+            flash(f"🔄 Balance updated: {balance} SOL", "success")
+        else:
+            flash("⚠️ Network not supported or wallet missing.", "warning")
+    except Exception as e:
+        flash(f"❌ Refresh failed: {e}", "danger")
     return redirect(url_for("system.list_wallets"))
 
 
