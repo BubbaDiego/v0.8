@@ -36,11 +36,38 @@
   color: #7c3aed;
   border-color: #bcb4ef;
 }
-.layout-toggle-btn {
-  border-radius: 10px;
+.layout-toggle-group {
+  display: inline-flex;
+  gap: 0.22rem;
+  vertical-align: middle;
+}
+
+.layout-btn {
   border: 1.5px solid #d2cdf7;
-  font-size: 1.6rem;          /* 🔍 Larger toggle icon */
+  border-radius: 10px;
   padding: 0.18rem 0.55rem;
+  font-size: 1.6rem;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  min-width: 48px;
+  min-height: 48px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  outline: none;
+}
+
+.layout-btn.active,
+.layout-btn:focus {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px #e4ddff;
+}
+
+.layout-btn:hover {
+  background: #f2e8fd;
+  color: #7c3aed;
+  border-color: #7c3aed;
 }
 .theme-toggle-group {
   display: inline-flex;

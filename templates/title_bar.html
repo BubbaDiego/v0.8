@@ -23,9 +23,11 @@
   </div>
   <div class="title-bar-actions d-flex align-items-center gap-3 ms-auto">
     <div class="config-bar d-flex align-items-center gap-2">
-      <a id="layoutModeToggle" class="btn config-btn" href="#" role="button" title="Switch View Mode">
-        <span id="currentLayoutIcon">🖥️</span>
-      </a>
+      <div class="layout-toggle-group" id="layoutToggleGroup">
+        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="wide-mode" title="Wide Mode">🖥️</a>
+        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="fitted-mode" title="Fitted Mode">💻</a>
+        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="mobile-mode" title="Mobile Mode">📱</a>
+      </div>
       <div class="theme-toggle-group" id="themeToggleGroup">
         <a class="btn config-btn theme-btn" href="#" role="button" data-theme="light" title="Light Theme">☀️</a>
         <a class="btn config-btn theme-btn" href="#" role="button" data-theme="dark" title="Dark Theme">🌙</a>
