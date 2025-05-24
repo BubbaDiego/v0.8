@@ -11,7 +11,15 @@
 
 {% block content %}
 {% include "title_bar.html" %}
-<div class="container-fluid pt-4">
-  {% include "positions_table.html" %}
+<div class="sonic-section-container sonic-section-middle mt-3">
+  <div class="sonic-content-panel">
+    {% include "positions_table.html" %}
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
 {% endblock %}
