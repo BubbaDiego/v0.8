@@ -20,3 +20,17 @@ body.dashboard-parallax::before {
   z-index: -1;
   pointer-events: none;
 }
+
+/* Start zoomed in and animate to normal scale */
+body.dashboard-parallax.zoom-out::before {
+  animation: zoomOutParallax 1s ease-out forwards;
+}
+
+@keyframes zoomOutParallax {
+  from {
+    transform: translateZ(-1px) scale(1.5);
+  }
+  to {
+    transform: translateZ(-1px) scale(1);
+  }
+}
