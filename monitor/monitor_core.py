@@ -8,6 +8,7 @@ from monitor.price_monitor import PriceMonitor
 from monitor.position_monitor import PositionMonitor
 from monitor.operations_monitor import OperationsMonitor
 from monitor.xcom_monitor import XComMonitor
+from monitor.twilio_monitor import TwilioMonitor
 # Add any new monitors here
 
 from monitor.monitor_registry import MonitorRegistry
@@ -23,6 +24,7 @@ class MonitorCore:
         self.registry.register("position_monitor", PositionMonitor())
         self.registry.register("operations_monitor", OperationsMonitor())
         self.registry.register("xcom_monitor", XComMonitor())
+        self.registry.register("twilio_monitor", TwilioMonitor())
         # Add more monitors as needed
 
     def run_all(self):

@@ -38,6 +38,12 @@ TWILIO_TO_PHONE=+1234567890
 TWILIO_FLOW_SID=your_flow_sid_here
 ```
 
+## Twilio Monitor
+
+The `twilio_monitor` runs as part of the background monitor suite. It uses
+`CheckTwilioHeartbeartService` in dry‑run mode to verify that credentials are
+valid without placing an actual call.
+
 ## Hedge Calculator
 
 ## Threshold Seeder
