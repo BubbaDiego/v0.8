@@ -11,6 +11,7 @@ from xcom.xcom_core import get_latest_xcom_monitor_entry
 
 from data.data_locker import DataLocker
 from core.core_imports import DB_PATH
+from alert_core.threshold_service import ThresholdService
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from system.system_core import SystemCore
@@ -191,6 +192,20 @@ def get_dashboard_context(data_locker):
     core = SystemCore(data_locker)
     portfolio_limits = core.get_portfolio_thresholds()
 
+    # ---- Profit Badge Calculation ----
+    profit_badge_value = None
+    try:
+        threshold_service = ThresholdService(data_locker.db)
+        profit_threshold = threshold_service.get_thresholds("Profit", "Position", "ABOVE")
+        if profit_threshold:
+            low_limit = profit_threshold.low
+            profits = [float(p.get("pnl_after_fees_usd") or 0.0) for p in positions]
+            above = [p for p in profits if p >= low_limit]
+            if above:
+                profit_badge_value = round(max(above))
+    except Exception as e:
+        log.error(f"Profit badge calc failed: {e}", source="DashboardContext")
+
     ls = data_locker.ledger
     ledger_info = {
         "age_price": ls.get_status("price_monitor").get("age_seconds", 9999),
@@ -297,6 +312,7 @@ def get_dashboard_context(data_locker):
         "status_items": status_items,
         "monitor_items": monitor_items,
         "portfolio_limits": portfolio_limits,
+        "profit_badge_value": profit_badge_value,
         "graph_data": graph_data,
         "size_composition": size_composition,
         "collateral_composition": collateral_composition,
