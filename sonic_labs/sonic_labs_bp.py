@@ -59,10 +59,24 @@ def hedge_labs_page():
     """Render the Hedge Labs UI."""
     dl = current_app.data_locker
     hedges = dl.hedges.get_hedges() or []
+    def hedge_to_dict(h):
+        return {
+            "id": h.id,
+            "positions": h.positions,
+            "total_long_size": h.total_long_size,
+            "total_short_size": h.total_short_size,
+            "long_heat_index": h.long_heat_index,
+            "short_heat_index": h.short_heat_index,
+            "total_heat_index": h.total_heat_index,
+            "created_at": h.created_at.isoformat() if hasattr(h.created_at, "isoformat") else h.created_at,
+            "updated_at": h.updated_at.isoformat() if hasattr(h.updated_at, "isoformat") else h.updated_at,
+            "notes": h.notes,
+        }
+    hedges_data = [hedge_to_dict(h) for h in hedges]
     theme_config = dl.system.get_active_theme_profile() or {}
     return render_template(
         "hedge_labs.html",
-        hedges=hedges,
+        hedges=hedges_data,
         theme=theme_config,
     )
 
