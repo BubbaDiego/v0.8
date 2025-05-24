@@ -47,7 +47,7 @@
             <th>Notify (Low)</th>
             <th>Notify (Med)</th>
             <th>Notify (High)</th>
-            <th></th>
+            {# Removed per-row Save button column #}
           </tr>
         </thead>
         <tbody>
@@ -84,7 +84,6 @@
               </div>
               {% endfor %}
             </td>
-            <td><button class="btn btn-sm btn-primary save-threshold">Save</button></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -92,6 +91,9 @@
     </div>
   </div>
   {% endfor %}
+  <div class="text-end mb-3">
+    <button id="saveAllThresholds" class="btn btn-primary">Save All</button>
+  </div>
 </div>
 {% endblock %}
 
