@@ -10,16 +10,19 @@ cyclone_bp = Blueprint("cyclone", __name__, template_folder=".", url_prefix="/cy
 
 # --- Smart Background Runner ---
 def run_in_background(task_func, name="UnnamedTask"):
+    app = current_app._get_current_object()
+
     def wrapper():
         try:
             log.info(f"🧵 Starting background task: {name}", source="AsyncRunner")
 
-            if inspect.iscoroutinefunction(task_func):
-                asyncio.run(task_func())
-            else:
-                result = task_func()
-                if inspect.iscoroutine(result):
-                    asyncio.run(result)
+            with app.app_context():
+                if inspect.iscoroutinefunction(task_func):
+                    asyncio.run(task_func())
+                else:
+                    result = task_func()
+                    if inspect.iscoroutine(result):
+                        asyncio.run(result)
 
             log.success(f"✅ Completed background task: {name}", source="AsyncRunner")
 
