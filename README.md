@@ -83,3 +83,14 @@ If you have an older database created before version 0.8.5, add the new `status`
 ```sql
 ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
 ```
+
+## Windows Branch Name Compatibility
+If a remote branch name contains characters that are invalid on Windows (such as `>` or `:`), Git cannot create the local reference. Rename the branch on a Unix-like system or ask the author to rename it. For example:
+
+```bash
+git checkout codex/fix-->=-not-supported--error-in-apply_color
+git branch -m codex/fix-not-supported-error-in-apply_color
+git push origin :codex/fix-->=-not-supported--error-in-apply_color codex/fix-not-supported-error-in-apply_color
+```
+
+After renaming, Windows users can fetch the branch normally.
