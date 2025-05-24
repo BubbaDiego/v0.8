@@ -1,4 +1,5 @@
 from core.core_imports import log
+import json
 # dl_wallets.py
 """
 Author: BubbaDiego
@@ -27,8 +28,9 @@ class DLWalletManager:
             cursor.execute(
                 """
                 INSERT INTO wallets (
-                    name, public_address, private_address, image_path, balance
-                ) VALUES (?, ?, ?, ?, ?)
+                    name, public_address, private_address, image_path,
+                    balance, tags, is_active, type
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
                 (
                     wallet["name"],
@@ -36,6 +38,9 @@ class DLWalletManager:
                     encrypt_key(wallet.get("private_address")),
                     wallet.get("image_path", ""),
                     wallet.get("balance", 0.0),
+                    json.dumps(wallet.get("tags", [])),
+                    int(wallet.get("is_active", True)),
+                    wallet.get("type", "personal"),
                 ),
             )
             self.db.commit()  # ✅ not self.db.db
@@ -50,6 +55,13 @@ class DLWalletManager:
             wallets = [dict(row) for row in cursor.fetchall()]
             for w in wallets:
                 w["private_address"] = decrypt_key(w.get("private_address"))
+                tags = w.get("tags")
+                if isinstance(tags, str):
+                    try:
+                        w["tags"] = json.loads(tags) if tags else []
+                    except json.JSONDecodeError:
+                        w["tags"] = [t.strip() for t in tags.split(",") if t.strip()]
+                w["is_active"] = bool(w.get("is_active", 1))
             log.debug(f"Retrieved {len(wallets)} wallets", source="DLWalletManager")
             return wallets
         except Exception as e:
@@ -59,20 +71,29 @@ class DLWalletManager:
     def update_wallet(self, name: str, wallet: dict):
         try:
             cursor = self.db.get_cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE wallets SET
                     public_address = ?,
                     private_address = ?,
                     image_path = ?,
-                    balance = ?
+                    balance = ?,
+                    tags = ?,
+                    is_active = ?,
+                    type = ?
                 WHERE name = ?
-            """, (
-                wallet["public_address"],
-                encrypt_key(wallet.get("private_address")),
-                wallet.get("image_path", ""),
-                wallet.get("balance", 0.0),
-                name
-            ))
+            """,
+                (
+                    wallet["public_address"],
+                    encrypt_key(wallet.get("private_address")),
+                    wallet.get("image_path", ""),
+                    wallet.get("balance", 0.0),
+                    json.dumps(wallet.get("tags", [])),
+                    int(wallet.get("is_active", True)),
+                    wallet.get("type", "personal"),
+                    name,
+                ),
+            )
             self.db.commit()
             log.info(f"Wallet updated: {name}", source="DLWalletManager")
         except Exception as e:
@@ -88,6 +109,13 @@ class DLWalletManager:
             if row:
                 data = dict(row)
                 data["private_address"] = decrypt_key(data.get("private_address"))
+                tags = data.get("tags")
+                if isinstance(tags, str):
+                    try:
+                        data["tags"] = json.loads(tags) if tags else []
+                    except json.JSONDecodeError:
+                        data["tags"] = [t.strip() for t in tags.split(",") if t.strip()]
+                data["is_active"] = bool(data.get("is_active", 1))
                 return data
             return None
         except Exception as e:
