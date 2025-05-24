@@ -25,7 +25,8 @@
     "coinmarketcap_api_enabled": "ENABLE",
     "coinpaprika_api_enabled": "ENABLE",
     "binance_api_enabled": "ENABLE",
-    "coinmarketcap_api_key": "${COINMARKETCAP_API_KEY}"
+    "coinmarketcap_api_key": "${COINMARKETCAP_API_KEY}",
+    "jupiter_api_base": "${JUPITER_API_BASE}"
   },
   "notification_config": {
     "email": {
