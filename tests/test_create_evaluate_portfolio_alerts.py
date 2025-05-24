@@ -25,16 +25,16 @@ def test_create_evaluate_portfolio_alerts():
     dl.delete_all_alerts()
 
     metrics = [
-        (AlertType.TotalValue, "total_value", 50.0),
-        (AlertType.TotalSize, "total_size", 1.0),
-        (AlertType.AvgLeverage, "avg_leverage", 2.0),
-        (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0),
-        (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2),
-        (AlertType.TotalHeat, "total_heat", 25.0),
+        (AlertType.TotalValue, "total_value", 50.0, Condition.ABOVE),
+        (AlertType.TotalSize, "total_size", 1.0, Condition.ABOVE),
+        (AlertType.AvgLeverage, "avg_leverage", 2.0, Condition.ABOVE),
+        (AlertType.AvgTravelPercent, "avg_travel_percent", 10.0, Condition.ABOVE),
+        (AlertType.ValueToCollateralRatio, "value_to_collateral_ratio", 1.2, Condition.BELOW),
+        (AlertType.TotalHeat, "total_heat", 25.0, Condition.ABOVE),
     ]
 
     print("🚀 Creating Portfolio Alerts")
-    for alert_type, desc, trigger in metrics:
+    for alert_type, desc, trigger, condition in metrics:
         alert = {
             "id": str(uuid4()),
             "created_at": now,
@@ -43,7 +43,7 @@ def test_create_evaluate_portfolio_alerts():
             "asset": "PORTFOLIO",
             "asset_type": "ALL",
             "trigger_value": trigger,
-            "condition": Condition.ABOVE.value,
+            "condition": condition.value,
             "notification_type": "SMS",
             "level": "Normal",
             "last_triggered": None,

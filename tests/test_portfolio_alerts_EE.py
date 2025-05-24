@@ -156,12 +156,13 @@ def _create_portfolio_alerts(repo):
     }
     alerts = []
     for atype, desc in metric_map.items():
+        cond = Condition.BELOW if atype == AlertType.ValueToCollateralRatio else Condition.ABOVE
         alert = Alert(
             id=str(uuid.uuid4()),
             alert_type=atype,
             alert_class="Portfolio",
             trigger_value=get_default_trigger_value(atype),
-            condition=Condition.ABOVE,
+            condition=cond,
             notification_type=NotificationType.EMAIL,
             description=desc
         )

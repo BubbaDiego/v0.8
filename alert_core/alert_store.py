@@ -261,15 +261,15 @@ class AlertStore:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         metrics = [
-            (AlertType.TOTAL_VALUE, "total_value", 50000),
-            (AlertType.TOTAL_SIZE, "total_size", 1.0),
-            (AlertType.TOTAL_LEVERAGE, "avg_leverage", 2.0),
-            (AlertType.TOTAL_TRAVEL_PERCENT, "avg_travel_percent", 10.0),
-            (AlertType.TOTAL_RATIO, "value_to_collateral_ratio", 1.2),
-            (AlertType.TOTAL_HEAT_INDEX, "total_heat", 25.0),
+            (AlertType.TOTAL_VALUE, "total_value", 50000, Condition.ABOVE),
+            (AlertType.TOTAL_SIZE, "total_size", 1.0, Condition.ABOVE),
+            (AlertType.TOTAL_LEVERAGE, "avg_leverage", 2.0, Condition.ABOVE),
+            (AlertType.TOTAL_TRAVEL_PERCENT, "avg_travel_percent", 10.0, Condition.ABOVE),
+            (AlertType.TOTAL_RATIO, "value_to_collateral_ratio", 1.2, Condition.BELOW),
+            (AlertType.TOTAL_HEAT_INDEX, "total_heat", 25.0, Condition.ABOVE),
         ]
 
-        for alert_type, description, trigger_value in metrics:
+        for alert_type, description, trigger_value, condition in metrics:
             try:
                 alert = {
                     "id": str(uuid4()),
@@ -278,7 +278,7 @@ class AlertStore:
                     "alert_class": AlertClass.PORTFOLIO.value,
                     "asset_type": "ALL",
                     "trigger_value": trigger_value,
-                    "condition": Condition.ABOVE.value,
+                    "condition": condition.value,
                     "notification_type": NotificationType.SMS.value,
                     "level": "Normal",
                     "last_triggered": None,
