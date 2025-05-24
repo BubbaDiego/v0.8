@@ -6,7 +6,7 @@ import json
 from positions.position_sync_service import PositionSyncService  # noqa: F401
 from positions.position_core_service import PositionCoreService  # noqa: F401
 from core.core_imports import retry_on_locked
-from app.system_bp import hedge_calculator_page
+from app.system_bp import hedge_calculator_page, hedge_report_page
 
 sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")
 
@@ -15,6 +15,13 @@ sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")
 def hedge_calculator():
     """Delegate to the system blueprint implementation."""
     return hedge_calculator_page()
+
+
+@sonic_labs_bp.route("/hedge_report", methods=["GET"])
+@retry_on_locked()
+def hedge_report():
+    """Delegate to the system blueprint implementation for hedge report."""
+    return hedge_report_page()
 
 @sonic_labs_bp.route("/sonic_sauce", methods=["GET"])
 def get_sonic_sauce():
