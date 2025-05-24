@@ -1,7 +1,7 @@
 import asyncio
 import os
 from flask import Blueprint, jsonify, render_template, current_app
-from cyclone.cyclone_engine import Cyclone
+# Access the shared Cyclone instance attached to the Flask app
 from core.core_imports import BASE_DIR, log
 from threading import Thread
 import inspect
@@ -37,7 +37,8 @@ def cyclone_dashboard():
 @cyclone_bp.route("/run_market_updates", methods=["POST"])
 def run_market_updates():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_market_updates()), name="MarketUpdate")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_market_updates()),
+                          name="MarketUpdate")
         return jsonify({"message": "Market Updates Started."}), 202
     except Exception as e:
         log.error(f"Market Updates Error: {e}", source="CycloneAPI")
@@ -46,7 +47,8 @@ def run_market_updates():
 @cyclone_bp.route("/run_position_updates", methods=["POST"])
 def run_position_updates():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_position_updates()), name="JupiterUpdate")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_position_updates()),
+                          name="JupiterUpdate")
         return jsonify({"message": "Position Updates Started."}), 202
     except Exception as e:
         log.error(f"Position Updates Error: {e}", source="CycloneAPI")
@@ -55,7 +57,8 @@ def run_position_updates():
 @cyclone_bp.route("/run_dependent_updates", methods=["POST"])
 def run_dependent_updates():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_enrich_positions()), name="DependentUpdate")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_enrich_positions()),
+                          name="DependentUpdate")
         return jsonify({"message": "Dependent Updates Started."}), 202
     except Exception as e:
         log.error(f"Dependent Updates Error: {e}", source="CycloneAPI")
@@ -64,7 +67,8 @@ def run_dependent_updates():
 @cyclone_bp.route("/run_alert_evaluations", methods=["POST"])
 def run_alert_evaluations():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_alert_updates()), name="AlertEval")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_alert_updates()),
+                          name="AlertEval")
         return jsonify({"message": "Alert Evaluations Started."}), 202
     except Exception as e:
         log.error(f"Alert Evaluations Error: {e}", source="CycloneAPI")
@@ -73,7 +77,8 @@ def run_alert_evaluations():
 @cyclone_bp.route("/run_system_updates", methods=["POST"])
 def run_system_updates():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_system_updates()), name="SystemUpdate")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_system_updates()),
+                          name="SystemUpdate")
         return jsonify({"message": "System Updates Started."}), 202
     except Exception as e:
         log.error(f"System Updates Error: {e}", source="CycloneAPI")
@@ -82,7 +87,8 @@ def run_system_updates():
 @cyclone_bp.route("/run_full_cycle", methods=["POST"])
 def run_full_cycle():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_cycle()), name="FullCycle")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_cycle()),
+                          name="FullCycle")
         return jsonify({"message": "Full Cycle Started."}), 202
     except Exception as e:
         log.error(f"Full Cycle Error: {e}", source="CycloneAPI")
@@ -91,7 +97,8 @@ def run_full_cycle():
 @cyclone_bp.route("/clear_all_data", methods=["POST"])
 def clear_all_data():
     try:
-        run_in_background(lambda: asyncio.run(Cyclone().run_clear_all_data()), name="ClearAllData")
+        run_in_background(lambda: asyncio.run(current_app.cyclone.run_clear_all_data()),
+                          name="ClearAllData")
         return jsonify({"message": "Clear All Data Started."}), 202
     except Exception as e:
         log.error(f"Clear All Data Error: {e}", source="CycloneAPI")
