@@ -37,22 +37,26 @@ class SystemCore:
         svc = ThresholdService(self.theme.dl.db)
 
         metrics = {
-            "avg_leverage": ("AvgLeverage", "Portfolio", "ABOVE"),
-            "total_value": ("TotalValue", "Portfolio", "ABOVE"),
-            "total_size": ("TotalSize", "Portfolio", "ABOVE"),
-            "avg_travel_percent": ("AvgTravelPercent", "Portfolio", "ABOVE"),
-            "value_to_collateral_ratio": ("ValueToCollateralRatio", "Portfolio", "BELOW"),
-            "total_heat": ("TotalHeat", "Portfolio", "ABOVE")
+            "avg_leverage": "AvgLeverage",
+            "total_value": "TotalValue",
+            "total_size": "TotalSize",
+            "avg_travel_percent": "AvgTravelPercent",
+            "value_to_collateral_ratio": "ValueToCollateralRatio",
+            "total_heat": "TotalHeat",
         }
 
         result = {}
-        for key, (atype, aclass, cond) in metrics.items():
-            th = svc.get_thresholds(atype, aclass, cond)
+        for key, atype in metrics.items():
+            # Attempt to fetch thresholds for ABOVE first then BELOW
+            th = svc.get_thresholds(atype, "Portfolio", "ABOVE")
+            if not th:
+                th = svc.get_thresholds(atype, "Portfolio", "BELOW")
+
             result[key] = {
                 "low": th.low if th else None,
                 "medium": th.medium if th else None,
                 "high": th.high if th else None,
-                "condition": th.condition if th else "ABOVE"
+                "condition": th.condition if th else "ABOVE",
             }
 
         return result
