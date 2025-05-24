@@ -33,7 +33,12 @@ system_bp = Blueprint("system", __name__, url_prefix="/system")
 
 
 def get_core():
-    return SystemCore(current_app.data_locker)
+    """Return the shared SystemCore instance."""
+    core = getattr(current_app, "system_core", None)
+    if core is None:
+        core = SystemCore(current_app.data_locker)
+        current_app.system_core = core
+    return core
 
 
 @system_bp.route("/test_xcom", methods=["POST"])
