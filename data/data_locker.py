@@ -27,12 +27,6 @@ from data.dl_monitor_ledger import DLMonitorLedgerManager
 from data.dl_modifiers import DLModifierManager
 from data.dl_hedges import DLHedgeManager
 from core.constants import SONIC_SAUCE_PATH
-
-class DataLocker:
-    def __init__(self, db_path):
-        ...
-        self.ledger = DLMonitorLedgerManager(self.db)
-
 from core.core_imports import log
 from datetime import datetime
 
