@@ -29,6 +29,9 @@ The [Hedge Core module](hedge_core/hedge_core_module_spec.md) links long and sho
 ### Monitor Core
 The [Monitor module](monitor/monitor_module_spec.md) drives periodic tasks and health checks. It registers individual monitors and exposes CLI and API entrypoints for running them.
 
+### Wallets
+The [Jupiter API spec](wallets/jupiter_api_spec.md) from **sonic_labs** describes how wallets interact with Jupiter Perps for managing collateral.
+
 ---
 
 Each linked specification contains more detailed design notes, functional requirements, and example workflows.
