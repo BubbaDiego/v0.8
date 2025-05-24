@@ -52,6 +52,15 @@ class WalletRepository:
         self.dl.update_wallet(name, wallet.dict())
         return True
 
+    def update_balance(self, name: str, balance: float) -> bool:
+        wallet = self.get_wallet_by_name(name)
+        if not wallet:
+            return False
+        data = wallet.__dict__
+        data["balance"] = balance
+        self.dl.update_wallet(name, data)
+        return True
+
     # 💾 Backup all wallets to JSON
     def export_to_json(self, path: str = WALLETS_JSON_PATH) -> None:
         wallets = self.get_all_wallets()

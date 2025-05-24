@@ -15,6 +15,15 @@ from __future__ import annotations
 
 from typing import List, Optional
 
+from solana.transaction import Transaction
+from solana.keypair import Keypair
+
+from wallets.wallet_service import WalletService
+from wallets.wallet import Wallet
+from wallets.solana_client import SolanaClient
+from core.logging import log
+
+
 from solana.rpc.api import Client
 from solana.transaction import Transaction
 from solana.keypair import Keypair
@@ -29,6 +38,7 @@ from core.logging import log
 LAMPORTS_PER_SOL = 1_000_000_000
 
 
+
 class WalletCore:
     """Central access point for wallet + blockchain operations."""
 
@@ -36,6 +46,7 @@ class WalletCore:
         self.service = WalletService()
         self.rpc_endpoint = rpc_endpoint
         self.client = Client(rpc_endpoint)
+
         log.debug(f"WalletCore initialized with RPC {rpc_endpoint}", source="WalletCore")
 
     # ------------------------------------------------------------------
@@ -50,6 +61,7 @@ class WalletCore:
         """Switch to a different Solana RPC endpoint."""
         self.rpc_endpoint = endpoint
         self.client = Client(endpoint)
+
         log.debug(f"RPC endpoint switched to {endpoint}", source="WalletCore")
 
     # ------------------------------------------------------------------
@@ -57,6 +69,7 @@ class WalletCore:
     # ------------------------------------------------------------------
     def fetch_balance(self, wallet: Wallet) -> Optional[float]:
         """Fetch the SOL balance for ``wallet`` using the active client."""
+
         try:
             resp = self.client.get_balance(PublicKey(wallet.public_address), commitment=Confirmed)
             lamports = resp.get("result", {}).get("value")
@@ -65,6 +78,7 @@ class WalletCore:
         except Exception as e:
             log.error(f"Failed to fetch balance for {wallet.name}: {e}", source="WalletCore")
         return None
+
 
     def _keypair_from_wallet(self, wallet: Wallet) -> Keypair:
         if not wallet.private_address:
@@ -82,6 +96,7 @@ class WalletCore:
         """Sign and submit ``tx`` using ``wallet``'s keypair."""
         try:
             kp = self._keypair_from_wallet(wallet)
+
             recent = self.client.get_recent_blockhash()["result"]["value"]["blockhash"]
             tx.recent_blockhash = recent
             tx.sign(kp)
@@ -90,6 +105,7 @@ class WalletCore:
             if sig:
                 log.success(f"Transaction sent: {sig}", source="WalletCore")
             return sig
+
         except Exception as e:
             log.error(f"Failed to send transaction from {wallet.name}: {e}", source="WalletCore")
             return None
