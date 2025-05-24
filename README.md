@@ -75,3 +75,11 @@ python scripts/init_db.py
 ```
 
 The script will create `mother_brain.db` in the `data` directory (or the path set via the `DB_PATH` environment variable) and ensure every table exists.
+
+**Existing Installations**
+
+If you have an older database created before version 0.8.5, add the new `status` column manually:
+
+```sql
+ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
+```

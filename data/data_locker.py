@@ -147,7 +147,8 @@ class DataLocker:
                     liquidation_distance REAL,
                     heat_index REAL,
                     current_heat_index REAL,
-                    pnl_after_fees_usd REAL
+                    pnl_after_fees_usd REAL,
+                    status TEXT DEFAULT 'ACTIVE'
                 )
             """,
             "positions_totals_history": """

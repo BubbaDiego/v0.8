@@ -55,6 +55,31 @@ def reset_database(db_path):
     """)
 
     cursor.execute("""
+        CREATE TABLE positions (
+            id TEXT PRIMARY KEY,
+            asset_type TEXT,
+            position_type TEXT,
+            entry_price REAL,
+            liquidation_price REAL,
+            travel_percent REAL,
+            value REAL,
+            collateral REAL,
+            size REAL,
+            leverage REAL,
+            wallet_name TEXT,
+            last_updated TEXT,
+            alert_reference_id TEXT,
+            hedge_buddy_id TEXT,
+            current_price REAL,
+            liquidation_distance REAL,
+            heat_index REAL,
+            current_heat_index REAL,
+            pnl_after_fees_usd REAL,
+            status TEXT DEFAULT 'ACTIVE'
+        )
+    """)
+
+    cursor.execute("""
         CREATE TABLE position_alert_map (
             id TEXT PRIMARY KEY,
             position_id TEXT NOT NULL,
