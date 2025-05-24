@@ -2,6 +2,7 @@
 
 from alert_core.threshold_service import ThresholdService
 from system.wallet_service import WalletService
+from wallets.wallet_core import WalletCore
 from system.theme_service import ThemeService
 from xcom.xcom_core import XComCore
 from system.death_nail_service import DeathNailService
@@ -11,11 +12,12 @@ class SystemCore:
     def __init__(self, data_locker):
         self.log = log
         self.wallets = WalletService(data_locker)
+        self.wallet_core = WalletCore()
         self.theme = ThemeService(data_locker)
         self.xcom = XComCore(data_locker)
         self.death_nail_service = DeathNailService(self.log, self.xcom)
 
-        self.log.success("SystemCore initialized with Wallet + Theme services.")
+        self.log.success("SystemCore initialized with Wallet, WalletCore and Theme services.")
 
     def death(self, metadata: dict):
         self.death_nail_service.trigger(metadata)
