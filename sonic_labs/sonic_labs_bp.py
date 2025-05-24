@@ -6,6 +6,7 @@ import json
 from positions.position_sync_service import PositionSyncService  # noqa: F401
 from positions.position_core_service import PositionCoreService  # noqa: F401
 from core.core_imports import retry_on_locked
+from calc_core.calc_services import CalcServices
 from app.system_bp import hedge_calculator_page, hedge_report_page
 
 sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")
@@ -129,3 +130,69 @@ def api_test_calcs():
     except Exception as e:
         current_app.logger.error(f"Error running test calcs: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
+
+
+@sonic_labs_bp.route("/api/hedge_positions", methods=["GET"])
+@retry_on_locked()
+def api_get_hedge_positions():
+    """Return position data for a specific hedge."""
+    hedge_id = request.args.get("hedge_id")
+    if not hedge_id:
+        return jsonify({"error": "hedge_id required"}), 400
+
+    dl = current_app.data_locker
+    hedges = dl.hedges.get_hedges() or []
+    hedge = next((h for h in hedges if str(h.id) == hedge_id), None)
+    if not hedge:
+        return jsonify({"error": "Hedge not found"}), 404
+
+    pos_list = []
+    for pid in hedge.positions:
+        pos = dl.positions.get_position_by_id(pid)
+        if pos:
+            pos_list.append(dict(pos))
+
+    return jsonify({"positions": pos_list})
+
+
+@sonic_labs_bp.route("/api/evaluate_hedge", methods=["GET"])
+@retry_on_locked()
+def api_evaluate_hedge():
+    """Evaluate hedge positions at a specific price."""
+    hedge_id = request.args.get("hedge_id")
+    price = request.args.get("price")
+    if not hedge_id or price is None:
+        return jsonify({"error": "hedge_id and price required"}), 400
+
+    try:
+        price = float(price)
+    except ValueError:
+        return jsonify({"error": "invalid price"}), 400
+
+    dl = current_app.data_locker
+    hedges = dl.hedges.get_hedges() or []
+    hedge = next((h for h in hedges if str(h.id) == hedge_id), None)
+    if not hedge:
+        return jsonify({"error": "Hedge not found"}), 404
+
+    calc = CalcServices()
+    results = {}
+    eval_positions = []
+
+    for pid in hedge.positions:
+        pos = dl.positions.get_position_by_id(pid)
+        if not pos:
+            continue
+        eval_data = calc.evaluate_at_price(pos, price)
+        ptype = str(pos.get("position_type", "")).lower()
+        results[ptype] = {
+            "id": pid,
+            **{k: round(v, 6) if isinstance(v, float) else v for k, v in eval_data.items()},
+        }
+        pos_copy = dict(pos)
+        pos_copy.update(eval_data)
+        eval_positions.append(pos_copy)
+
+    totals = calc.calculate_totals(eval_positions)
+
+    return jsonify({"long": results.get("long"), "short": results.get("short"), "totals": totals})

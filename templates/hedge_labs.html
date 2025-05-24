@@ -35,6 +35,41 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <div class="card mt-4">
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label for="hedgeSelect" class="form-label"><strong>Select Hedge</strong></label>
+          <select id="hedgeSelect" class="form-select">
+            <option value="" disabled selected>-- Choose Hedge --</option>
+            {% for h in hedges %}
+            <option value="{{ h.id }}">{{ h.id }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-8">
+          <label for="priceSlider" class="form-label"><strong>Simulated Price</strong></label>
+          <input type="range" id="priceSlider" class="form-range" step="0.01" disabled>
+          <div id="priceValue" class="mt-2">Price: 0</div>
+        </div>
+      </div>
+      <table class="table table-sm" id="evalTable">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Value</th>
+            <th>Travel %</th>
+            <th>Heat</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    window.initialHedges = {{ hedges | tojson }};
+  </script>
 </div>
 {% endblock %}
 
