@@ -71,24 +71,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ========== Theme Toggle (3-way) ==========
-  const THEMES = ["light", "dark", "funky"];
-  function setTheme(theme) {
-    if (theme === "light") {
-      document.body.removeAttribute("data-theme");
+  // ========== Theme Toggle (cyclic) ==========
+  const THEMES = ['light', 'dark', 'funky'];
+  const THEME_ICONS = ['☀️', '🌙', '🎨'];
+  let themeIndex = 0;
+  function applyTheme(idx) {
+    const theme = THEMES[idx];
+    if (theme === 'light') {
+      document.body.removeAttribute('data-theme');
     } else {
-      document.body.setAttribute("data-theme", theme);
+      document.body.setAttribute('data-theme', theme);
     }
-    localStorage.setItem("dashboardTheme", theme);
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+    const icon = document.getElementById('currentThemeIcon');
+    if (icon) icon.innerText = THEME_ICONS[idx];
+    localStorage.setItem('dashboardTheme', idx);
+  }
+  const themeBtn = document.getElementById('themeModeToggle');
+  themeIndex = Number(localStorage.getItem('dashboardTheme')) || 0;
+  if (themeIndex >= THEMES.length) themeIndex = 0;
+  applyTheme(themeIndex);
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      themeIndex = (themeIndex + 1) % THEMES.length;
+      applyTheme(themeIndex);
     });
   }
-  const savedTheme = localStorage.getItem("dashboardTheme") || "light";
-  setTheme(savedTheme);
-  document.querySelectorAll('.theme-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      setTheme(this.getAttribute('data-theme'));
-    });
-  });
 });
