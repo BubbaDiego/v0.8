@@ -58,7 +58,10 @@ def test_xcom():
         elif mode == "email":
             xcom.send_notification("LOW", "Test Email", msg)
         elif mode == "voice":
-            xcom.send_notification("HIGH", "Test Voice", msg)
+            from xcom.check_twilio_heartbeart_service import CheckTwilioHeartbeartService
+
+            twilio_cfg = xcom.config_service.get_provider("twilio") or {}
+            CheckTwilioHeartbeartService(twilio_cfg).check(dry_run=False)
         elif mode == "system":
             SoundService().play()
 
