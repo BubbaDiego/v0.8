@@ -1,25 +1,36 @@
 // Layout mode toggle script
 console.log('layout_mode.js loaded');
 const LAYOUT_MODES = ['wide-mode', 'fitted-mode', 'mobile-mode'];
+
 const LAYOUT_ICONS = ['🖥️', '💻', '📱'];
 let layoutCurrent = 0;
 
 function setLayoutMode(idx) {
+
   document.body.classList.remove(...LAYOUT_MODES);
-  document.body.classList.add(LAYOUT_MODES[idx]);
-  const icon = document.getElementById('currentLayoutIcon');
-  if (icon) icon.innerText = LAYOUT_ICONS[idx];
-  localStorage.setItem('sonicLayoutMode', idx);
+  document.body.classList.add(mode);
+
+  const buttons = document.querySelectorAll('.layout-btn[data-mode]');
+  buttons.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+  });
+
+  localStorage.setItem('sonicLayoutMode', mode);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('layoutModeToggle');
-  layoutCurrent = Number(localStorage.getItem('sonicLayoutMode')) || 0;
-  setLayoutMode(layoutCurrent);
-  if (btn) {
-    btn.addEventListener('click', function() {
-      layoutCurrent = (layoutCurrent + 1) % LAYOUT_MODES.length;
-      setLayoutMode(layoutCurrent);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const buttons = document.querySelectorAll('.layout-btn[data-mode]');
+  let mode = localStorage.getItem('sonicLayoutMode') || LAYOUT_MODES[0];
+  if (!LAYOUT_MODES.includes(mode)) mode = LAYOUT_MODES[0];
+  setLayoutMode(mode);
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const mode = btn.getAttribute('data-mode');
+      setLayoutMode(mode);
+
     });
-  }
+  });
 });
