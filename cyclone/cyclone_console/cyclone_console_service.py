@@ -2,7 +2,8 @@ import asyncio
 import os
 from cyclone_engine import Cyclone
 from data.data_locker import DataLocker
-from sonic_labs.hedge_manager import HedgeManager
+# Import HedgeManager from the actual implementation location
+from positions.hedge_manager import HedgeManager
 from core.logging import log
 from cyclone.cyclone_position_service import CyclonePositionService
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService

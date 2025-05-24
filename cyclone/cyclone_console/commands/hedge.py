@@ -5,7 +5,8 @@ from rich.console import Console
 from rich.table import Table
 from core.core_imports import configure_console_log, DB_PATH
 from data.data_locker import DataLocker
-from sonic_labs.hedge_manager import HedgeManager
+# HedgeManager lives under positions. Import it from there so the CLI works.
+from positions.hedge_manager import HedgeManager
 from cyclone.cyclone_hedge_service import CycloneHedgeService
 
 app = typer.Typer(help="🛡 Hedge detection and management")
