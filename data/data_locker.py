@@ -14,6 +14,7 @@ Dependencies:
 
 import sys
 import os
+import json
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data.database import DatabaseManager
 from data.dl_alerts import DLAlertManager
@@ -26,7 +27,7 @@ from data.dl_system_data import DLSystemDataManager
 from data.dl_monitor_ledger import DLMonitorLedgerManager
 from data.dl_modifiers import DLModifierManager
 from data.dl_hedges import DLHedgeManager
-from core.constants import SONIC_SAUCE_PATH
+from core.constants import SONIC_SAUCE_PATH, BASE_DIR
 from core.core_imports import log
 from datetime import datetime
 
@@ -48,6 +49,7 @@ class DataLocker:
 
         self.initialize_database()
         self._seed_modifiers_if_empty()
+        self._seed_wallets_if_empty()
 
         log.debug("All DL managers bootstrapped successfully.", source="DataLocker")
 
@@ -314,6 +316,30 @@ class DataLocker:
                 log.debug("Modifiers seeded from sonic_sauce.json", source="DataLocker")
             except Exception as e:
                 log.error(f"❌ Failed seeding modifiers: {e}", source="DataLocker")
+
+    def _seed_wallets_if_empty(self):
+        """Seed wallets table from wallets.json if empty."""
+        cursor = self.db.get_cursor()
+        count = cursor.execute("SELECT COUNT(*) FROM wallets").fetchone()[0]
+        if count == 0:
+            json_path = os.path.join(BASE_DIR, "wallets.json")
+            if os.path.exists(json_path):
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        wallets = json.load(f)
+                    for w in wallets:
+                        try:
+                            self.wallets.create_wallet(w)
+                        except Exception as e:
+                            log.warning(
+                                f"Wallet seed failed for {w.get('name')}: {e}",
+                                source="DataLocker",
+                            )
+                    log.debug(
+                        f"Wallets seeded from {json_path}", source="DataLocker"
+                    )
+                except Exception as e:
+                    log.error(f"❌ Failed seeding wallets: {e}", source="DataLocker")
 
 
     def get_all_tables_as_dict(self) -> dict:
