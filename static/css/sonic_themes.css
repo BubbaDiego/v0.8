@@ -244,7 +244,7 @@ body {
   border-radius: 1rem;
 }
 
-.layout-toggle-btn,
+.layout-btn,
 .theme-btn.active {
   border-color: var(--primary) !important;
   background: var(--primary) !important;
@@ -256,14 +256,14 @@ body {
 }
 
 .theme-btn:hover,
-.layout-toggle-btn:hover {
+.layout-btn:hover {
   background: var(--accent) !important;
   color: var(--text) !important;
 }
 
 .sonic-content-panel,
 .title-bar,
-.layout-toggle-btn,
+.layout-btn,
 .theme-btn {
   transition: background 0.22s, color 0.22s, border-color 0.22s;
 }
