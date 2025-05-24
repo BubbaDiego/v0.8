@@ -5,7 +5,7 @@ import asyncio
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from alerts.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_enrichment_service import AlertEnrichmentService
 from data.alert import Alert, AlertType, Condition, AlertLevel
 from unittest.mock import AsyncMock, MagicMock
 

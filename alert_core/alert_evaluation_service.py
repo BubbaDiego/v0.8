@@ -20,9 +20,11 @@ class AlertEvaluationService:
     def evaluate(self, alert):
         try:
             if alert.evaluated_value is None:
-                log.error(f"❌ Missing evaluated_value for alert {alert.id}", source="AlertEvaluation")
-                alert.level = AlertLevel.NORMAL
-                return alert
+                log.warning(
+                    f"⚠️ Missing evaluated_value for alert {alert.id}; defaulting to 0",
+                    source="AlertEvaluation",
+                )
+                alert.evaluated_value = 0.0
 
             alert_type = str(alert.alert_type).strip()
             alert_class = str(alert.alert_class).strip()

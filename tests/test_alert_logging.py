@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from uuid import uuid4
 from datetime import datetime
 from data.alert import AlertType, Condition
-from alerts.alert_utils import log_alert_summary
+from alert_core.alert_utils import log_alert_summary
 
 def test_alert_logging():
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

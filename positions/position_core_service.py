@@ -24,7 +24,7 @@ class PositionCoreService:
     def update_position_and_alert(self, pos):
         try:
             self.dl.positions.create_position(pos)
-            from alerts.alert_evaluator import AlertEvaluator
+            from alert_core.alert_evaluator import AlertEvaluator
             evaluator = AlertEvaluator({}, self.dl)
             evaluator.update_alert_for_position(pos)
             log.success(f"✅ Updated position & alert: {pos.get('id')}", source="PositionCoreService")
@@ -33,7 +33,7 @@ class PositionCoreService:
 
     def delete_position_and_cleanup(self, position_id: str):
         try:
-            from alerts.alert_controller import AlertController
+            from alert_core.alert_controller import AlertController
             alert_ctrl = AlertController()
 
             alerts = self.dl.get_alerts()

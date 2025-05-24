@@ -1,6 +1,6 @@
 import pytest
 from data.alert import Alert, AlertType, AlertLevel, Condition
-from alerts.alert_evaluation_service import AlertEvaluationService
+from alert_core.alert_evaluation_service import AlertEvaluationService
 from core.core_imports import log
 
 @pytest.fixture

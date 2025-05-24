@@ -7,7 +7,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from data.alert import AlertType, Condition, Status
-from alerts.alert_service_manager import AlertServiceManager
+from alert_core.alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
 from core.core_imports import get_locker
 

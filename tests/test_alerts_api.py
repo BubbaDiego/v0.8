@@ -1,6 +1,6 @@
 import pytest
 from flask import Flask
-from alerts.alerts_bp import alerts_bp
+from app.alerts_bp import alerts_bp
 from core.core_imports import log
 
 # Setup the Flask Test App

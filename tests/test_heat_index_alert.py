@@ -7,9 +7,9 @@ import uuid
 
 from data.alert import Alert, AlertType, Condition, NotificationType
 from data.data_locker import DataLocker
-from alerts.alert_enrichment_service import AlertEnrichmentService
-from alerts.alert_evaluation_service import AlertEvaluationService
-from alerts.alert_repository import AlertRepository
+from alert_core.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_evaluation_service import AlertEvaluationService
+from alert_core.alert_repository import AlertRepository
 from config.config_loader import load_config
 from core.core_imports import ALERT_LIMITS_PATH, get_locker
 

@@ -4,8 +4,8 @@ import copy
 import json
 import os
 from utils.config_loader import load_config
-from alerts.alert_repository import AlertRepository
-from alerts.alert_service_manager import AlertServiceManager
+from alert_core.alert_repository import AlertRepository
+from alert_core.alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
 
 from tests.system.system_test_helpers import create_temp_alert_limits_json

@@ -18,9 +18,10 @@ from core.logging import log
 
 
 class AlertEnrichmentService:
-    def __init__(self, data_locker):
+    def __init__(self, data_locker, system_core=None):
         self.data_locker = data_locker
         self.core = CalculationCore(data_locker)
+        self.system_core = system_core
 
     async def enrich(self, alert):
         """
@@ -63,7 +64,7 @@ class AlertEnrichmentService:
 
     async def _enrich_portfolio(self, alert):
         try:
-            context = get_dashboard_context(self.data_locker)
+            context = get_dashboard_context(self.data_locker, self.system_core)
             if not context:
                 raise RuntimeError("Dashboard context returned None")
 
@@ -78,7 +79,7 @@ class AlertEnrichmentService:
                 "avg_travel_percent": totals.get("avg_travel_percent"),
                 "value_to_collateral_ratio": (
                     totals.get("total_value") / totals.get("total_collateral")
-                    if totals.get("total_collateral") else None
+                    if totals.get("total_collateral") not in (0, None) else 0.0
                 ),
                 "total_heat": totals.get("avg_heat_index")
             }

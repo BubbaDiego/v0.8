@@ -195,7 +195,7 @@ def get_latest_xcom_monitor_history(dl):
     except Exception:
         return []
 
-def get_dashboard_context(data_locker):
+def get_dashboard_context(data_locker, system_core=None):
 
     log.info("📊 Assembling dashboard context", source="DashboardContext")
     core = CalculationCore(data_locker)
@@ -207,8 +207,8 @@ def get_dashboard_context(data_locker):
         wallet_name = pos.get("wallet") or pos.get("wallet_name") or "Unknown"
         pos["wallet_image"] = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
 
-    core = SystemCore(data_locker)
-    portfolio_limits = core.get_portfolio_thresholds()
+    core_sys = system_core or SystemCore(data_locker)
+    portfolio_limits = core_sys.get_portfolio_thresholds()
 
     # ---- Profit Badge Calculation ----
     profit_badge_value = None

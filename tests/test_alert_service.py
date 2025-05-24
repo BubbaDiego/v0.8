@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock
-from alerts.alert_service import AlertService
+from alert_core.alert_service import AlertService
 from data.alert import Alert, AlertLevel
 
 @pytest.mark.asyncio

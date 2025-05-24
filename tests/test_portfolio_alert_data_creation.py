@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from data.alert import Alert, AlertType, Condition
-from alerts.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_enrichment_service import AlertEnrichmentService
 from core.core_imports import log
 
 # --- Mock DataLocker for Portfolio Alert Creation ---
