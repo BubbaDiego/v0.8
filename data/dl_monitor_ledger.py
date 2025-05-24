@@ -26,7 +26,7 @@ class DLMonitorLedgerManager:
             )
         """)
         self.db.commit()
-        log.success("✅ monitor_ledger table ensured", source="DLMonitorLedger")
+        log.debug("monitor_ledger table ensured", source="DLMonitorLedger")
 
     def insert_ledger_entry(self, monitor_name: str, status: str, metadata: dict = None):
         import uuid

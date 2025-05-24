@@ -16,7 +16,7 @@ Dependencies:
 class DLBrokerManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLBrokerManager initialized.", source="DLBrokerManager")
+        log.debug("DLBrokerManager initialized.", source="DLBrokerManager")
 
     def create_broker(self, broker: dict):
         try:

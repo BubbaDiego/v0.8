@@ -20,7 +20,7 @@ Dependencies:
 class DLAlertManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLAlertManager initialized.", source="DLAlertManager")
+        log.debug("DLAlertManager initialized.", source="DLAlertManager")
 
     def create_alert(self, alert: dict) -> bool:
         try:

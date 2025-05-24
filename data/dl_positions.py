@@ -21,7 +21,7 @@ from core.core_imports import log
 class DLPositionManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLPositionManager initialized.", source="DLPositionManager")
+        log.debug("DLPositionManager initialized.", source="DLPositionManager")
 
     def create_position(self, position: dict):
         from datetime import datetime

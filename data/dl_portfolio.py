@@ -18,7 +18,7 @@ from core.core_imports import log
 class DLPortfolioManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLPortfolioManager initialized.", source="DLPortfolioManager")
+        log.debug("DLPortfolioManager initialized.", source="DLPortfolioManager")
 
     def record_snapshot(self, totals: dict):
         try:
