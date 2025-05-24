@@ -34,6 +34,20 @@ class DatabaseManager:
                     raise
         return self.conn
 
+    def recover_database(self):
+        """Recreate the database file if it's corrupt."""
+        if self.conn:
+            try:
+                self.conn.close()
+            finally:
+                self.conn = None
+        try:
+            os.remove(self.db_path)
+        except OSError:
+            pass
+        # Fresh connection will recreate the DB file
+        self.connect()
+
     def get_cursor(self):
         return self.connect().cursor()
 
