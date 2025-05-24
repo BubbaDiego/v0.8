@@ -7,8 +7,8 @@ from uuid import uuid4
 
 from data.models import AlertThreshold, AlertLevel, AlertType
 from data.alert import Alert
-from alerts.threshold_service import ThresholdService
-from alert_evaluation_service import AlertEvaluationService
+from alert_core.threshold_service import ThresholdService
+from alert_core.alert_evaluation_service import AlertEvaluationService
 from data.dl_thresholds import DLThresholdManager
 
 

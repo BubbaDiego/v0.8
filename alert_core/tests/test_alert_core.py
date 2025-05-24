@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from data.data_locker import DataLocker
 from config.config_loader import load_config
-from alerts.alert_core import AlertCore
+from alert_core.alert_core import AlertCore
 from data.alert import AlertType, Condition
 from core.constants import DB_PATH
 

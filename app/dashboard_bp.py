@@ -38,7 +38,7 @@ def new_dashboard():
 @dashboard_bp.route("/dash")
 @route_log_alert
 def dash_page():
-    context = get_dashboard_context(current_app.data_locker)
+    context = get_dashboard_context(current_app.data_locker, current_app.system_core)
     return render_template("sonic_dashboard.html", **context)
 
 # ✅ NEW WALLET IMAGE MAP
@@ -133,7 +133,7 @@ def get_alert_icon(alert_type):
 @route_log_alert
 def api_graph_data():
     """Return portfolio snapshot totals for the history line chart."""
-    context = get_dashboard_context(current_app.data_locker)
+    context = get_dashboard_context(current_app.data_locker, current_app.system_core)
     graph = context.get("graph_data", {})
     return jsonify(graph)
 
@@ -234,7 +234,7 @@ def test_desktop_dashboard():
 
 @dashboard_bp.route("/api/dashboard_cards", methods=["GET"])
 def api_dashboard_cards():
-    context = get_dashboard_context(current_app.data_locker)
+    context = get_dashboard_context(current_app.data_locker, current_app.system_core)
     rendered_cards = render_template("dashboard_top.html", **context)
     return jsonify({"success": True, "html": rendered_cards})
 

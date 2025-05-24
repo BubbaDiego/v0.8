@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import uuid4
 from data.verify_alert_db_schema import verify_and_patch_schema
 from data.data_locker import DataLocker
-from alerts.alert_core import AlertCore
+from alert_core.alert_core import AlertCore
 from core.logging import log
 
 # Ensure schema exists BEFORE DataLocker instantiates

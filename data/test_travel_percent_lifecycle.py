@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime
 from uuid import uuid4
 from data_locker import DataLocker
-from alerts.alert_core import AlertCore
+from alert_core.alert_core import AlertCore
 from verify_alert_db_schema import verify_and_patch_schema
 from core.logging import log
 

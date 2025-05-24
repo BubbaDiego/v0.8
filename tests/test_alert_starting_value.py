@@ -4,7 +4,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from alerts.alert_repository import AlertRepository
+from alert_core.alert_repository import AlertRepository
 
 class MockDataLocker:
     def __init__(self):

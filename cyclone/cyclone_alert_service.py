@@ -3,20 +3,20 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from uuid import uuid4
 from data.alert import AlertType, Condition
-from alerts.alert_utils import log_alert_summary
+from alert_core.alert_utils import log_alert_summary
 from datetime import datetime
-from alerts.alert_enrichment_service import AlertEnrichmentService
-from alerts.alert_evaluation_service import AlertEvaluationService
+from alert_core.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_evaluation_service import AlertEvaluationService
 #from positions.positions_core_service import PositionsCoreService
 from positions.position_core_service import PositionCoreService
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService
 from uuid import uuid4
 from data.alert import AlertType, Condition
-from alerts.alert_utils import log_alert_summary
+from alert_core.alert_utils import log_alert_summary
 from datetime import datetime
 
 
-from alerts.alert_utils import normalize_alert_fields
+from alert_core.alert_utils import normalize_alert_fields
 from core.logging import log as logger
 
 

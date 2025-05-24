@@ -1,9 +1,9 @@
 
 import asyncio
 import random
-from alerts.alert_service import AlertService
-from alerts.alert_repository import AlertRepository
-from alerts.alert_enrichment_service import AlertEnrichmentService
+from alert_core.alert_service import AlertService
+from alert_core.alert_repository import AlertRepository
+from alert_core.alert_enrichment_service import AlertEnrichmentService
 from xcom.notification_service import NotificationService
 from data.alert import Alert, AlertType
 from utils.config_loader import load_config
