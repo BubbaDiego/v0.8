@@ -5,7 +5,7 @@ from core.logging import log
 class DLModifierManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLModifierManager initialized.", source="DLModifierManager")
+        log.debug("DLModifierManager initialized.", source="DLModifierManager")
 
     def ensure_table(self):
         cursor = self.db.get_cursor()
@@ -18,7 +18,7 @@ class DLModifierManager:
             )
         """)
         self.db.commit()
-        log.success("✅ modifiers table ensured", source="DLModifierManager")
+        log.debug("modifiers table ensured", source="DLModifierManager")
 
     def set_modifier(self, key: str, value: float, group: str = "heat_modifiers"):
         cursor = self.db.get_cursor()

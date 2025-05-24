@@ -6,7 +6,7 @@ from core.core_imports import log
 class DLPriceManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLPriceManager initialized.", source="DLPriceManager")
+        log.debug("DLPriceManager initialized.", source="DLPriceManager")
 
     def insert_price(self, price_data: dict):
         try:

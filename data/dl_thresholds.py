@@ -11,7 +11,7 @@ from datetime import datetime
 class DLThresholdManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLThresholdManager initialized.", source="DLThresholdManager")
+        log.debug("DLThresholdManager initialized.", source="DLThresholdManager")
 
     def get_all(self) -> list:
         cursor = self.db.get_cursor()

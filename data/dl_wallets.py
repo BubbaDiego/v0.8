@@ -19,7 +19,7 @@ from wallets.encryption import encrypt_key, decrypt_key
 class DLWalletManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLWalletManager initialized.", source="DLWalletManager")
+        log.debug("DLWalletManager initialized.", source="DLWalletManager")
 
     def create_wallet(self, wallet: dict):
         try:

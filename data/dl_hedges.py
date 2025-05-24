@@ -20,7 +20,7 @@ from core.core_imports import log
 class DLHedgeManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLHedgeManager initialized.", source="DLHedgeManager")
+        log.debug("DLHedgeManager initialized.", source="DLHedgeManager")
 
     def get_hedges(self) -> list:
         """Return a list of :class:`Hedge` objects from existing positions."""

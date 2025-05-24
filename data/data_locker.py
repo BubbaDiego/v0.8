@@ -55,7 +55,7 @@ class DataLocker:
         self.initialize_database()
         self._seed_modifiers_if_empty()
 
-        log.info("All DL managers bootstrapped successfully.", source="DataLocker")
+        log.debug("All DL managers bootstrapped successfully.", source="DataLocker")
 
     def initialize_database(self):
         """
@@ -215,7 +215,7 @@ class DataLocker:
         for name, ddl in table_defs.items():
             try:
                 cursor.execute(ddl)
-                log.success(f"✅ Table ensured: {name}", source="DataLocker")
+                log.debug(f"Table ensured: {name}", source="DataLocker")
             except Exception as e:
                 log.error(f"❌ Failed creating table {name}: {e}", source="DataLocker")
 
@@ -236,7 +236,7 @@ class DataLocker:
 
     def close(self):
         self.db.close()  # Hey
-        log.info("DataLocker shutdown complete.", source="DataLocker")
+        log.debug("DataLocker shutdown complete.", source="DataLocker")
 
     def get_latest_price(self, asset_type: str) -> dict:
         return self.prices.get_latest_price(asset_type)
@@ -316,7 +316,7 @@ class DataLocker:
                 with open(SONIC_SAUCE_PATH, "r", encoding="utf-8") as f:
                     data = f.read()
                 self.modifiers.import_from_json(data)
-                log.success("📦 Modifiers seeded from sonic_sauce.json", source="DataLocker")
+                log.debug("Modifiers seeded from sonic_sauce.json", source="DataLocker")
             except Exception as e:
                 log.error(f"❌ Failed seeding modifiers: {e}", source="DataLocker")
 

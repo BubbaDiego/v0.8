@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 class DLSystemDataManager:
     def __init__(self, db):
         self.db = db
-        log.info("DLSystemDataManager initialized.", source="DLSystemDataManager")
+        log.debug("DLSystemDataManager initialized.", source="DLSystemDataManager")
 
     # === Theme Mode ===
     def get_theme_mode(self) -> str:
