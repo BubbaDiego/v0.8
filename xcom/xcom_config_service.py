@@ -16,14 +16,28 @@ def _resolve_env(value, env_key):
 
 class XComConfigService:
     def __init__(self, dl_sys):
-        self.dl_sys = dl_sys  # Not used directly anymore
+        # dl_sys may be either a DataLocker or its DLSystemDataManager.
+        # It is stored for use when a Flask ``current_app`` context is not
+        # available.
+        self.dl_sys = dl_sys
 
     def get_provider(self, name: str) -> dict:
         try:
             locker = getattr(current_app, "data_locker", None)
+            # Fallback to the object passed into ``__init__`` when Flask
+            # context is unavailable. ``self.dl_sys`` can be either a
+            # DataLocker instance or already the DLSystemDataManager.
             if not locker or not hasattr(locker, "system"):
-                raise Exception("data_locker.system not available")
-            config = locker.system.get_var("xcom_providers") or {}
+                if hasattr(self.dl_sys, "get_var"):
+                    system_mgr = self.dl_sys
+                elif hasattr(self.dl_sys, "system") and hasattr(self.dl_sys.system, "get_var"):
+                    system_mgr = self.dl_sys.system
+                else:
+                    raise Exception("data_locker.system not available")
+            else:
+                system_mgr = locker.system
+
+            config = system_mgr.get_var("xcom_providers") or {}
             provider = config.get(name, {})
             # Fallback for email if missing/empty
             if name == "email" and (not provider or not provider.get("smtp")):
