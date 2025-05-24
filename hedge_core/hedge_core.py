@@ -41,7 +41,11 @@ class HedgeCore:
             return []
 
     def build_hedges(self, positions: Optional[List[dict]] = None) -> List[Hedge]:
-        """Build :class:`Hedge` objects from position records."""
+        """Build :class:`Hedge` objects from position records.
+
+        The returned hedge ID now matches the ``hedge_buddy_id`` used to link
+        positions so that consecutive calls yield consistent identifiers.
+        """
         if positions is None:
             positions = self.dl.positions.get_all_positions()
 
@@ -55,7 +59,8 @@ class HedgeCore:
         for key, group in hedge_groups.items():
             if len(group) < 2:
                 continue
-            hedge = Hedge(id=str(uuid4()))
+            # Use the hedge_buddy_id as the Hedge ID so lookups remain stable
+            hedge = Hedge(id=str(key))
             hedge.positions = [p.get("id") for p in group]
 
             total_long = total_short = long_heat = short_heat = 0.0

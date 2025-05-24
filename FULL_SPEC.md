@@ -1255,6 +1255,7 @@ HedgeCore(data_locker)
 - All logging is handled through the shared logger injected via `core.core_imports`. 【F:hedge_core/hedge_core.py†L24-L129】
 - Hedge detection relies solely on wallet/asset pairs and does not consider leverage or size weighting in this implementation.
 - `get_modifiers()` provides a simple pass-through to the data layer so external callers can inspect weighting factors.
+- Hedge IDs mirror the `hedge_buddy_id` used to link positions ensuring stable lookups across API calls.
 
 \n---\n
 # File: monitor/monitor_module_spec.md

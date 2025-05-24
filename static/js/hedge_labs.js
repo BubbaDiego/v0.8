@@ -42,7 +42,12 @@ function initSlider() {
   const shortLiq = parseFloat(short.liquidation_price) || 0;
   const longEntry = parseFloat(long.entry_price) || 0;
   const shortEntry = parseFloat(short.entry_price) || 0;
-  const current = longEntry && shortEntry ? (longEntry + shortEntry) / 2 : longEntry || shortEntry || 0;
+  const longCurrent = parseFloat(long.current_price) || longEntry;
+  const shortCurrent = parseFloat(short.current_price) || shortEntry;
+  const current =
+    longCurrent && shortCurrent
+      ? (longCurrent + shortCurrent) / 2
+      : longCurrent || shortCurrent || 0;
   slider.min = longLiq ? longLiq * 0.95 : current * 0.8;
   slider.max = shortLiq ? shortLiq * 1.05 : current * 1.2;
   slider.value = current;
@@ -67,7 +72,10 @@ function updateTable(data) {
     const row = data[type];
     if (!row) return;
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${type}</td><td>${row.value}</td><td>${row.travel_percent}</td><td>${row.heat_index}</td>`;
+    const value = typeof row.value === 'number' ? row.value.toFixed(2) : row.value;
+    const travel = typeof row.travel_percent === 'number' ? row.travel_percent.toFixed(2) : row.travel_percent;
+    const heat = typeof row.heat_index === 'number' ? row.heat_index.toFixed(2) : row.heat_index;
+    tr.innerHTML = `<td>${type}</td><td>${value}</td><td>${travel}</td><td>${heat}</td>`;
     body.appendChild(tr);
   });
   if (data.totals) {
