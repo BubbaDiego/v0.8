@@ -188,6 +188,12 @@ class DataLocker:
                     interval_seconds INTEGER NOT NULL
                 )
             """,
+            "global_config": """
+                CREATE TABLE IF NOT EXISTS global_config (
+                    key TEXT PRIMARY KEY,
+                    value TEXT
+                )
+            """,
             "system_vars": """
             CREATE TABLE IF NOT EXISTS system_vars (
     id TEXT PRIMARY KEY DEFAULT 'main',
@@ -212,6 +218,12 @@ class DataLocker:
                 log.success(f"✅ Table ensured: {name}", source="DataLocker")
             except Exception as e:
                 log.error(f"❌ Failed creating table {name}: {e}", source="DataLocker")
+
+        # Ensure a default row exists for system vars so lookups don't fail
+        try:
+            cursor.execute("INSERT OR IGNORE INTO system_vars (id) VALUES (1)")
+        except Exception as e:
+            log.error(f"❌ Failed initializing system_vars default row: {e}", source="DataLocker")
 
         self.db.commit()
 
