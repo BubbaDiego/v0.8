@@ -23,16 +23,12 @@
   </div>
   <div class="title-bar-actions d-flex align-items-center gap-3 ms-auto">
     <div class="config-bar d-flex align-items-center gap-2">
-      <div class="layout-toggle-group" id="layoutToggleGroup">
-        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="wide-mode" title="Wide Mode">🖥️</a>
-        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="fitted-mode" title="Fitted Mode">💻</a>
-        <a class="btn config-btn layout-btn" href="#" role="button" data-mode="mobile-mode" title="Mobile Mode">📱</a>
-      </div>
-      <div class="theme-toggle-group" id="themeToggleGroup">
-        <a class="btn config-btn theme-btn" href="#" role="button" data-theme="light" title="Light Theme">☀️</a>
-        <a class="btn config-btn theme-btn" href="#" role="button" data-theme="dark" title="Dark Theme">🌙</a>
-        <a class="btn config-btn theme-btn" href="#" role="button" data-theme="funky" title="Funky Theme">🎨</a>
-      </div>
+      <a id="layoutModeToggle" class="btn config-btn layout-toggle-btn" href="#" role="button" title="Switch View Mode">
+        <span id="currentLayoutIcon">🖥️</span>
+      </a>
+      <a id="themeModeToggle" class="btn config-btn theme-btn" href="#" role="button" title="Switch Theme">
+        <span id="currentThemeIcon">☀️</span>
+      </a>
     </div>
     <div class="cyclone-bar d-flex align-items-center gap-2 ms-3">
         <a class="btn nav-icon-btn cyclone-btn" href="#" role="button" data-action="sync"   title="Jupiter Sync"><span>🪐</span></a>

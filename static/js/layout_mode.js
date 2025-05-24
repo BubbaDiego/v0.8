@@ -2,7 +2,11 @@
 console.log('layout_mode.js loaded');
 const LAYOUT_MODES = ['wide-mode', 'fitted-mode', 'mobile-mode'];
 
-function setLayoutMode(mode) {
+const LAYOUT_ICONS = ['🖥️', '💻', '📱'];
+let layoutCurrent = 0;
+
+function setLayoutMode(idx) {
+
   document.body.classList.remove(...LAYOUT_MODES);
   document.body.classList.add(mode);
 
@@ -13,6 +17,7 @@ function setLayoutMode(mode) {
 
   localStorage.setItem('sonicLayoutMode', mode);
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const buttons = document.querySelectorAll('.layout-btn[data-mode]');
@@ -25,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const mode = btn.getAttribute('data-mode');
       setLayoutMode(mode);
+
     });
   });
 });
