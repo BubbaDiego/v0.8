@@ -1,12 +1,13 @@
 // Layout mode toggle script
 console.log('layout_mode.js loaded');
 const LAYOUT_MODES = ['wide-mode', 'fitted-mode', 'mobile-mode'];
+const LAYOUT_ICONS = ['🖥️', '💻', '📱'];
 let layoutCurrent = 0;
 function setLayoutMode(idx) {
   document.body.classList.remove(...LAYOUT_MODES);
   document.body.classList.add(LAYOUT_MODES[idx]);
-  const label = document.getElementById('currentLayoutMode');
-  if (label) label.innerText = LAYOUT_MODES[idx].replace('-mode', '');
+  const icon = document.getElementById('currentLayoutIcon');
+  if (icon) icon.innerText = LAYOUT_ICONS[idx];
   localStorage.setItem('sonicLayoutMode', idx);
 }
 document.addEventListener('DOMContentLoaded', function() {

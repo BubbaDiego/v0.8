@@ -115,6 +115,31 @@
   transform: scale(1.15);
 }
 
+.config-btn {
+  font-size: 1.2rem;
+  min-width: 27px;
+  min-height: 27px;
+  padding: 0.22rem 0.32rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.config-btn:hover {
+  background: transparent;
+  color: inherit;
+  border-color: transparent;
+  box-shadow: none;
+  transform: scale(1.15);
+}
+
+.config-btn.theme-btn {
+  border: none !important;
+  background: transparent !important;
+}
+
 /* Refresh Dial */
 .refresh-dial {
   position: relative;
