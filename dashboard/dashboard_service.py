@@ -199,6 +199,24 @@ def get_latest_xcom_monitor_history(dl):
     except Exception:
         return []
 
+def get_profit_badge_value(data_locker, system_core=None):
+    """Return the highest profit that meets the Profit threshold."""
+    try:
+        threshold_service = ThresholdService(data_locker.db)
+        profit_threshold = threshold_service.get_thresholds("Profit", "Position", "ABOVE")
+        if not profit_threshold:
+            return None
+
+        low_limit = profit_threshold.low
+        positions = PositionCore(data_locker).get_all_positions() or []
+        profits = [float(p.get("pnl_after_fees_usd") or 0.0) for p in positions]
+        above = [p for p in profits if p >= low_limit]
+        if above:
+            return round(max(above))
+    except Exception as e:
+        log.error(f"Profit badge calc failed: {e}", source="ProfitBadge")
+    return None
+
 def get_dashboard_context(data_locker, system_core=None):
 
     log.info("📊 Assembling dashboard context", source="DashboardContext")
@@ -215,18 +233,7 @@ def get_dashboard_context(data_locker, system_core=None):
     portfolio_limits = core_sys.get_portfolio_thresholds()
 
     # ---- Profit Badge Calculation ----
-    profit_badge_value = None
-    try:
-        threshold_service = ThresholdService(data_locker.db)
-        profit_threshold = threshold_service.get_thresholds("Profit", "Position", "ABOVE")
-        if profit_threshold:
-            low_limit = profit_threshold.low
-            profits = [float(p.get("pnl_after_fees_usd") or 0.0) for p in positions]
-            above = [p for p in profits if p >= low_limit]
-            if above:
-                profit_badge_value = round(max(above))
-    except Exception as e:
-        log.error(f"Profit badge calc failed: {e}", source="DashboardContext")
+    profit_badge_value = get_profit_badge_value(data_locker, core_sys)
 
     ls = data_locker.ledger
     ledger_info = {

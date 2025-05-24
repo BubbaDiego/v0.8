@@ -17,6 +17,7 @@ from flask_socketio import SocketIO
 from core.core_imports import log, configure_console_log, DB_PATH, BASE_DIR, retry_on_locked
 from data.data_locker import DataLocker
 from system.system_core import SystemCore
+from dashboard.dashboard_service import get_profit_badge_value
 
 # --- Monitor & Cyclone Core Integration ---
 from monitor.monitor_core import MonitorCore
@@ -123,6 +124,15 @@ def inject_theme_profile():
         return {"active_theme_profile": active_theme or {}}
     except Exception:
         return {"active_theme_profile": {}}
+
+# --- Context: Profit Badge ---
+@app.context_processor
+def inject_profit_badge():
+    try:
+        value = get_profit_badge_value(current_app.data_locker, current_app.system_core)
+        return {"profit_badge_value": value}
+    except Exception:
+        return {"profit_badge_value": None}
 
 # --- Server Entry Point ---
 if __name__ == "__main__":
