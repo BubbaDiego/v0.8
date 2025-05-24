@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Hedge Labs{% endblock %}
+
+{% block extra_styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+{% endblock %}
+
+{% block content %}
+{% include "title_bar.html" %}
+<div class="container-fluid p-3">
+  <h3 class="mb-3">🧪 Hedge Labs</h3>
+  <div class="mb-3">
+    <button id="linkHedgesBtn" class="btn btn-primary btn-sm me-2">Link Hedges</button>
+    <button id="unlinkHedgesBtn" class="btn btn-secondary btn-sm me-2">Unlink Hedges</button>
+    <button id="testCalcsBtn" class="btn btn-info btn-sm">Test Calcs</button>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Positions</th>
+        <th>Total Heat</th>
+      </tr>
+    </thead>
+    <tbody id="hedgeTableBody">
+      {% for h in hedges %}
+      <tr>
+        <td>{{ h.id }}</td>
+        <td>{{ h.positions|join(', ') }}</td>
+        <td>{{ h.total_heat_index }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/hedge_labs.js') }}"></script>
+<script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
+<script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
+{% endblock %}
