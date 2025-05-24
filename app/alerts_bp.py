@@ -12,7 +12,7 @@ from dashboard.dashboard_service import WALLET_IMAGE_MAP, DEFAULT_WALLET_IMAGE
 
 from flask import Blueprint, jsonify, render_template, render_template_string, request, session
 from data.data_locker import DataLocker
-from config.config_managerz import UnifiedConfigManager
+from config.config_loader import update_config as merge_config
 
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app'))
 ALERT_MONITOR_DIR = os.path.join(APP_DIR, 'alert_monitor')
@@ -273,8 +273,7 @@ def update_config():
         parsed = _parse_nested_form(form_data)
         parsed = convert_types_in_dict(parsed)
 
-        manager = UnifiedConfigManager(str(ALERT_LIMITS_PATH))
-        manager.update_config(parsed)
+        merge_config(parsed, str(ALERT_LIMITS_PATH))
 
         return jsonify({"success": True, "message": "Configuration updated"})
     except Exception as e:
