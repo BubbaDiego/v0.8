@@ -80,18 +80,22 @@ def apply_color(metric_name, value, limits):
         val = float(value)
         cond = str(thresholds.get("condition", "ABOVE")).upper()
 
+        high = thresholds.get("high")
+        med = thresholds.get("medium")
+        low = thresholds.get("low")
+
         if cond == "ABOVE":
-            return (
-                "red" if val >= thresholds.get("high") else
-                "yellow" if val >= thresholds.get("medium") else
-                "green"
-            )
+            if high is not None and val >= float(high):
+                return "red"
+            if med is not None and val >= float(med):
+                return "yellow"
+            return "green"
         elif cond == "BELOW":
-            return (
-                "red" if val <= thresholds.get("low") else
-                "yellow" if val <= thresholds.get("medium") else
-                "green"
-            )
+            if low is not None and val <= float(low):
+                return "red"
+            if med is not None and val <= float(med):
+                return "yellow"
+            return "green"
         else:
             return "green"
 
