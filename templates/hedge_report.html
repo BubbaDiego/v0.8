@@ -1,4 +1,5 @@
 
+
 {% extends "base.html" %}
 {% block title %}Hedge Report{% endblock %}
 
@@ -11,6 +12,7 @@
 
 {% block content %}
 {% include "title_bar.html" %}
+
 
 {% set hd = heat_data|default({}) %}
 
@@ -374,8 +376,10 @@ tfoot tr.text-center > td {
 
 {% endblock content %}
 
+
 {% block extra_scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
 <script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
 {% endblock %}
+
