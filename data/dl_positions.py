@@ -113,6 +113,12 @@ class DLPositionManager:
             log.debug(f"Fetched {len(rows)} positions", source="DLPositionManager")
             return [dict(row) for row in rows]
         except Exception as e:
+            err_msg = str(e)
+            if "database disk image is malformed" in err_msg or "file is not a database" in err_msg:
+                log.error(f"Error fetching positions: {e}", source="DLPositionManager")
+                log.warning("Database appears corrupt. Attempting recovery...", source="DLPositionManager")
+                self.db.recover_database()
+                return []
             log.error(f"Error fetching positions: {e}", source="DLPositionManager")
             return []
 
