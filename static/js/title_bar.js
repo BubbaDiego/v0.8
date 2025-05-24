@@ -79,9 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function setTheme(idx) {
     const theme = THEMES[idx];
     if (theme === "light") {
-      document.body.removeAttribute("data-theme");
+      // Apply theme on <html> so CSS :root selectors work
+      document.documentElement.removeAttribute("data-theme");
     } else {
-      document.body.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-theme", theme);
     }
     localStorage.setItem("dashboardTheme", theme);
     const icon = document.getElementById("currentThemeIcon");
