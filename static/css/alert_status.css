@@ -85,3 +85,25 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
   background: var(--container-bg);
   box-sizing: border-box;
 }
+
+/* Color coding for alert levels */
+.alert-bars .level-normal .liq-bar-fill,
+.alert-bars .level-normal .liq-flame-container {
+  background: #007bff;
+}
+
+.alert-bars .level-low .liq-bar-fill,
+.alert-bars .level-low .liq-flame-container {
+  background: #28a745;
+}
+
+.alert-bars .level-medium .liq-bar-fill,
+.alert-bars .level-medium .liq-flame-container {
+  background: #ffc107;
+  color: #000;
+}
+
+.alert-bars .level-high .liq-bar-fill,
+.alert-bars .level-high .liq-flame-container {
+  background: #dc3545;
+}
