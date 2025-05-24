@@ -88,7 +88,7 @@ def system_metadata():
 @system_bp.route("/wallets", methods=["GET"])
 def list_wallets():
     core = get_core()
-    wallets = core.wallets.list_wallets()
+    wallets = core.wallet_core.load_wallets()
     return render_template("wallets/wallet_list.html", wallets=wallets)
 
 
