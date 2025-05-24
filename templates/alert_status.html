@@ -58,7 +58,7 @@
               <td class="left">{{ alert.level }}</td>
               <td class="left">{{ alert.status }}</td>
               {% set wallet_img = alert.wallet_image %}
-              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://')) %}
+              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://') or wallet_img.startswith('/static/')) %}
                 <td class="left"><img class="wallet-icon" src="{{ wallet_img }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
               {% else %}
                 <td class="left"><img class="wallet-icon" src="{{ url_for('static', filename=wallet_img if wallet_img else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}"><span style="display:none">{{ alert.wallet_name or 'N/A' }}</span></td>
@@ -80,9 +80,9 @@
       {% if alerts %}
         {% for alert in alerts %}
           {% if alert.travel_percent is defined and alert.travel_percent is not none %}
-            <div class="liq-row" data-alert-id="{{ alert.id }}">
+            <div class="liq-row level-{{ alert.level|lower }}" data-alert-id="{{ alert.id }}">
               {% set wallet_img = alert.wallet_image %}
-              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://')) %}
+              {% if wallet_img and (wallet_img.startswith('http://') or wallet_img.startswith('https://') or wallet_img.startswith('/static/')) %}
               <img class="wallet-icon" src="{{ wallet_img }}" alt="{{ alert.wallet_name or alert.asset }}" />
               {% else %}
               <img class="wallet-icon" src="{{ url_for('static', filename=wallet_img if wallet_img else 'images/' + alert.asset_image) }}" alt="{{ alert.wallet_name or alert.asset }}" />
