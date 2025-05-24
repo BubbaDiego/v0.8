@@ -15,6 +15,7 @@ Dependencies:
 import sys
 import os
 import json
+import sqlite3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data.database import DatabaseManager
 from data.dl_alerts import DLAlertManager
@@ -222,7 +223,19 @@ class DataLocker:
         except Exception as e:
             log.error(f"❌ Failed initializing system_vars default row: {e}", source="DataLocker")
 
-        self.db.commit()
+        try:
+            self.db.commit()
+        except sqlite3.DatabaseError as e:  # pragma: no cover - rare corruption case
+            if "malformed" in str(e) or "file is not a database" in str(e):
+                log.error(
+                    f"❌ Database corruption detected: {e}. Recreating database.",
+                    source="DataLocker",
+                )
+                self.db.recover_database()
+                # Retry initialization on a fresh DB
+                self.initialize_database()
+            else:
+                raise
 
     # Inside DataLocker class
     def read_positions(self):
