@@ -48,9 +48,14 @@ function initSlider() {
     longCurrent && shortCurrent
       ? (longCurrent + shortCurrent) / 2
       : longCurrent || shortCurrent || 0;
-  slider.min = longLiq ? longLiq * 0.95 : current * 0.8;
-  slider.max = shortLiq ? shortLiq * 1.05 : current * 1.2;
-  slider.value = current;
+
+  let min = longLiq ? longLiq * 0.95 : current * 0.8;
+  let max = shortLiq ? shortLiq * 1.05 : current * 1.2;
+  if (min > max) [min, max] = [max, min];
+  slider.min = min;
+  slider.max = max;
+  const clamped = Math.min(Math.max(current, min), max);
+  slider.value = clamped;
   document.getElementById('priceValue').textContent = 'Price: $' + current.toFixed(2);
 }
 
