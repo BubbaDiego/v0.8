@@ -13,6 +13,7 @@ REQUIRED_TABLES = {
         pnl_after_fees_usd REAL,
         travel_percent REAL,
         liquidation_distance REAL
+        ,status TEXT DEFAULT 'ACTIVE'
     )
     """,
     "alerts": """
