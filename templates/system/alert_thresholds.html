@@ -13,6 +13,20 @@
 {% include "title_bar.html" %}
 <div class="container-fluid pt-4">
   <h2 class="mb-4"><i class="fas fa-ruler me-2"></i>Alert Thresholds</h2>
+  {% set type_icons = {
+    'pricethreshold': '💵',
+    'deltachange': '📊',
+    'travelpercentliquid': '🚨',
+    'time': '⏰',
+    'profit': '💰',
+    'heatindex': '🔥',
+    'totalvalue': '💰',
+    'totalsize': '📦',
+    'avgleverage': '🎚️',
+    'valuetocollateralratio': '⚖️',
+    'avgtravelpercent': '🚀',
+    'totalheat': '🔥'
+  } %}
 
   {% for alert_class, items in grouped_thresholds.items() %}
   <div class="card mb-4">
@@ -39,7 +53,7 @@
         <tbody>
           {% for t in items %}
           <tr data-id="{{ t.id }}">
-            <td>{{ t.alert_type }}</td>
+            <td>{{ type_icons.get(t.alert_type|lower, '❓') }}</td>
             <td>{{ t.metric_key }}</td>
             <td>{{ t.condition }}</td>
             <td><input type="number" class="form-control form-control-sm" name="low" value="{{ t.low_val }}"></td>
