@@ -58,25 +58,43 @@ ALERT_KEY_ALIASES = {
 }
 
 def apply_color(metric_name, value, limits):
+    """Return a color string based on metric thresholds.
+
+    The logic mirrors the front-end card logic and respects the threshold
+    condition (``"ABOVE"`` or ``"BELOW"``).  Values above ``high`` trigger
+    ``red`` while those between ``medium`` and ``high`` trigger ``yellow``
+    when the condition is ``"ABOVE"``.  For ``"BELOW"`` the comparisons are
+    inverted.
+    """
     try:
         thresholds = limits.get(metric_name.lower())
         if thresholds is None:
-            matched_key = fuzzy_match_key(metric_name, limits, aliases=ALERT_KEY_ALIASES, threshold=40.0)
+            matched_key = fuzzy_match_key(metric_name, limits,
+                                          aliases=ALERT_KEY_ALIASES,
+                                          threshold=40.0)
             thresholds = limits.get(matched_key)
-        if thresholds is None or value is None:
+
+        if not thresholds or value is None:
             return "red"
+
         val = float(value)
-        if metric_name.lower() == "travel":
+        cond = str(thresholds.get("condition", "ABOVE")).upper()
+
+        if cond == "ABOVE":
             return (
-                "green" if val >= thresholds["low"] else
-                "yellow" if val >= thresholds["medium"] else
-                "red"
+                "red" if val >= thresholds.get("high") else
+                "yellow" if val >= thresholds.get("medium") else
+                "green"
             )
-        return (
-            "green" if val <= thresholds["low"] else
-            "yellow" if val <= thresholds["medium"] else
-            "red"
-        )
+        elif cond == "BELOW":
+            return (
+                "red" if val <= thresholds.get("low") else
+                "yellow" if val <= thresholds.get("medium") else
+                "green"
+            )
+        else:
+            return "green"
+
     except Exception as e:
         log.error(f"apply_color failed: {e}", source="DashboardContext")
         return "red"
