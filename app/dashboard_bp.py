@@ -227,9 +227,10 @@ def test_desktop_dashboard():
             "size": {"low": 1000, "medium": 5000, "high": 10000},
             "ratio": {"low": 1.1, "medium": 1.5, "high": 2.0},
             "travel": {"low": -10.0, "medium": -5.0, "high": 0.0},
-        }
+        },
+        "profit_badge_value": 123
     }
-    return render_template("dashboard.html", **mock_context)
+    return render_template("sonic_dashboard.html", **mock_context)
 
 @dashboard_bp.route("/api/dashboard_cards", methods=["GET"])
 def api_dashboard_cards():
