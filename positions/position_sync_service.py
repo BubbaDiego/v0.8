@@ -4,6 +4,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from datetime import datetime
 import requests
+import time
 from core.logging import log
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
@@ -18,6 +19,27 @@ class PositionSyncService:
         "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs": "ETH",
         "So11111111111111111111111111111111111111112": "SOL"
     }
+
+    def _request_with_retries(self, url: str, attempts: int = 3, delay: float = 1.0):
+        """Return a requests.Response object with simple retry logic."""
+        headers = {"User-Agent": "Cyclone/PositionSyncService"}
+        for attempt in range(1, attempts + 1):
+            try:
+                res = requests.get(url, headers=headers, timeout=10)
+                log.debug(
+                    f"📡 Attempt {attempt} → status {res.status_code}",
+                    source="JupiterAPI",
+                )
+                res.raise_for_status()
+                return res
+            except requests.RequestException as e:
+                log.error(
+                    f"[{attempt}/{attempts}] Request error: {e}",
+                    source="JupiterAPI",
+                )
+                if attempt == attempts:
+                    raise
+                time.sleep(delay * attempt)
 
     def run_full_jupiter_sync(self, source="user") -> dict:
         from positions.hedge_manager import HedgeManager
@@ -145,12 +167,11 @@ class PositionSyncService:
 
                 try:
                     url = f"https://perps-api.jup.ag/v1/positions?walletAddress={pub}&showTpslRequests=true"
-                    res = requests.get(url)
+                    res = self._request_with_retries(url)
 
                     log.debug(f"🌐 [{name}] Jupiter API status: {res.status_code}", source="JupiterAPI")
                     log.debug(f"📝 Response Body:\n{res.text}", source="JupiterAPI")
 
-                    res.raise_for_status()
                     data_list = res.json().get("dataList", [])
                     log.info(f"📊 {name} → {len(data_list)} Jupiter positions", source="PositionSyncService")
 
