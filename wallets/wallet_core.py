@@ -22,6 +22,8 @@ from solana.publickey import PublicKey
 from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
 
+from wallets.check_wallet_balance_service import CheckWalletBalanceService
+
 from wallets.wallet_service import WalletService
 from wallets.wallet import Wallet
 from core.logging import log
@@ -36,6 +38,7 @@ class WalletCore:
         self.service = WalletService()
         self.rpc_endpoint = rpc_endpoint
         self.client = Client(rpc_endpoint)
+        self.balance_service = CheckWalletBalanceService()
         log.debug(f"WalletCore initialized with RPC {rpc_endpoint}", source="WalletCore")
 
     # ------------------------------------------------------------------
@@ -44,7 +47,12 @@ class WalletCore:
     def load_wallets(self) -> List[Wallet]:
         """Return all wallets from the repository as dataclass objects."""
         wallets_out = self.service.list_wallets()
-        return [Wallet(**w.dict()) for w in wallets_out]
+        wallets = [Wallet(**w.dict()) for w in wallets_out]
+        for w in wallets:
+            bal = self.balance_service.get_balance(w.public_address)
+            if bal is not None:
+                w.balance = bal
+        return wallets
 
     def set_rpc_endpoint(self, endpoint: str) -> None:
         """Switch to a different Solana RPC endpoint."""
