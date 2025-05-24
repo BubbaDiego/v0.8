@@ -130,11 +130,8 @@ class PositionSyncService:
         try:
             log.info(f"📁 Writing to DB: {self.dl.db.db_path}", source="PositionSyncService")
 
-            wallets = [{
-                "public_address": "6vMjsGU63evYuwwGsDHBRnKs1stALR7SYN5V57VZLXca",
-                "name": "TestWallet"
-            }]
-            log.warning(f"🚨 OVERRIDE: Using test wallet for sync", source="PositionSyncService")
+            wallets = self.dl.read_wallets()
+            log.info(f"🔍 Loaded {len(wallets)} wallets for sync", source="PositionSyncService")
 
             new_positions = []
 
