@@ -101,6 +101,12 @@ def hedge_calculator_redirect():
     """Redirect to the Hedge Calculator page within the system blueprint."""
     return redirect(url_for("system.hedge_calculator_page"))
 
+# --- Hedge Report Redirect ---
+@app.route("/hedge_report")
+def hedge_report_redirect():
+    """Redirect to the Hedge Report page within the system blueprint."""
+    return redirect(url_for("system.hedge_report_page"))
+
 if "dashboard.index" in app.view_functions:
     app.add_url_rule("/dashboard", endpoint="dash", view_func=app.view_functions["dashboard.index"])
 

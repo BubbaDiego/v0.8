@@ -446,6 +446,65 @@ def hedge_calculator_page():
         return jsonify({"error": str(e)}), 500
 
 
+@system_bp.route("/hedge_report", methods=["GET"])
+def hedge_report_page():
+    """Render the hedge report page with aggregated long/short data."""
+    try:
+        core = PositionCore(current_app.data_locker)
+        positions = core.get_all_positions() or []
+
+        def build(group_positions, asset_name):
+            from calc_core.calc_services import CalcServices
+            totals = CalcServices().calculate_totals(group_positions)
+            return {
+                "asset": asset_name,
+                "collateral": totals.get("total_collateral", 0.0),
+                "value": totals.get("total_value", 0.0),
+                "leverage": totals.get("avg_leverage", 0.0),
+                "travel_percent": totals.get("avg_travel_percent", 0.0),
+                "size": totals.get("total_size", 0.0),
+            }
+
+        heat_data = {}
+        assets = ["BTC", "ETH", "SOL"]
+        for asset in assets:
+            asset_positions = [
+                p
+                for p in positions
+                if str(p.get("asset_type", "")).upper() == asset
+            ]
+            longs = [
+                p
+                for p in asset_positions
+                if str(p.get("position_type", "")).upper() == "LONG"
+            ]
+            shorts = [
+                p
+                for p in asset_positions
+                if str(p.get("position_type", "")).upper() == "SHORT"
+            ]
+            data = {}
+            if longs:
+                data["long"] = build(longs, asset)
+            if shorts:
+                data["short"] = build(shorts, asset)
+            if data:
+                heat_data[asset] = data
+
+        longs_all = [p for p in positions if str(p.get("position_type", "")).upper() == "LONG"]
+        shorts_all = [p for p in positions if str(p.get("position_type", "")).upper() == "SHORT"]
+        totals = {}
+        if shorts_all:
+            totals["short"] = build(shorts_all, "Short")
+        if longs_all:
+            totals["long"] = build(longs_all, "Long")
+        heat_data["totals"] = totals
+
+        return render_template("hedge_report.html", heat_data=heat_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @system_bp.route("/xcom_config", methods=["GET"])
 def xcom_config_page():
     dl = current_app.data_locker
