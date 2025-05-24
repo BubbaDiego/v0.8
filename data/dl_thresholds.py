@@ -52,6 +52,14 @@ class DLThresholdManager:
                 if k in fields and isinstance(fields[k], list):
                     fields[k] = ",".join(fields[k])
 
+            # Filter out fields not present in DB schema
+            cursor = self.db.get_cursor()
+            cols = getattr(self, "_cols", None)
+            if cols is None:
+                cols = {row[1] for row in cursor.execute("PRAGMA table_info(alert_thresholds)")}
+                self._cols = cols
+            fields = {k: v for k, v in fields.items() if k in cols}
+
             # Set last_modified
             fields["last_modified"] = datetime.now(timezone.utc).isoformat()
             fields["id"] = threshold_id

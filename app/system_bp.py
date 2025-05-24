@@ -626,6 +626,31 @@ def update_alert_threshold(id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+# === POST: Update all thresholds ===
+@system_bp.route("/alert_thresholds/update_all", methods=["POST"])
+def update_all_alert_thresholds():
+    try:
+        payload = request.get_json(force=True)
+        if not isinstance(payload, list):
+            return (
+                jsonify({"success": False, "error": "Expected a list of thresholds"}),
+                400,
+            )
+
+        db = current_app.data_locker.db
+        dl_mgr = DLThresholdManager(db)
+        updated = 0
+        for item in payload:
+            tid = item.get("id")
+            if not tid:
+                continue
+            dl_mgr.update(tid, item)
+            updated += 1
+        return jsonify({"success": True, "updated": updated})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @system_bp.route("/alert_thresholds/export", methods=["GET"])
 def export_alert_thresholds():
     db = current_app.data_locker.db
