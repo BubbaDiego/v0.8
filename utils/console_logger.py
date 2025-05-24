@@ -10,6 +10,7 @@ import json
 import time
 import inspect
 from datetime import datetime
+from contextlib import contextmanager
 
 
 
@@ -99,8 +100,8 @@ class ConsoleLogger:
             print(f"[🧠 LOGGING DEBUG] caller='{caller_module}' source='{source}' → effective='{effective_source}'")
             print(f"                └─ FINAL DECISION: ✅ allowed")
 
-        color = cls.COLORS.get(level, "")
-        icon = cls.ICONS.get(level, "")
+        color = cls.COLORS.get(level, cls.COLORS["info"])
+        icon = cls.ICONS.get(level, cls.ICONS.get("info", ""))
         endc = cls.COLORS["endc"]
         timestamp = cls._timestamp()
         label = f"{icon} {message} :: [{effective_source}] @ {timestamp}"
@@ -119,7 +120,9 @@ class ConsoleLogger:
             except Exception as e:
                 inline_payload = f" [payload processing error: {e}]"
 
-        print(f"{color}{label}{inline_payload}{endc}")
+        # Reset any prior color codes before applying our own to ensure
+        # messages are not inadvertently tinted from earlier output.
+        print(f"{endc}{color}{label}{inline_payload}{endc}")
 
     @classmethod
     def info(cls, message: str, source: str = None, payload: dict = None):
