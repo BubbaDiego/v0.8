@@ -251,8 +251,18 @@ def get_dashboard_context(data_locker):
 
     for snap in snapshots:
         timestamps.append(snap.get("snapshot_time"))
-        values.append(float(snap.get("total_value", 0)))
-        collateral.append(float(snap.get("total_collateral", 0)))
+        values.append(int(round(float(snap.get("total_value", 0)))) )
+        collateral.append(int(round(float(snap.get("total_collateral", 0)))) )
+
+    current_value_int = int(round(totals["total_value"]))
+    if values:
+        if values[-1] != current_value_int:
+            values[-1] = current_value_int
+
+    current_collateral_int = int(round(totals["total_collateral"]))
+    if collateral:
+        if collateral[-1] != current_collateral_int:
+            collateral[-1] = current_collateral_int
 
     graph_data = {
         "timestamps": timestamps,

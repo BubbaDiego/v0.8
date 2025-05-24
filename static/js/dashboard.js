@@ -40,6 +40,11 @@ function renderGraph(data) {
       categories: data.timestamps,
       labels: { show: false }
     },
+    yaxis: {
+      labels: {
+        formatter: val => Math.round(val)
+      }
+    },
     colors: ["#3498db", "#2ecc71"],
     grid: { borderColor: "#444" },
     stroke: { curve: "smooth" },

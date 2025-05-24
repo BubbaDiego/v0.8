@@ -25,6 +25,11 @@ function renderLineChart(data) {
       type: 'datetime',
       categories: data.timestamps
     },
+    yaxis: {
+      labels: {
+        formatter: val => Math.round(val)
+      }
+    },
     colors: ['#2980b9', '#27ae60'],
     stroke: { curve: 'smooth' },
     tooltip: { x: { format: 'yyyy-MM-dd HH:mm' } }
