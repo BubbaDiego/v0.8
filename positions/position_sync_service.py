@@ -6,6 +6,7 @@ from datetime import datetime
 import requests
 import time
 from core.logging import log
+from core.constants import JUPITER_API_BASE
 from data.data_locker import DataLocker
 from positions.position_enrichment_service import PositionEnrichmentService
 from calc_core.calculation_core import CalculationCore
@@ -166,7 +167,7 @@ class PositionSyncService:
                     continue
 
                 try:
-                    url = f"https://perps-api.jup.ag/v1/positions?walletAddress={pub}&showTpslRequests=true"
+                    url = f"{JUPITER_API_BASE}/v1/positions?walletAddress={pub}&showTpslRequests=true"
                     res = self._request_with_retries(url)
 
                     log.debug(f"🌐 [{name}] Jupiter API status: {res.status_code}", source="JupiterAPI")

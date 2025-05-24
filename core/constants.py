@@ -66,6 +66,11 @@ DATA_PROVIDER_ADDR = "0x69C7C30F2D9A9355Ab0F2F05aF28805F131B18C9"
 LIQUIDATION_DATA_ADDR = "0xABCDEFabcdefABCDEFabcdefABCDEFabcdefABCD"
 
 # -----------------------------
+# ☄️ Jupiter API
+# -----------------------------
+JUPITER_API_BASE = os.getenv("JUPITER_API_BASE", "https://perps-api.jup.ag")
+
+# -----------------------------
 # 🧪 Contract ABIs
 # -----------------------------
 POOL_ABI = []

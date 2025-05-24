@@ -105,7 +105,7 @@ Internal Method
 update_jupiter_positions() → dict
 Loops through wallets
 
-Hits Jupiter API: https://perps-api.jup.ag/v1/positions
+Hits Jupiter API: `${JUPITER_API_BASE}/v1/positions`
 
 Maps and inserts valid positions
 

@@ -36,7 +36,10 @@ TWILIO_FROM_PHONE=+1987654321
 TWILIO_TO_PHONE=+1234567890
 # Optional
 TWILIO_FLOW_SID=your_flow_sid_here
+JUPITER_API_BASE=https://perps-api.jup.ag
 ```
+
+`JUPITER_API_BASE` lets you override the default Jupiter endpoint if it changes.
 
 ## Twilio Monitor
 
