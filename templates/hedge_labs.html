@@ -12,31 +12,42 @@
 {% include "title_bar.html" %}
 <div class="container-fluid p-3">
   <h3 class="mb-3">🧪 Hedge Labs</h3>
-  <div class="mb-3">
-    <button id="linkHedgesBtn" class="btn btn-primary btn-sm me-2">Link Hedges</button>
-    <button id="unlinkHedgesBtn" class="btn btn-secondary btn-sm me-2">Unlink Hedges</button>
-    <button id="testCalcsBtn" class="btn btn-info btn-sm">Test Calcs</button>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <strong><span class="me-1">🦔</span>Hedges</strong>
+    </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <button id="linkHedgesBtn" class="btn btn-primary btn-sm me-2">Link Hedges</button>
+        <button id="unlinkHedgesBtn" class="btn btn-secondary btn-sm me-2">Unlink Hedges</button>
+        <button id="testCalcsBtn" class="btn btn-info btn-sm">Test Calcs</button>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Positions</th>
+            <th>Total Heat</th>
+          </tr>
+        </thead>
+        <tbody id="hedgeTableBody">
+          {% for h in hedges %}
+          <tr>
+            <td>{{ h.id }}</td>
+            <td>{{ h.positions|join(', ') }}</td>
+            <td>{{ h.total_heat_index }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Positions</th>
-        <th>Total Heat</th>
-      </tr>
-    </thead>
-    <tbody id="hedgeTableBody">
-      {% for h in hedges %}
-      <tr>
-        <td>{{ h.id }}</td>
-        <td>{{ h.positions|join(', ') }}</td>
-        <td>{{ h.total_heat_index }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 
   <div class="card mt-4">
+    <div class="card-header">
+      <strong><span class="me-1">🧮</span>Calculator</strong>
+    </div>
     <div class="card-body">
       <div class="row mb-3">
         <div class="col-md-4">
@@ -57,11 +68,11 @@
       <table class="table table-sm" id="evalTable">
         <thead>
           <tr>
-            <th>Position</th>
-            <th>Value</th>
-            <th>Travel %</th>
-            <th>Liq&nbsp;Dist</th>
-            <th>Heat</th>
+            <th><i class="fas fa-map-marker-alt me-1"></i>Position</th>
+            <th><i class="fas fa-dollar-sign me-1"></i>Value</th>
+            <th><i class="fas fa-route me-1"></i>Travel %</th>
+            <th><i class="fas fa-ruler me-1"></i>Liq&nbsp;Dist</th>
+            <th><i class="fas fa-fire me-1"></i>Heat</th>
           </tr>
         </thead>
         <tbody></tbody>
