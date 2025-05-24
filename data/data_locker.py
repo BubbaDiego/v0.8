@@ -15,6 +15,7 @@ Dependencies:
 import sys
 import os
 import json
+import sqlite3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data.database import DatabaseManager
 from data.dl_alerts import DLAlertManager
@@ -50,6 +51,7 @@ class DataLocker:
         self.initialize_database()
         self._seed_modifiers_if_empty()
         self._seed_wallets_if_empty()
+        self._seed_thresholds_if_empty()
 
         log.debug("All DL managers bootstrapped successfully.", source="DataLocker")
 
@@ -222,7 +224,19 @@ class DataLocker:
         except Exception as e:
             log.error(f"❌ Failed initializing system_vars default row: {e}", source="DataLocker")
 
-        self.db.commit()
+        try:
+            self.db.commit()
+        except sqlite3.DatabaseError as e:  # pragma: no cover - rare corruption case
+            if "malformed" in str(e) or "file is not a database" in str(e):
+                log.error(
+                    f"❌ Database corruption detected: {e}. Recreating database.",
+                    source="DataLocker",
+                )
+                self.db.recover_database()
+                # Retry initialization on a fresh DB
+                self.initialize_database()
+            else:
+                raise
 
     # Inside DataLocker class
     def read_positions(self):
@@ -340,6 +354,22 @@ class DataLocker:
                     )
                 except Exception as e:
                     log.error(f"❌ Failed seeding wallets: {e}", source="DataLocker")
+
+    def _seed_thresholds_if_empty(self):
+        """Seed alert_thresholds table with defaults if empty."""
+        cursor = self.db.get_cursor()
+        count = cursor.execute("SELECT COUNT(*) FROM alert_thresholds").fetchone()[0]
+        if count == 0:
+            try:
+                from data.threshold_seeder import AlertThresholdSeeder
+                seeder = AlertThresholdSeeder(self.db)
+                created, updated = seeder.seed_all()
+                log.debug(
+                    f"Alert thresholds seeded: {created} created, {updated} updated",
+                    source="DataLocker",
+                )
+            except Exception as e:
+                log.error(f"❌ Failed seeding alert thresholds: {e}", source="DataLocker")
 
 
     def get_all_tables_as_dict(self) -> dict:
