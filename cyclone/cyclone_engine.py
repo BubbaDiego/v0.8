@@ -101,6 +101,15 @@ class Cyclone:
         except Exception as e:
             log.error(f"📉 Market Updates crashed: {e}", source="Cyclone")
 
+    async def run_position_updates(self):
+        """Sync positions from Jupiter wallets."""
+        log.info("Starting Position Updates", source="Cyclone")
+        try:
+            await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
+            log.success("🪐 Position updates completed", source="Cyclone")
+        except Exception as e:
+            log.error(f"Position Updates crashed: {e}", source="Cyclone")
+
     async def run_composite_position_pipeline(self):
         await asyncio.to_thread(self.position_core.update_positions_from_jupiter)
 
