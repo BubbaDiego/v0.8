@@ -177,3 +177,49 @@ class CalcServices:
             if lower <= value < upper:
                 return color
         return "red"
+
+    # ------------------------------------------------------------------
+    # Price evaluation helpers
+    # ------------------------------------------------------------------
+    def value_at_price(self, position: dict, price: float) -> float:
+        """Return the position value using ``price`` as the current price."""
+        size = float(position.get("size", 0.0))
+        return round(size * price, 2)
+
+    def travel_percent_at_price(self, position: dict, price: float) -> float:
+        """Calculate travel percent at a given ``price``."""
+        return self.calculate_travel_percent(
+            position.get("position_type", "LONG"),
+            float(position.get("entry_price", 0.0)),
+            price,
+            float(position.get("liquidation_price", 0.0)),
+        )
+
+    def liquid_distance_at_price(self, position: dict, price: float) -> float:
+        """Liquidation distance using ``price`` as the current price."""
+        return self.calculate_liquid_distance(
+            price, float(position.get("liquidation_price", 0.0))
+        )
+
+    def heat_index_at_price(self, position: dict, price: float) -> Optional[float]:
+        """Composite heat index if the position were at ``price``."""
+        pos_copy = dict(position)
+        pos_copy["current_price"] = price
+        pos_copy.setdefault(
+            "leverage",
+            self.calculate_leverage(
+                float(position.get("size", 0.0)),
+                float(position.get("collateral", 0.0)),
+            ),
+        )
+        return self.calculate_composite_risk_index(pos_copy) or 0.0
+
+    def evaluate_at_price(self, position: dict, price: float) -> dict:
+        """Return multiple metrics for ``position`` evaluated at ``price``."""
+        return {
+            "value": self.value_at_price(position, price),
+            "travel_percent": self.travel_percent_at_price(position, price),
+            "liquidation_distance": self.liquid_distance_at_price(position, price),
+            "heat_index": self.heat_index_at_price(position, price),
+        }
+
