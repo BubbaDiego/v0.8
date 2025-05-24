@@ -1,0 +1,22 @@
+/* Parallax effect for Sonic Dashboard page */
+body.dashboard-parallax {
+  background-image: url('/static/images/cityscape3.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+body.dashboard-parallax::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  transform: translateZ(-1px) scale(1.5);
+  z-index: -1;
+  pointer-events: none;
+}
