@@ -366,10 +366,25 @@ class DataLocker:
                 created, updated = seeder.seed_all()
                 log.debug(
                     f"Alert thresholds seeded: {created} created, {updated} updated",
+
                     source="DataLocker",
                 )
             except Exception as e:
                 log.error(f"❌ Failed seeding alert thresholds: {e}", source="DataLocker")
+
+                try:
+                    from system.death_nail_service import DeathNailService
+                    DeathNailService(log).trigger({
+                        "message": "💀 Failed to seed alert thresholds",
+                        "level": "HIGH",
+                        "payload": {"error": str(e)},
+                    })
+                except Exception as death_e:
+                    log.error(
+                        f"❌ Death nail trigger failed: {death_e}",
+                        source="DataLocker",
+                    )
+
 
 
     def get_all_tables_as_dict(self) -> dict:
