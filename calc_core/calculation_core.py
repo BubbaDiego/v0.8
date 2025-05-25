@@ -71,18 +71,15 @@ class CalculationCore:
                 ]:
                     cursor.execute(f"UPDATE positions SET {field} = ? WHERE id = ?", (val, pos_id))
 
-                if entry_price > 0:
-                    token_count = size / entry_price
-                    pnl = (current_price - entry_price) * token_count if position_type == "LONG" else (entry_price - current_price) * token_count
-                else:
-                    pnl = 0.0
-
-                pos["value"] = round(collateral + pnl, 2)
+                pos["value"] = self.calc_services.calculate_value(pos)
                 pos["leverage"] = round(size / collateral, 2) if collateral > 0 else 0.0
                 heat_index = self.calc_services.calculate_composite_risk_index(pos) or 0.0
                 pos["heat_index"] = pos["current_heat_index"] = heat_index
 
-                cursor.execute("UPDATE positions SET heat_index = ?, current_heat_index = ? WHERE id = ?", (heat_index, heat_index, pos_id))
+                cursor.execute(
+                    "UPDATE positions SET value = ?, heat_index = ?, current_heat_index = ? WHERE id = ?",
+                    (pos["value"], heat_index, heat_index, pos_id),
+                )
                 log.success("Updated DB for position", "aggregate_positions_and_update", {"id": pos_id, "heat_index": heat_index})
 
             except Exception as e:
