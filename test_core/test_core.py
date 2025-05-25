@@ -25,7 +25,12 @@ class TestCore:
     def run_glob(self, pattern: str | None = None) -> None:
         """Discover test files matching *pattern* and run them."""
         pattern = pattern or self.default_pattern
-        files = [p for p in Path(".").rglob(pattern)]
+        files = [
+            p
+            for p in Path(".").rglob(pattern)
+            # Exclude common virtual environment directories
+            if not any(part in {".venv", "venv", "site-packages"} for part in p.parts)
+        ]
         if not files:
             log.warning(f"⚠️ No test files found for pattern: {pattern}", source="TestCore")
             return
