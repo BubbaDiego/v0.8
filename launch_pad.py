@@ -14,9 +14,7 @@ from time import time as timer_time
 
 from test_core import TestCore
 from utils.schema_validation_service import SchemaValidationService
-from tests.verification_console import VerificationConsole
 from core.core_imports import log
-from test_core import TestCore
 
 
 
@@ -212,18 +210,17 @@ def main_menu():
     ---------------------------
     1) 🚀 Start Flask App
     2) 🧪 Launch Test Manager
-    3) 🧬 Launch Verification Console
-    4) 🛡️ Launch Operations Monitor
+    3) 🛡️ Launch Operations Monitor
 
     🛠️  UTILITIES
     ---------------------------
-    5) 🧹 Clear Python Caches
-    6) 📋 Run Schema Validation Service
+    4) 🧹 Clear Python Caches
+    5) 📋 Run Schema Validation Service
 
     🩺  SYSTEM HEALTH
     ---------------------------
-    7) 🩺 Run System Health Check
-    8) 🌀 Run Cyclone System Tests
+    6) 🩺 Run System Health Check
+    7) 🌀 Run Cyclone System Tests
 
     ❌  OTHER
     ---------------------------
@@ -240,13 +237,13 @@ def main_menu():
         run_test_manager()
     elif choice == "3":
         clear_screen()
-        VerificationConsole().interactive_menu()
+        run_operations_monitor()
     elif choice == "4":
         clear_screen()
-        run_operations_monitor()
+        run_clear_caches()
     elif choice == "5":
         clear_screen()
-        run_clear_caches()
+        run_schema_validation_service()
     elif choice == "6":
         clear_screen()
         run_health_check()
