@@ -59,7 +59,7 @@ def update_config(new_config: dict, filename: str | None = None) -> dict:
     if filename:
         filename = (
             str(ALERT_LIMITS_PATH)
-            if Path(filename).name in {"alert_limits.json", "alert_limitsz.json"}
+            if Path(filename).name == "alert_limits.json"
             else os.path.abspath(filename)
         )
 

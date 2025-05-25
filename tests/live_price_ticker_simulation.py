@@ -94,7 +94,7 @@ async def live_price_ticker_simulation():
 
     repo = AlertRepository(data_locker)
     enrichment = AlertEnrichmentService(data_locker)
-    config_loader = lambda: load_config("alert_limitsz.json") or {}
+    config_loader = lambda: load_config("alert_limits.json") or {}
     notification_service = NotificationService(config_loader)
 
     service = AlertService(repo, enrichment, config_loader)
