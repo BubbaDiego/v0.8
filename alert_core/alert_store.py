@@ -41,8 +41,20 @@ for enum_name in REQUIRED_ALERT_TYPES:
 
 
 class AlertStore:
-    def __init__(self, data_locker):
+    def __init__(self, data_locker, config_loader=None):
+        """Persist alerts to the database.
+
+        Parameters
+        ----------
+        data_locker : DataLocker
+            Wrapper around the database access layer.
+        config_loader : callable, optional
+            Function returning the alert configuration dictionary.  When None,
+            a stub loader that returns an empty dict is used.
+        """
+
         self.data_locker = data_locker
+        self.config_loader = config_loader or (lambda: {})
 
     @staticmethod
     def initialize_alert_data(alert_data: dict = None) -> dict:
@@ -195,6 +207,9 @@ class AlertStore:
         positions = self.data_locker.positions.get_all_positions()
         created = 0
 
+        config = self.config_loader() or {}
+        pos_cfg = config.get("alert_ranges", {}).get("positions_alerts", {})
+
         for pos in positions:
             pos_id = pos.get("id")
             pos_type = pos.get("position_type", "N/A")
@@ -205,28 +220,34 @@ class AlertStore:
                     {
                         "alert_type": AlertType.HEAT_INDEX.value,
                         "description": "heat_index",
-                        "trigger_value": 30.0
+                        "trigger_value": 30.0,
                     },
                     {
                         "alert_type": AlertType.TRAVEL_PERCENT_LIQUID.value,
                         "description": "travel_percent",
-                        "trigger_value": 100.0
+                        "trigger_value": 100.0,
                     },
                     {
                         "alert_type": AlertType.PROFIT.value,
                         "description": "profit",
-                        "trigger_value": 50.0
-                    }
+                        "trigger_value": 50.0,
+                    },
                 ]
 
                 for spec in alerts:
+                    metric_cfg = pos_cfg.get(spec["description"], {})
+                    if metric_cfg.get("enabled") is False:
+                        continue
+
+                    trig_val = metric_cfg.get("medium", spec["trigger_value"])
+
                     alert = {
                         "id": str(uuid4()),
                         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "alert_type": spec["alert_type"],
                         "alert_class": AlertClass.POSITION.value,
                         "asset_type": asset_type,
-                        "trigger_value": spec["trigger_value"],
+                        "trigger_value": trig_val,
                         "condition": Condition.ABOVE.value,
                         "notification_type": NotificationType.SMS.value,
                         "level": "Normal",
@@ -260,6 +281,9 @@ class AlertStore:
         created = 0
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        config = self.config_loader() or {}
+        port_cfg = config.get("alert_ranges", {}).get("portfolio_alerts", {})
+
         metrics = [
             (AlertType.TOTAL_VALUE, "total_value", 50000, Condition.ABOVE),
             (AlertType.TOTAL_SIZE, "total_size", 1.0, Condition.ABOVE),
@@ -270,6 +294,12 @@ class AlertStore:
         ]
 
         for alert_type, description, trigger_value, condition in metrics:
+            metric_cfg = port_cfg.get(description, {})
+            if metric_cfg.get("enabled") is False:
+                continue
+
+            trig_val = metric_cfg.get("medium", trigger_value)
+
             try:
                 alert = {
                     "id": str(uuid4()),
@@ -277,7 +307,7 @@ class AlertStore:
                     "alert_type": alert_type.value,  # ✅ enum.value is already lowercase
                     "alert_class": AlertClass.PORTFOLIO.value,
                     "asset_type": "ALL",
-                    "trigger_value": trigger_value,
+                    "trigger_value": trig_val,
                     "condition": condition.value,
                     "notification_type": NotificationType.SMS.value,
                     "level": "Normal",
