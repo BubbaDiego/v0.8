@@ -133,6 +133,10 @@ class RichLogger:
     def debug(self, message: str, source: str | None = None, payload: dict | None = None):
         self._log(logging.DEBUG, "debug", message, source, payload)
 
+    def critical(self, message: str, source: str | None = None, payload: dict | None = None):
+        """Log a critical message. Uses the error icon with CRITICAL level."""
+        self._log(logging.CRITICAL, "error", message, source, payload)
+
     def death(self, message: str, source: str | None = None, payload: dict | None = None):
         self._log(logging.CRITICAL, "death", message, source, payload)
 

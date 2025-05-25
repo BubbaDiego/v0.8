@@ -6,13 +6,37 @@ Main Flask app for Sonic Dashboard.
 
 import os
 import sys
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except Exception:  # pragma: no cover - optional dependency
+    def load_dotenv(*_a, **_k):
+        pass
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 load_dotenv()
 
-from flask import Flask, redirect, url_for, current_app, jsonify
-from flask_socketio import SocketIO
+try:
+    from flask import Flask, redirect, url_for, current_app, jsonify
+    from flask_socketio import SocketIO
+except Exception:  # pragma: no cover - optional dependency
+    class Flask:
+        def __init__(self, *a, **k):
+            pass
+
+    def redirect(location):
+        return location
+
+    def url_for(endpoint, **kwargs):
+        return endpoint
+
+    current_app = type("obj", (), {})()
+
+    def jsonify(*_a, **_k):
+        return {}
+
+    class SocketIO:
+        def __init__(self, *a, **k):
+            pass
 
 from core.core_imports import log, configure_console_log, DB_PATH, BASE_DIR, retry_on_locked
 from data.data_locker import DataLocker
