@@ -1,3 +1,9 @@
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, os.path.abspath(Path(__file__).resolve().parent.parent))
+
 from core.constants import (
     DB_PATH,
     CONFIG_PATH,
@@ -18,12 +24,19 @@ from monitor.operations_monitor import OperationsMonitor
 from xcom.check_twilio_heartbeart_service import CheckTwilioHeartbeartService
 from utils.path_audit import run_audit
 from xcom.sound_service import SoundService
-import os
-from pathlib import Path
+try:
+    from dotenv import load_dotenv
+except Exception:  # pragma: no cover - optional dependency
+    def load_dotenv(*_a, **_k):
+        return False
 import sqlite3
-import sys
 import time
 import threading
+
+# Automatically load environment variables
+dotenv_file = BASE_DIR / ".env"
+if not load_dotenv(dotenv_file):
+    load_dotenv(BASE_DIR / ".env.example")
 
 
 class DotSpinner:

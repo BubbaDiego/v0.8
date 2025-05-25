@@ -118,11 +118,13 @@ ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
 `utils.startup_service` provides a unified `StartUpService` helper. Running
 `StartUpService.run_all()` ensures the `mother_brain.db` database exists, checks
 for required configuration files and creates the `logs/` and `data/` directories
-if needed. Progress is shown via a simple dot spinner between steps. When all
-checks pass a short startup sound (`static/sounds/web_station_startup.mp3`) will
-play. On failure the "death spiral" tone is used instead. Invoke this at
-application launch to verify the environment is ready. The Launch Pad console
-exposes this check via a **Startup Service** option in its main menu.
+if needed. Progress is shown via a simple dot spinner between steps. Environment
+variables are automatically loaded from a `.env` file in the project root (with
+`.env.example` as a fallback) before any checks run. When all checks pass a
+short startup sound (`static/sounds/web_station_startup.mp3`) will play. On
+failure the "death spiral" tone is used instead. Invoke this at application
+launch to verify the environment is ready. The Launch Pad console exposes this
+check via a **Startup Service** option in its main menu.
 
 ## Database Recovery
 
