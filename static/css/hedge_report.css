@@ -78,6 +78,12 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
   width: auto;
 }
 
+/* Expand the main panel to use the full section width */
+.hedge-report-panel {
+  max-width: none;
+  width: 100%;
+}
+
 /* Outer borders for tables */
 #short-table {
   border-left: var(--panel-border-width) solid var(--panel-border);
