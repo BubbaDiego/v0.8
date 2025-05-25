@@ -78,6 +78,15 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
   width: auto;
 }
 
+/* Make the first table wider to prevent crowding */
+.dual-table-wrapper .positions-table-wrapper:first-child {
+  flex-basis: 60%;
+}
+
+.dual-table-wrapper .positions-table-wrapper:last-child {
+  flex-basis: 40%;
+}
+
 /* Expand the main panel to use the full section width */
 .hedge-report-panel {
   max-width: none;
