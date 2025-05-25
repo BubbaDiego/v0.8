@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from data.dl_thresholds import DLThresholdManager
 
-DB_PATH = "test_alerts.db"  # Can be ":memory:" for in-memory testing
+DB_PATH = ":memory:"
 
 
 # === Ensure schema exists ===
