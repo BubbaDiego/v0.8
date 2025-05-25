@@ -65,10 +65,6 @@ class TestCore:
                 f"--json-report-file={json_report}",
             ])
 
-        args.extend([
-            f"--html={html_report}", "--self-contained-html",
-            "--json-report", f"--json-report-file={json_report}",
-        ])
 
 
         # Prevent auto-loading of external plugins which may introduce
