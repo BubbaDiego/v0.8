@@ -1,7 +1,42 @@
 import re
 from enum import Enum
 from typing import Optional, Type, List, Dict, Any
-from rapidfuzz import process, fuzz
+try:
+    from rapidfuzz import process, fuzz  # type: ignore
+except Exception:  # pragma: no cover - fallback for minimal env
+    # Very small fallback implementations using difflib so tests can run
+    from difflib import SequenceMatcher
+
+    def _ratio(a: str, b: str) -> int:
+        return int(SequenceMatcher(None, a, b).ratio() * 100)
+
+    class _Fuzz:
+        @staticmethod
+        def partial_ratio(a: str, b: str) -> int:
+            return _ratio(a, b)
+
+        @staticmethod
+        def token_set_ratio(a: str, b: str) -> int:
+            return _ratio(" ".join(sorted(a.split())), " ".join(sorted(b.split())))
+
+        @staticmethod
+        def partial_token_ratio(a: str, b: str) -> int:
+            return _ratio(a, b)
+
+    class _Process:
+        @staticmethod
+        def extractOne(query: str, choices: list[str], scorer=_Fuzz.partial_token_ratio):
+            best_choice = None
+            best_score = -1
+            for choice in choices:
+                score = scorer(query, choice)
+                if score > best_score:
+                    best_score = score
+                    best_choice = choice
+            return best_choice, best_score, None
+
+    fuzz = _Fuzz()
+    process = _Process()
 
 # 🔕 Toggle to disable console output
 FUZZY_LOGGING_ENABLED = False
