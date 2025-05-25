@@ -3,11 +3,53 @@ from core.constants import (
     CONFIG_PATH,
     ALERT_LIMITS_PATH,
     BASE_DIR,
+    SONIC_SAUCE_PATH,
+    COM_CONFIG_PATH,
+    THEME_CONFIG_PATH,
+    CONFIG_DIR,
+    MONITOR_DIR,
+    IMAGE_DIR,
+    DATA_DIR,
+    LOG_DIR,
 )
-# from utils.path_audit import maybe_create_mother_brain
+from utils.schema_validation_service import SchemaValidationService
+from data.data_locker import DataLocker
+from monitor.operations_monitor import OperationsMonitor
+from xcom.check_twilio_heartbeart_service import CheckTwilioHeartbeartService
+from utils.path_audit import run_audit
+from xcom.sound_service import SoundService
 import os
 from pathlib import Path
 import sqlite3
+import sys
+import time
+import threading
+
+
+class DotSpinner:
+    """Simple spinner that prints dots while running."""
+
+    def __init__(self, interval: float = 0.2):
+        self.interval = interval
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._spin)
+        self._thread.daemon = True
+
+    def _spin(self):
+        while not self._stop.is_set():
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            time.sleep(self.interval)
+
+    def __enter__(self):
+        self._thread.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._stop.set()
+        self._thread.join()
+        sys.stdout.write("\n")
+        sys.stdout.flush()
 
 from utils.config_loader import save_config
 from core.core_imports import log
@@ -24,13 +66,40 @@ def maybe_create_mother_brain(db_path: str) -> None:
 class StartUpService:
 
     @staticmethod
-    def run_all():
+    def run_all(play_sound: bool = True):
+        """Run all startup checks with a simple progress spinner."""
         log.banner("🧠 STARTUP CHECK")
-        StartUpService.check_for_mother_brain()
-        StartUpService.verify_required_paths()
-        StartUpService.ensure_alert_limits()
-        StartUpService.ensure_required_directories()
-        log.success("✅ All startup checks passed.\n", source="StartUpService")
+
+        steps = [
+            StartUpService.check_for_mother_brain,
+            StartUpService.verify_required_paths,
+            StartUpService.ensure_alert_limits,
+            StartUpService.check_env_vars,
+            StartUpService.initialize_database,
+            StartUpService.ensure_required_directories,
+            StartUpService.run_path_audit,
+            StartUpService.run_operations_tests,
+            StartUpService.run_twilio_heartbeat,
+        ]
+
+        sounder = SoundService()
+
+        try:
+            for step in steps:
+                with DotSpinner():
+                    step()
+            log.success("✅ All startup checks passed.\n", source="StartUpService")
+            if play_sound:
+                sounder.play("static/sounds/web_station_startup.mp3")
+        except SystemExit:
+            if play_sound:
+                sounder.play("static/sounds/death_spiral.mp3")
+            raise
+        except Exception as exc:
+            log.critical(f"❌ Startup failed: {exc}", source="StartUpService")
+            if play_sound:
+                sounder.play("static/sounds/death_spiral.mp3")
+            raise
 
     @staticmethod
     def check_for_mother_brain():
@@ -39,7 +108,15 @@ class StartUpService:
     @staticmethod
     def verify_required_paths():
         missing = []
-        for path in [DB_PATH, CONFIG_PATH, ALERT_LIMITS_PATH]:
+        required = [
+            DB_PATH,
+            CONFIG_PATH,
+            ALERT_LIMITS_PATH,
+            SONIC_SAUCE_PATH,
+            COM_CONFIG_PATH,
+            THEME_CONFIG_PATH,
+        ]
+        for path in required:
             if not os.path.exists(path):
                 missing.append(path)
 
@@ -67,13 +144,91 @@ class StartUpService:
             log.success("✅ Default alert_limitsz.json created.", source="StartUpService")
         else:
             log.info("✅ alert_limitsz.json found.", source="StartUpService")
+            valid = SchemaValidationService.validate_schema(
+                str(ALERT_LIMITS_PATH),
+                SchemaValidationService.ALERT_LIMITS_SCHEMA,
+                name="Alert Ranges",
+            )
+            if not valid:
+                raise SystemExit(
+                    "Startup check failed: alert_limits.json schema invalid"
+                )
 
     @staticmethod
     def ensure_required_directories():
-        required_dirs = [os.path.join(BASE_DIR, "logs"), os.path.join(BASE_DIR, "data")]
+        required_dirs = [
+            LOG_DIR,
+            DATA_DIR,
+            CONFIG_DIR,
+            MONITOR_DIR,
+            IMAGE_DIR,
+        ]
         for d in required_dirs:
             Path(d).mkdir(parents=True, exist_ok=True)
             log.info(f"📁 Ensured directory exists: {d}", source="StartUpService")
+
+    @staticmethod
+    def check_env_vars():
+        required = [
+            "SMTP_SERVER",
+            "SMTP_PORT",
+            "SMTP_USERNAME",
+            "SMTP_PASSWORD",
+            "SMTP_DEFAULT_RECIPIENT",
+            "TWILIO_ACCOUNT_SID",
+            "TWILIO_AUTH_TOKEN",
+            "TWILIO_FROM_PHONE",
+            "TWILIO_TO_PHONE",
+        ]
+        missing = [var for var in required if not os.getenv(var)]
+        if missing:
+            log.critical("❌ Missing required environment variables:")
+            for var in missing:
+                log.error(f"  - {var}", source="StartUpService")
+            raise SystemExit("Startup failed due to missing environment variables.")
+        log.info("✅ Required environment variables present.", source="StartUpService")
+
+    @staticmethod
+    def initialize_database():
+        try:
+            dl = DataLocker(str(DB_PATH))
+            dl.close()
+            log.info(
+                "✅ Database initialized and connectivity verified.",
+                source="StartUpService",
+            )
+        except Exception as exc:
+            log.critical(f"❌ Database initialization failed: {exc}", source="StartUpService")
+            raise SystemExit("Startup failed during database initialization.")
+
+    @staticmethod
+    def run_operations_tests():
+        try:
+            monitor = OperationsMonitor()
+            monitor.run_startup_post()
+        except Exception as exc:
+            log.error(f"Operations POST tests failed: {exc}", source="StartUpService")
+
+    @staticmethod
+    def run_twilio_heartbeat():
+        try:
+            result = CheckTwilioHeartbeartService({}).check(dry_run=True)
+            if not result.get("success"):
+                log.error(
+                    f"Twilio heartbeat check failed: {result.get('error')}",
+                    source="StartUpService",
+                )
+            else:
+                log.info("✅ Twilio credentials verified.", source="StartUpService")
+        except Exception as exc:
+            log.error(f"Twilio heartbeat error: {exc}", source="StartUpService")
+
+    @staticmethod
+    def run_path_audit():
+        try:
+            run_audit()
+        except Exception as exc:
+            log.error(f"Path audit failed: {exc}", source="StartUpService")
 
 # --- Allow Standalone Run ---
 if __name__ == "__main__":
