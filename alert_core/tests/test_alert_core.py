@@ -103,5 +103,10 @@ if __name__ == "__main__":
     asyncio.run(run_test())
 
 
-def test_alert_core_basic():
-    asyncio.run(run_test())
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_alert_core_basic():
+    await run_test()
+
