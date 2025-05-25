@@ -21,15 +21,6 @@
   overflow: hidden;
 }
 
-.sonic-title-pill.shimmer {
-  color: #fff;
-  background: linear-gradient(90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
 
 @keyframes shimmer {
   0% {
@@ -41,13 +32,22 @@
 }
 
 .sonic-title-pill.default {
-  background: #cce5ff;
+  background-color: #cce5ff;
   color: #232946;
 }
 
 .sonic-title-pill.dashboard {
-  background: #7c3aed;
+  background-color: #7c3aed;
   color: #fff;
+}
+
+.sonic-title-pill.shimmer {
+  background-image: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
 }
 
 .sonic-title-image {
