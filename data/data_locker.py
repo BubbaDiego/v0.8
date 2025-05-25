@@ -48,10 +48,13 @@ class DataLocker:
         self.ledger = DLMonitorLedgerManager(self.db)
         self.modifiers = DLModifierManager(self.db)
 
-        self.initialize_database()
-        self._seed_modifiers_if_empty()
-        self._seed_wallets_if_empty()
-        self._seed_thresholds_if_empty()
+        try:
+            self.initialize_database()
+            self._seed_modifiers_if_empty()
+            self._seed_wallets_if_empty()
+            self._seed_thresholds_if_empty()
+        except Exception as e:
+            log.error(f"❌ DataLocker setup failed: {e}", source="DataLocker")
 
         log.debug("All DL managers bootstrapped successfully.", source="DataLocker")
 
@@ -61,6 +64,9 @@ class DataLocker:
         This method can be run safely and repeatedly.
         """
         cursor = self.db.get_cursor()
+        if cursor is None:
+            log.error("❌ Unable to obtain DB cursor during init", source="DataLocker")
+            return
 
         table_defs = {
             "wallets": """
@@ -236,7 +242,7 @@ class DataLocker:
                 # Retry initialization on a fresh DB
                 self.initialize_database()
             else:
-                raise
+                log.error(f"❌ Commit failed during init: {e}", source="DataLocker")
 
     # Inside DataLocker class
     def read_positions(self):
@@ -321,6 +327,9 @@ class DataLocker:
     def _seed_modifiers_if_empty(self):
         """Seed modifiers table from sonic_sauce.json if empty."""
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, skipping modifier seed", source="DataLocker")
+            return
         count = cursor.execute("SELECT COUNT(*) FROM modifiers").fetchone()[0]
         if count == 0:
             try:
@@ -334,6 +343,9 @@ class DataLocker:
     def _seed_wallets_if_empty(self):
         """Seed wallets table from wallets.json if empty."""
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, skipping wallet seed", source="DataLocker")
+            return
         count = cursor.execute("SELECT COUNT(*) FROM wallets").fetchone()[0]
         if count == 0:
             json_path = os.path.join(BASE_DIR, "wallets.json")
@@ -358,6 +370,9 @@ class DataLocker:
     def _seed_thresholds_if_empty(self):
         """Seed alert_thresholds table with defaults if empty."""
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, skipping threshold seed", source="DataLocker")
+            return
         count = cursor.execute("SELECT COUNT(*) FROM alert_thresholds").fetchone()[0]
         if count == 0:
             try:
@@ -391,7 +406,10 @@ class DataLocker:
         """Return all user tables and their rows as a dictionary."""
         try:
             datasets = {}
-            for table in self.db.list_tables():
+            tables = self.db.list_tables()
+            if not tables:
+                return datasets
+            for table in tables:
                 datasets[table] = self.db.fetch_all(table)
             return datasets
         except Exception as e:

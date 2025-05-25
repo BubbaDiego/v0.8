@@ -144,7 +144,8 @@ class DLPositionManager:
             log.success("🧹 All positions got fucked", source="DLPositionManager")
         except Exception as e:
             log.error(f"❌ Failed to wipe positions: {e}", source="DLPositionManager")
-            raise
+            # Do not propagate DB errors
+            return
 
     # Primary method
     def delete_positions(self):
@@ -159,6 +160,9 @@ class DLPositionManager:
             snapshot_id = str(uuid4())
             snapshot_time = datetime.now().isoformat()
             cursor = self.db.get_cursor()
+            if not cursor:
+                log.error("❌ DB unavailable for snapshot", source="DLPositionManager")
+                return
             cursor.execute("""
                 INSERT INTO positions_totals_history (
                     id, snapshot_time, total_size, total_value, total_collateral,
@@ -178,7 +182,7 @@ class DLPositionManager:
             log.success(f"📸 Snapshot recorded: {snapshot_id}", source="DataLocker")
         except Exception as e:
             log.error(f"❌ Failed to record position snapshot: {e}", source="DataLocker")
-            raise
+            return
 
     def initialize_schema(db):
         cursor = db.get_cursor()
@@ -253,7 +257,13 @@ class DLPositionManager:
             return []
 
     def get_position_by_id(self, pos_id: str):
-        cursor = self.db.get_cursor()
-        cursor.execute("SELECT * FROM positions WHERE id = ?", (pos_id,))
-        row = cursor.fetchone()
-        return dict(row) if row else None
+        try:
+            cursor = self.db.get_cursor()
+            if not cursor:
+                return None
+            cursor.execute("SELECT * FROM positions WHERE id = ?", (pos_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+        except Exception as e:
+            log.error(f"❌ Failed to fetch position {pos_id}: {e}", source="DLPositionManager")
+            return None

@@ -15,6 +15,9 @@ class DLMonitorLedgerManager:
 
     def ensure_table(self):
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, ledger table not created", source="DLMonitorLedger")
+            return
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS monitor_ledger (
                 id TEXT PRIMARY KEY,
@@ -42,6 +45,9 @@ class DLMonitorLedgerManager:
 
 
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, ledger entry not stored", source="DLMonitorLedger")
+            return
         cursor.execute("""
             INSERT INTO monitor_ledger (
                 id, monitor_name, timestamp, status, metadata
@@ -54,6 +60,9 @@ class DLMonitorLedgerManager:
 
     def get_last_entry(self, monitor_name: str) -> dict:
         cursor = self.db.get_cursor()
+        if not cursor:
+            log.error("❌ DB unavailable, cannot fetch ledger entry", source="DLMonitorLedger")
+            return {}
         cursor.execute("""
             SELECT timestamp, status, metadata
             FROM monitor_ledger
