@@ -23,6 +23,7 @@ from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
 
 from wallets.blockchain_balance_service import BlockchainBalanceService
+from wallets.jupiter_service import JupiterService
 
 from wallets.wallet_service import WalletService
 from wallets.wallet import Wallet
@@ -39,7 +40,11 @@ class WalletCore:
         self.rpc_endpoint = rpc_endpoint
         self.client = Client(rpc_endpoint)
         self.balance_service = BlockchainBalanceService()
-        log.debug(f"WalletCore initialized with RPC {rpc_endpoint}", source="WalletCore")
+        self.jupiter = JupiterService()
+        log.debug(
+            f"WalletCore initialized with RPC {rpc_endpoint}",
+            source="WalletCore",
+        )
 
     # ------------------------------------------------------------------
     # Data access helpers
@@ -100,4 +105,33 @@ class WalletCore:
             return sig
         except Exception as e:
             log.error(f"Failed to send transaction from {wallet.name}: {e}", source="WalletCore")
+            return None
+
+    # ------------------------------------------------------------------
+    # Jupiter collateral helpers
+    # ------------------------------------------------------------------
+    def deposit_collateral(self, wallet: Wallet, market: str, amount: float) -> Optional[dict]:
+        """Deposit collateral into a Jupiter perpetual position."""
+        try:
+            result = self.jupiter.increase_position(wallet.public_address, market, amount)
+            log.info(
+                f"Deposited {amount} to {market} for {wallet.name}",
+                source="WalletCore",
+            )
+            return result
+        except Exception as e:  # pragma: no cover - network failures
+            log.error(f"Deposit failed for {wallet.name}: {e}", source="WalletCore")
+            return None
+
+    def withdraw_collateral(self, wallet: Wallet, market: str, amount: float) -> Optional[dict]:
+        """Withdraw collateral from a Jupiter perpetual position."""
+        try:
+            result = self.jupiter.decrease_position(wallet.public_address, market, amount)
+            log.info(
+                f"Withdrew {amount} from {market} for {wallet.name}",
+                source="WalletCore",
+            )
+            return result
+        except Exception as e:  # pragma: no cover - network failures
+            log.error(f"Withdraw failed for {wallet.name}: {e}", source="WalletCore")
             return None
