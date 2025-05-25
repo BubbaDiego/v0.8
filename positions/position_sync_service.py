@@ -81,7 +81,8 @@ class PositionSyncService:
             })
 
             calc_core = CalculationCore(self.dl)
-            totals = calc_core.calculate_totals(positions)
+            active_positions = self.dl.positions.get_active_positions()
+            totals = calc_core.calculate_totals(active_positions)
             self.dl.portfolio.record_snapshot(totals)
 
             # Step 4: HTML Report

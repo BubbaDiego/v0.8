@@ -149,7 +149,7 @@ def api_graph_data():
 def api_size_composition():
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions() or []
+        positions = core.get_active_positions() or []
 
         long_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
         short_total = sum(float(p.get("size", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
@@ -175,7 +175,7 @@ def api_size_composition():
 def api_collateral_composition():
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions() or []
+        positions = core.get_active_positions() or []
 
         long_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "LONG")
         short_total = sum(float(p.get("collateral", 0)) for p in positions if str(p.get("position_type", "")).upper() == "SHORT")
