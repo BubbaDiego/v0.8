@@ -15,12 +15,20 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from solana.rpc.api import Client
-from solana.transaction import Transaction
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.rpc.commitment import Confirmed
-from solana.rpc.types import TxOpts
+try:
+    from solana.rpc.api import Client
+    from solana.transaction import Transaction
+    from solana.keypair import Keypair
+    from solana.publickey import PublicKey
+    from solana.rpc.commitment import Confirmed
+    from solana.rpc.types import TxOpts
+except Exception:  # pragma: no cover - optional dependency
+    Client = None
+    Transaction = object
+    Keypair = object
+    PublicKey = object
+    Confirmed = None
+    TxOpts = object
 
 from wallets.blockchain_balance_service import BlockchainBalanceService
 from wallets.jupiter_service import JupiterService
@@ -38,11 +46,11 @@ class WalletCore:
     def __init__(self, rpc_endpoint: str = "https://api.mainnet-beta.solana.com"):
         self.service = WalletService()
         self.rpc_endpoint = rpc_endpoint
-        self.client = Client(rpc_endpoint)
-        self.balance_service = BlockchainBalanceService()
-        self.jupiter = JupiterService()
+        self.client = Client(rpc_endpoint) if Client else None
+        self.balance_service = BlockchainBalanceService() if Client else None
+        self.jupiter = JupiterService() if Client else None
         log.debug(
-            f"WalletCore initialized with RPC {rpc_endpoint}",
+            f"WalletCore initialized with RPC {rpc_endpoint}" + (" (stubbed)" if Client is None else ""),
             source="WalletCore",
         )
 
@@ -62,7 +70,8 @@ class WalletCore:
     def set_rpc_endpoint(self, endpoint: str) -> None:
         """Switch to a different Solana RPC endpoint."""
         self.rpc_endpoint = endpoint
-        self.client = Client(endpoint)
+        if Client:
+            self.client = Client(endpoint)
         log.debug(f"RPC endpoint switched to {endpoint}", source="WalletCore")
 
     # ------------------------------------------------------------------
@@ -70,6 +79,9 @@ class WalletCore:
     # ------------------------------------------------------------------
     def fetch_balance(self, wallet: Wallet) -> Optional[float]:
         """Fetch the SOL balance for ``wallet`` using the active client."""
+        if not Client or not self.client:
+            log.debug("fetch_balance skipped; solana client unavailable", source="WalletCore")
+            return None
         try:
             resp = self.client.get_balance(PublicKey(wallet.public_address), commitment=Confirmed)
             lamports = resp.get("result", {}).get("value")
@@ -80,7 +92,7 @@ class WalletCore:
         return None
 
     def _keypair_from_wallet(self, wallet: Wallet) -> Keypair:
-        if not wallet.private_address:
+        if not Client or not wallet.private_address:
             raise ValueError("Wallet has no private key")
         try:
             import base58
@@ -93,6 +105,9 @@ class WalletCore:
 
     def send_transaction(self, wallet: Wallet, tx: Transaction) -> Optional[str]:
         """Sign and submit ``tx`` using ``wallet``'s keypair."""
+        if not Client or not self.client:
+            log.debug("send_transaction skipped; solana client unavailable", source="WalletCore")
+            return None
         try:
             kp = self._keypair_from_wallet(wallet)
             recent = self.client.get_recent_blockhash()["result"]["value"]["blockhash"]
@@ -112,6 +127,9 @@ class WalletCore:
     # ------------------------------------------------------------------
     def deposit_collateral(self, wallet: Wallet, market: str, amount: float) -> Optional[dict]:
         """Deposit collateral into a Jupiter perpetual position."""
+        if not Client or not self.jupiter:
+            log.debug("deposit_collateral skipped; solana client unavailable", source="WalletCore")
+            return None
         try:
             result = self.jupiter.increase_position(wallet.public_address, market, amount)
             log.info(
@@ -125,6 +143,9 @@ class WalletCore:
 
     def withdraw_collateral(self, wallet: Wallet, market: str, amount: float) -> Optional[dict]:
         """Withdraw collateral from a Jupiter perpetual position."""
+        if not Client or not self.jupiter:
+            log.debug("withdraw_collateral skipped; solana client unavailable", source="WalletCore")
+            return None
         try:
             result = self.jupiter.decrease_position(wallet.public_address, market, amount)
             log.info(

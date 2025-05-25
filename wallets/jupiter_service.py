@@ -4,7 +4,10 @@ Utility wrapper for interacting with Jupiter Perpetuals API.
 """
 from __future__ import annotations
 
-import requests
+try:
+    import requests
+except Exception:  # pragma: no cover - optional dependency
+    requests = None
 
 from core.logging import log
 from core.constants import JUPITER_API_BASE
@@ -26,6 +29,9 @@ class JupiterService:
             "size_usd_delta": 0,
         }
         log.debug(f"POST {url} {payload}", source="JupiterService")
+        if not requests:
+            log.debug("HTTP client unavailable; skipping API call", source="JupiterService")
+            return {}
         try:
             res = requests.post(url, json=payload, timeout=10)
             res.raise_for_status()
@@ -44,6 +50,9 @@ class JupiterService:
             "size_usd_delta": 0,
         }
         log.debug(f"POST {url} {payload}", source="JupiterService")
+        if not requests:
+            log.debug("HTTP client unavailable; skipping API call", source="JupiterService")
+            return {}
         try:
             res = requests.post(url, json=payload, timeout=10)
             res.raise_for_status()

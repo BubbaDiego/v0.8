@@ -1,5 +1,6 @@
 import pytest
 import asyncio
+import types
 from data.alert import Alert, AlertType, Condition
 from alert_core.alert_enrichment_service import AlertEnrichmentService
 from core.core_imports import log
@@ -19,6 +20,11 @@ class MockDataLockerPortfolio:
             }
         }
         self.prices = {"BTC": {"current_price": 150}}
+        self.db = types.SimpleNamespace(
+            get_cursor=lambda: types.SimpleNamespace(
+                execute=lambda *a, **k: types.SimpleNamespace(fetchall=lambda: [])
+            )
+        )
 
     def get_position_by_reference_id(self, ref_id):
         return self.positions.get(ref_id)

@@ -6,7 +6,7 @@ import asyncio
 import random
 
 from datetime import datetime
-#from data.data_locker import DataLocker
+from data.data_locker import DataLocker
 from core.constants import DB_PATH
 from data.alert import AlertType, Condition
 from cyclone.cyclone_engine import Cyclone
