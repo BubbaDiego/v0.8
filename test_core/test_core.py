@@ -62,6 +62,11 @@ class TestCore:
         self._open_html_report(html_report)
 
     # ------------------------------------------------------------------
+    def test_alert_core(self) -> None:
+        """Run AlertCore-specific test cases."""
+        self.run_glob("alert_core/tests/test_*.py")
+
+    # ------------------------------------------------------------------
     def _open_html_report(self, report_path: Path) -> None:
         """Open *report_path* in a browser if possible."""
         if not report_path.exists():
@@ -78,16 +83,19 @@ class TestCore:
         print("\n=== 🔍 Test Runner Console ===")
         print("1) Run all tests")
         print("2) Run test file pattern")
-        print("3) Exit")
+        print("3) Run Alert Core tests")
+        print("4) Exit")
 
         while True:
-            choice = input("Enter your choice (1-3): ").strip()
+            choice = input("Enter your choice (1-4): ").strip()
             if choice == "1":
                 self.run_glob()
             elif choice == "2":
                 pattern = input("Pattern (e.g., tests/test_*.py): ").strip()
                 self.run_glob(pattern)
             elif choice == "3":
+                self.test_alert_core()
+            elif choice == "4":
                 break
             else:
                 print("Invalid choice. Try again.")

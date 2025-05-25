@@ -12,6 +12,7 @@ from rich.text import Text
 from core.core_imports import configure_console_log
 from core.logging import log
 from monitor.operations_monitor import OperationsMonitor
+from test_core import TestCore
 
 console = Console()
 configure_console_log()
@@ -72,19 +73,29 @@ def operations_menu():
             time.sleep(1)
 
 
+def test_core_menu():
+    """Run unit tests via :class:`TestCore`."""
+    tester = TestCore()
+    tester.interactive_menu()
+    input("Press ENTER to return...")
+
+
 def main_menu():
     while True:
         clear_screen()
         show_banner()
         console.print("1) Launch Sonic Web")
         console.print("2) ⚙️ Operations")
-        console.print("3) Exit")
+        console.print("3) 🧪 Test Core")
+        console.print("4) Exit")
         choice = input("→ ").strip()
         if choice == "1":
             launch_sonic_web()
         elif choice == "2":
             operations_menu()
         elif choice == "3":
+            test_core_menu()
+        elif choice == "4":
             console.print("Goodbye!", style="green")
             break
         else:
