@@ -119,6 +119,7 @@ ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
 `StartUpService.run_all()` ensures the `mother_brain.db` database exists, checks
 for required configuration files and creates the `logs/` and `data/` directories
 if needed. Invoke this at application launch to verify the environment is ready.
+The Launch Pad console exposes this check via a **Startup Service** option in its main menu.
 
 ## Database Recovery
 

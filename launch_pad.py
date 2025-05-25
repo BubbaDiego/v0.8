@@ -15,6 +15,7 @@ from monitor.operations_monitor import OperationsMonitor
 from test_core import TestCore
 from data.data_locker import DataLocker
 from core.constants import DB_PATH
+from utils.startup_service import StartUpService
 
 console = Console()
 configure_console_log()
@@ -125,9 +126,10 @@ def main_menu():
         console.print("1) 🦔 Sonic App + 🖥️ Sonic Monitor")
         console.print("2) 🌀 Launch Cyclone")
         console.print("3) Launch Sonic Web")
-        console.print("4) ⚙️ Operations")
-        console.print("5) 🧪 Test Core")
-        console.print("6) Exit")
+        console.print("4) 🌅 Startup Service")
+        console.print("5) ⚙️ Operations")
+        console.print("6) 🧪 Test Core")
+        console.print("7) Exit")
         choice = input("→ ").strip()
         if choice == "1":
             launch_web_and_monitor()
@@ -136,10 +138,13 @@ def main_menu():
         elif choice == "3":
             launch_sonic_web()
         elif choice == "4":
-            operations_menu()
+            StartUpService.run_all()
+            input("Press ENTER to continue...")
         elif choice == "5":
-            test_core_menu()
+            operations_menu()
         elif choice == "6":
+            test_core_menu()
+        elif choice == "7":
             console.print("Goodbye!", style="green")
             break
         else:
