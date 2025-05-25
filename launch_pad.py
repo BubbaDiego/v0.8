@@ -54,7 +54,7 @@ def operations_menu():
         choice = input("→ ").strip().lower()
         if choice == "1":
             monitor = OperationsMonitor()
-            result = monitor.run_startup_configuration_test()
+            result = monitor.run_configuration_test()
             log.info("Config Test Result", payload=result)
             input("Press ENTER to continue...")
         elif choice == "b":
