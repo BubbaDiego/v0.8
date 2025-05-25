@@ -21,10 +21,9 @@
 
 <!-- Page Title Removed -->
 
-<div class="container-fluid px-4">
-  <div class="row gx-0">
-    <div class="col-md-6">
-      <div class="positions-table-wrapper">
+<div class="sonic-section-container sonic-section-middle mt-3">
+  <div class="sonic-content-panel">
+    <div class="positions-table-wrapper">
         <h3 class="section-title icon-inline text-center mb-2"><span>📉</span><span>SHORT</span></h3>
         <table id="short-table" class="positions-table">
           <thead>
@@ -95,9 +94,8 @@
         </table>
       </div>
     </div>
-
-    <div class="col-md-6 mt-4 mt-md-0">
-      <div class="positions-table-wrapper">
+  <div class="sonic-content-panel">
+    <div class="positions-table-wrapper">
         <h3 class="section-title icon-inline text-center mb-2"><span>📈</span><span>LONG</span></h3>
         <table id="long-table" class="positions-table">
           <thead>
@@ -188,12 +186,12 @@
 {% set ethTotal = ethShort + ethLong %}
 {% set solTotal = solShort + solLong %}
 
-<div class="d-flex flex-wrap justify-content-around mt-5">
-  <div style="width: 400px;">
-    <canvas id="sizeDist"></canvas>
+<div class="sonic-section-container sonic-section-bottom mt-5">
+  <div class="sonic-content-panel">
+    <canvas id="sizeDist" class="full-chart"></canvas>
   </div>
-  <div style="width: 400px;">
-    <canvas id="assetDist"></canvas>
+  <div class="sonic-content-panel">
+    <canvas id="assetDist" class="full-chart"></canvas>
   </div>
 </div>
 
