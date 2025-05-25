@@ -2,6 +2,9 @@ import pytest
 import os
 import json
 from utils.schema_validation_service import SchemaValidationService
+import jsonschema
+if getattr(jsonschema, 'IS_STUB', False):
+    pytest.skip('jsonschema not available', allow_module_level=True)
 
 TEST_VALID_FILE = "tests/mock_alert_limits_valid.json"
 TEST_INVALID_SCHEMA_FILE = "tests/mock_alert_limits_invalid_schema.json"

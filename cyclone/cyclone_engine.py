@@ -66,11 +66,11 @@ def configure_cyclone_console_log():
 
 
 class Cyclone:
-    def __init__(self, monitor_core, poll_interval=60):
+    def __init__(self, monitor_core=None, poll_interval=60):
         self.logger = logging.getLogger("Cyclone")
         self.poll_interval = poll_interval
         self.logger.setLevel(logging.DEBUG)
-        self.monitor_core = monitor_core
+        self.monitor_core = monitor_core or MonitorCore()
 
         self.data_locker = global_data_locker
         self.price_sync = PriceSyncService(self.data_locker)
@@ -95,7 +95,6 @@ class Cyclone:
             self.data_locker,
             config_loader=lambda: self.config,
         )
-        self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
         self.hedge_core = HedgeCore(self.data_locker)
