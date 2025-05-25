@@ -16,6 +16,9 @@
       </svg>
       <span class="timer-number"></span>
     </div>
+    {% if title_text %}
+    <div class="sonic-title-pill {{ title_theme|default('default') }} ms-2">{{ title_text }}</div>
+    {% endif %}
     {% if profit_badge_value %}
     <span class="profit-badge badge text-bg-success ms-2">{{ profit_badge_value }}</span>
     {% endif %}
@@ -49,7 +52,6 @@
     </div>
   </div>
   </nav>
-  {% include "sonic_titles.html" %}
   <script src="{{ url_for('static', filename='js/refresh_timer.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/title_bar.js') }}" defer></script>
 
