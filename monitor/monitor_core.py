@@ -14,18 +14,27 @@ from monitor.twilio_monitor import TwilioMonitor
 from monitor.monitor_registry import MonitorRegistry
 
 class MonitorCore:
-    """
-    Central controller for all registered monitors.
-    """
-    def __init__(self):
-        self.registry = MonitorRegistry()
-        # Register all monitors here (ONLY place this ever happens)
-        self.registry.register("price_monitor", PriceMonitor())
-        self.registry.register("position_monitor", PositionMonitor())
-        self.registry.register("operations_monitor", OperationsMonitor())
-        self.registry.register("xcom_monitor", XComMonitor())
-        self.registry.register("twilio_monitor", TwilioMonitor())
-        # Add more monitors as needed
+    """Central controller for all registered monitors."""
+
+    def __init__(self, registry: MonitorRegistry | None = None):
+        """Create the core controller.
+
+        If ``registry`` is not supplied a new :class:`MonitorRegistry` instance
+        is created and the default monitors are registered. When a registry is
+        provided it is used as-is, allowing external callers to customize the
+        available monitors.
+        """
+
+        self.registry = registry or MonitorRegistry()
+
+        if registry is None:
+            # Register default monitors when no custom registry is supplied
+            self.registry.register("price_monitor", PriceMonitor())
+            self.registry.register("position_monitor", PositionMonitor())
+            self.registry.register("operations_monitor", OperationsMonitor())
+            self.registry.register("xcom_monitor", XComMonitor())
+            self.registry.register("twilio_monitor", TwilioMonitor())
+            # Add more monitors as needed
 
     def run_all(self):
         """

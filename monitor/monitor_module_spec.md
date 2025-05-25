@@ -26,7 +26,7 @@ monitor/
 Central controller for executing registered monitors.
 
 ```python
-MonitorCore(registry: Optional[MonitorRegistry] = None)
+MonitorCore(registry: MonitorRegistry | None = None)
 ```
 - If `registry` is not provided, a new one is created and default monitors are registered (`PriceMonitor`, `PositionMonitor`, `OperationsMonitor`).
 
