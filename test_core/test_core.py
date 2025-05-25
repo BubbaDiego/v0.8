@@ -72,3 +72,23 @@ class TestCore:
         except Exception:
             pass
 
+    # ------------------------------------------------------------------
+    def interactive_menu(self) -> None:
+        """Interactive CLI for running tests."""
+        print("\n=== 🔍 Test Runner Console ===")
+        print("1) Run all tests")
+        print("2) Run test file pattern")
+        print("3) Exit")
+
+        while True:
+            choice = input("Enter your choice (1-3): ").strip()
+            if choice == "1":
+                self.run_glob()
+            elif choice == "2":
+                pattern = input("Pattern (e.g., tests/test_*.py): ").strip()
+                self.run_glob(pattern)
+            elif choice == "3":
+                break
+            else:
+                print("Invalid choice. Try again.")
+

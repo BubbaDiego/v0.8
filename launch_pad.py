@@ -11,10 +11,10 @@ import time
 from datetime import datetime
 from functools import wraps
 from time import time as timer_time
-#from tests.test_runner_manager import TestRunnerManager
 from utils.schema_validation_service import SchemaValidationService
 from tests.verification_console import VerificationConsole
 from core.core_imports import log
+from test_core import TestCore
 
 
 
@@ -163,8 +163,11 @@ def run_operations_monitor():
 @timed_operation
 def run_test_manager():
     """Run the Test Runner Manager (interactive menu)."""
-    runner = TestRunnerManager(tests_folder="tests/")
-    runner.interactive_menu()
+    runner = TestCore()
+    if hasattr(runner, "interactive_menu"):
+        runner.interactive_menu()
+    else:
+        runner.run_all()
 
 def show_launchpad_banner():
     print("\n" + "=" * 60)
