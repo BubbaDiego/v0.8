@@ -12,6 +12,7 @@ from xcom.xcom_core import XComCore
 from monitor.monitor_core import MonitorCore
 from monitor.monitor_registry import MonitorRegistry
 from monitor.price_monitor import PriceMonitor
+from monitor.operations_monitor import OperationsMonitor
 from data.dl_system_data import DLSystemDataManager
 
 
@@ -190,6 +191,14 @@ def menu_ops_test():
     pause()
 
 # ───────────────────────────────────────────────
+def menu_core_config_test():
+    banner("🛠️ CORE CONFIG TEST")
+    monitor = OperationsMonitor()
+    result = monitor.run_startup_configuration_test()
+    log.info("Config Test Result", payload=result)
+    pause()
+
+# ───────────────────────────────────────────────
 def main():
     while True:
         clear_screen()
@@ -205,6 +214,7 @@ def main():
 5) 🧠 Inspect System Vars
 6) 🎯 Alert Thresholds & Settings
 7) 🧪 Operations Test
+8) 🛠️ Core Config Test
 q) ❌ Quit
         """)
         cmd = input("Choose an option > ").strip().lower()
@@ -215,6 +225,7 @@ q) ❌ Quit
         elif cmd == "5": menu_sysvars()
         elif cmd == "6": menu_thresholds()
         elif cmd == "7": menu_ops_test()
+        elif cmd == "8": menu_core_config_test()
         elif cmd == "q":
             log.success("Console exited. Goodbye 👋", source="SOC")
             break
