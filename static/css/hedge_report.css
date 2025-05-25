@@ -66,6 +66,18 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
   font-style: italic;
 }
 
+/* Container for both tables so they sit flush */
+.dual-table-wrapper {
+  display: flex;
+  width: 100%;
+  gap: 0;
+}
+
+.dual-table-wrapper .positions-table-wrapper {
+  flex: 1 1 0;
+  width: auto;
+}
+
 /* Outer borders for tables */
 #short-table {
   border-left: var(--panel-border-width) solid var(--panel-border);
