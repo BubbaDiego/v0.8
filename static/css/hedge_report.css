@@ -29,6 +29,8 @@
 .positions-table td.left { text-align: left; }
 .positions-table th.right,
 .positions-table td.right { text-align: right; }
+.positions-table th.center,
+.positions-table td.center { text-align: center; }
 
 .positions-table tbody td {
   background: var(--container-bg);
@@ -46,6 +48,7 @@
   text-align: right;
 }
 .positions-table tfoot td.left { text-align: left; }
+.positions-table tfoot td.center { text-align: center; }
 
 .sort-indicator {
   font-size: 1em;
