@@ -102,4 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
       setTheme(themeIndex);
     });
   }
+
+  // Apply shimmer animation to the title pill on load
+  const titlePill = document.querySelector('.sonic-title-pill');
+  if (titlePill) {
+    titlePill.classList.add('shimmer');
+  }
 });

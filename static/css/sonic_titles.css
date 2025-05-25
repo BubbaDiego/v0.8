@@ -17,6 +17,27 @@
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.sonic-title-pill.shimmer {
+  color: #fff;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .sonic-title-pill.default {
