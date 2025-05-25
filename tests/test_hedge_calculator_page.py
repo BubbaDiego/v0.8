@@ -38,9 +38,9 @@ def client(monkeypatch):
     with app.test_client() as client:
         yield client
 
-def test_hedge_calculator_page_contains_sliders(client):
+def test_hedge_modifiers_page_contains_inputs(client):
     response = client.get("/sonic_labs/hedge_calculator")
     assert response.status_code == 200
     html = response.data.decode()
-    assert "priceSlider" in html
-    assert "leverageSlider" in html
+    assert "feePercentage" in html
+    assert "distanceWeightInput" in html
