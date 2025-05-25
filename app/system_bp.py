@@ -693,34 +693,39 @@ def update_all_alert_thresholds():
 
 @system_bp.route("/alert_thresholds/export", methods=["GET"])
 def export_alert_thresholds():
-    db = current_app.data_locker.db
-    thresholds = DLThresholdManager(db).get_all()
-    data = [t.to_dict() for t in thresholds]
-
-    return jsonify(data)
+    try:
+        db = current_app.data_locker.db
+        mgr = DLThresholdManager(db)
+        mgr.export_to_json()
+        thresholds = mgr.get_all()
+        data = [t.to_dict() for t in thresholds]
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @system_bp.route("/alert_thresholds/import", methods=["POST"])
 def import_alert_thresholds():
     try:
-        payload = request.get_json()
-        if not isinstance(payload, list):
-            return (
-                jsonify({"success": False, "error": "Expected a list of thresholds"}),
-                400,
-            )
-
+        payload = request.get_json(silent=True)
         db = current_app.data_locker.db
-        dl_mgr = DLThresholdManager(db)
+        mgr = DLThresholdManager(db)
 
-        count = 0
-        for t in payload:
-            if "id" not in t:
-                continue
-            dl_mgr.update(t["id"], t)  # update existing
-            count += 1
+        updated = 0
+        if isinstance(payload, list):
+            for item in payload:
+                tid = item.get("id")
+                if not tid:
+                    continue
+                if mgr.get_by_id(tid):
+                    mgr.update(tid, item)
+                else:
+                    mgr.insert(AlertThreshold(**item))
+                updated += 1
+        else:
+            updated = mgr.import_from_json()
 
-        return jsonify({"success": True, "updated": count})
+        return jsonify({"success": True, "updated": updated})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
