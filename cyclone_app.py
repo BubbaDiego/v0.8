@@ -41,39 +41,38 @@ def show_main_menu():
 
 
 async def step_engine_menu():
-    steps = {
-    #    "1": "clear_all_data",
-        "2": "market_updates",
-        "3": "create_portfolio_alerts",
-        "4": "create_position_alerts",
-        "5": "evaluate_alerts",
-        "6": "cleanse_ids",
-        "7": "link_hedges",
-        "8": "enrich_positions",
-        "9": "enrich_alerts",
-        "10": "update_evaluated_value",
-        "11": "create_global_alerts"
-    }
+    """Interactive runner for Cyclone's step engine.
+
+    The menu reflects the step names expected by :meth:`Cyclone.run_cycle` and
+    shows which internal method each step triggers so it stays in sync with the
+    engine implementation.
+    """
+
+    step_definitions = [
+        ("update_operations", cyclone.run_operations_update),
+        ("market_updates", cyclone.run_market_updates),
+        ("check_jupiter_for_updates", cyclone.run_check_jupiter_for_updates),
+        ("enrich_positions", cyclone.run_enrich_positions),
+        ("enrich_alerts", cyclone.run_alert_enrichment),
+        ("update_evaluated_value", cyclone.run_update_evaluated_value),
+        ("create_portfolio_alerts", cyclone.run_create_portfolio_alerts),
+        ("create_position_alerts", cyclone.run_create_position_alerts),
+        ("create_global_alerts", cyclone.run_create_global_alerts),
+        ("evaluate_alerts", cyclone.run_alert_evaluation),
+        ("cleanse_ids", cyclone.run_cleanse_ids),
+        ("link_hedges", cyclone.run_link_hedges),
+        ("update_hedges", cyclone.run_update_hedges),
+    ]
+
+    steps = {str(i + 1): name for i, (name, _) in enumerate(step_definitions)}
 
     while True:
         os.system("cls" if os.name == "nt" else "clear")
         console.print(Panel("[bold magenta]🧪 Cyclone Workbench — Step Engine[/bold magenta]", border_style="magenta"))
         console.print(get_counts_banner())
-        console.print("""
-Select one or more steps (comma separated), or [bold red]X[/bold red] to return:
-
-1) clear_all_data
-2) market_updates
-3) create_portfolio_alerts
-4) create_position_alerts
-5) evaluate_alerts
-6) cleanse_ids
-7) link_hedges
-8) enrich_positions
-9) enrich_alerts
-10) update_evaluated_value
-11) create_global_alerts
-""")
+        console.print("Select one or more steps (comma separated), or [bold red]X[/bold red] to return:\n")
+        for i, (name, func) in enumerate(step_definitions, start=1):
+            console.print(f"{i}) {name} -> {func.__name__}")
 
         choice = Prompt.ask("→")
         if choice.strip().lower() in {"x", "exit"}:
