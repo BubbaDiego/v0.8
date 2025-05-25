@@ -50,14 +50,15 @@ valid without placing an actual call.
 ## Hedge Calculator
 
 ## Threshold Seeder
-Default alert thresholds can be populated (or refreshed) using the seeder script:
+Default alert thresholds can still be populated using the dedicated module:
 
 ```bash
 python -m data.threshold_seeder
 ```
 
-Run it from the project root on Windows or Linux. Existing thresholds will be
-updated to match the defaults defined in the script.
+However, the main database initializer now exposes the same functionality via
+the `--seed-thresholds` flag, allowing all seeding tasks to be consolidated into
+a single command.
 
 ## Running `sonic_app.py`
 
@@ -83,7 +84,17 @@ To create the SQLite database and all required tables, run:
 python scripts/init_db.py
 ```
 
-The script will create `mother_brain.db` in the `data` directory (or the path set via the `DB_PATH` environment variable) and ensure every table exists.
+The script creates `mother_brain.db` in the `data` directory (or the path set via
+the `DB_PATH` environment variable) and ensures every table exists.  Additional
+flags allow optional seeding and resets:
+
+```bash
+# wipe the DB and seed thresholds and wallets
+python scripts/init_db.py --reset --seed-thresholds --seed-wallets
+
+# run every available seeder
+python scripts/init_db.py --all
+```
 
 **Existing Installations**
 
