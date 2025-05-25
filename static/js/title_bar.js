@@ -116,4 +116,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (titlePill) {
     titlePill.classList.add('shimmer');
   }
+
+  // Allow dismissing the profit badge with a click
+  const profitBadge = document.querySelector('.profit-badge');
+  if (profitBadge) {
+    profitBadge.addEventListener('click', () => {
+      profitBadge.classList.add('fade-out');
+      setTimeout(() => profitBadge.remove(), 400);
+    });
+  }
 });
