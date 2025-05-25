@@ -1,6 +1,5 @@
 <div id="toastContainer" class="toast-container" style="position: fixed; top: 1.5rem; right: 2rem; z-index: 3000;"></div>
 <nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
-  {% set title_image = title_image|default(url_for('static', filename='images/sonic_title.png')) %}
   <div class="nav-bar d-flex align-items-center gap-2">
     <a class="btn nav-btn" href="/" title="Home"><span>🏠</span></a>
     <a class="btn nav-btn" href="{{ url_for('positions.list_positions') }}" title="Positions"><span>📊</span></a>
