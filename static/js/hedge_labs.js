@@ -34,6 +34,23 @@ function postAction(url) {
 let currentHedgeId = null;
 let hedgePositions = [];
 
+function setPriceDisplay(price) {
+  const wrapper = document.getElementById('priceValue');
+  if (!wrapper) return;
+  const img = document.getElementById('priceAssetIcon');
+  const text = document.getElementById('priceText');
+  if (img) {
+    const hedge = (window.initialHedges || []).find(h => String(h.id) === String(currentHedgeId));
+    if (hedge && hedge.asset_image) {
+      img.src = `/static/images/${hedge.asset_image}`;
+      img.classList.remove('d-none');
+    } else {
+      img.classList.add('d-none');
+    }
+  }
+  if (text) text.textContent = 'Price: $' + price.toFixed(2);
+}
+
 function loadHedgePositions(id) {
   fetch(`/sonic_labs/api/hedge_positions?hedge_id=${id}`)
     .then(resp => resp.json())
@@ -68,14 +85,14 @@ function initSlider() {
   slider.max = max;
   const clamped = Math.min(Math.max(current, min), max);
   slider.value = clamped;
-  document.getElementById('priceValue').textContent = 'Price: $' + current.toFixed(2);
+  setPriceDisplay(current);
 }
 
 function updateEvaluation() {
   const slider = document.getElementById('priceSlider');
   if (!slider || !currentHedgeId) return;
   const price = parseFloat(slider.value);
-  document.getElementById('priceValue').textContent = 'Price: $' + price.toFixed(2);
+  setPriceDisplay(price);
   fetch(`/sonic_labs/api/evaluate_hedge?hedge_id=${currentHedgeId}&price=${price}`)
     .then(resp => resp.json())
     .then(data => updateTable(data));
