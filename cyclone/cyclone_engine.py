@@ -79,7 +79,12 @@ class Cyclone:
         self.config = load_config(str(ALERT_LIMITS_PATH))
 
         self.position_core = PositionCore(self.data_locker)
-        self.alert_core = AlertCore(self.data_locker, config_loader=lambda: {})
+        # Pass alert limits config to AlertCore so alert creation respects
+        # the "enabled" flags defined in alert_limits.json
+        self.alert_core = AlertCore(
+            self.data_locker,
+            config_loader=lambda: self.config,
+        )
         self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
