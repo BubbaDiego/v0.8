@@ -14,7 +14,7 @@ from core.logging import log
 from data.database import DatabaseManager
 
 # 🔧 Point to real DB file (or use ":memory:")
-DB_PATH = "test_alerts.db"
+DB_PATH = ":memory:"
 
 # 1. Bootstrap schema BEFORE creating DataLocker
 db = DatabaseManager(DB_PATH)
@@ -112,7 +112,6 @@ if __name__ == "__main__":
 import pytest
 
 
-@pytest.mark.asyncio
-async def test_alert_core_barrage():
-    await run_barrage()
+def test_alert_core_barrage():
+    asyncio.run(run_barrage())
 

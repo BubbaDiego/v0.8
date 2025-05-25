@@ -107,7 +107,18 @@ class TestCore:
                 log.warning(f"⚠️ {line}", source="TestCore")
 
         log.banner("Test Summary")
-        log.info(f"✅ Passed: {passed}  ❌ Failed: {failed}  ⚠️ Skipped: {skipped}", source="TestCore")
+        log.info(
+            f"✅ Passed: {passed}  ❌ Failed: {failed}  ⚠️ Skipped: {skipped}",
+            source="TestCore",
+        )
+
+        total = passed + failed + skipped
+        if total:
+            pct = passed / total * 100
+            log.info(
+                f"🔢 Pass Rate: {pct:.1f}% ({passed}/{total})",
+                source="TestCore",
+            )
 
         if result == 0:
             log.success("✅ All tests completed!", source="TestCore")
@@ -129,8 +140,8 @@ class TestCore:
 
     # ------------------------------------------------------------------
     def test_alert_core(self) -> None:
-        """Run AlertCore-specific test cases."""
-        self.run_glob("alert_core/tests/test_*.py")
+        """Run all AlertCore test cases."""
+        self.run_glob("alert_core/**/test_*.py")
 
     # ------------------------------------------------------------------
     def _open_html_report(self, report_path: Path) -> None:
