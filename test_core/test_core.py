@@ -4,6 +4,7 @@ import sys
 import contextlib
 import os
 import importlib
+import re
 from pathlib import Path
 import pytest
 from core.core_imports import log
@@ -149,6 +150,40 @@ class TestCore:
         self.run_glob("alert_core/**/test_*.py")
 
     # ------------------------------------------------------------------
+    def pick_and_run_tests(self) -> None:
+        """Allow user to pick specific tests to run."""
+        tests = [
+            p
+            for p in Path("tests").rglob("test_*.py")
+            if not any(part in {".venv", "venv", "site-packages"} for part in p.parts)
+        ]
+        if not tests:
+            print("No tests found.")
+            return
+        tests = sorted(tests)
+        for i, t in enumerate(tests, 1):
+            print(f"{i}) {t}")
+        choice = input("Select tests (e.g., 1,2,7) or 'q' to cancel: ").strip()
+        if not choice or choice.lower() == "q":
+            return
+        import re
+        nums = re.findall(r"\d+", choice)
+        selected = []
+        for n in nums:
+            idx = int(n) - 1
+            if 0 <= idx < len(tests):
+                selected.append(tests[idx])
+        # Remove duplicates while preserving order
+        selected = list(dict.fromkeys(selected))
+        if not selected:
+            print("No valid selections.")
+            return
+        print("Running selected tests:")
+        for s in selected:
+            print(f"- {s}")
+        self.run_files(selected)
+
+    # ------------------------------------------------------------------
     def _open_html_report(self, report_path: Path) -> None:
         """Open *report_path* in a browser if possible."""
         if not report_path.exists():
@@ -166,10 +201,11 @@ class TestCore:
         print("1) Run all tests")
         print("2) Run test file pattern")
         print("3) Run Alert Core tests")
-        print("4) Exit")
+        print("4) Pick tests to run")
+        print("5) Exit")
 
         while True:
-            choice = input("Enter your choice (1-4): ").strip()
+            choice = input("Enter your choice (1-5): ").strip()
             if choice == "1":
                 self.run_glob()
             elif choice == "2":
@@ -178,6 +214,8 @@ class TestCore:
             elif choice == "3":
                 self.test_alert_core()
             elif choice == "4":
+                self.pick_and_run_tests()
+            elif choice == "5":
                 break
             else:
                 print("Invalid choice. Try again.")
