@@ -1,262 +1,63 @@
-#!/usr/bin/env python
-"""
-launch_pad.py
-Launch Pad Control Center for Sonic.
-"""
+#!/usr/bin/env python3
+"""Sonic Launch console."""
 
 import os
 import sys
 import subprocess
 import time
-from datetime import datetime
-from functools import wraps
-from time import time as timer_time
+import webbrowser
+from rich.console import Console
+from rich.text import Text
 
-from test_core import TestCore
-from utils.schema_validation_service import SchemaValidationService
-from core.core_imports import log
+console = Console()
 
-
-
-# --- Configuration ---
-CRITICAL_PACKAGES = [
-    "pytest",
-    "requests",
-    "flask",
-    "colorama"
-]
-
-# --- Helper Functions ---
 
 def clear_screen():
-    """Clear the console."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
 
-def check_and_install_critical_packages():
-    """Ensure critical packages are installed."""
-    missing = []
-    for package in CRITICAL_PACKAGES:
-        try:
-            __import__(package)
-        except ImportError:
-            missing.append(package)
 
-    if missing:
-        log.warning(f"Missing critical packages: {', '.join(missing)}", source="LaunchPad")
-        choice = input("Would you like to auto-install them? (y/n): ").strip().lower()
-        if choice == "y":
-            for pkg in missing:
-                try:
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
-                    log.success(f"Installed {pkg}", source="LaunchPad")
-                except subprocess.CalledProcessError:
-                    log.error(f"Failed to install {pkg}", source="LaunchPad")
-            input("\nPress ENTER to continue...")
-            clear_screen()
-        else:
-            log.warning("Continuing without installing missing packages.", source="LaunchPad")
-            input("\nPress ENTER to continue at your own risk...")
-            clear_screen()
-
-def timed_operation(func):
-    """Decorator to time operations."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        log.start_timer(func.__name__)
-        result = func(*args, **kwargs)
-        log.end_timer(func.__name__, source="LaunchPad")
-        return result
-    return wrapper
-
-# --- Main Operations ---
-
-@timed_operation
-def run_tests():
-    """Run all tests."""
-    log.info("Running tests with Pytest...", source="LaunchPad")
+def show_banner():
+    """Display the Sonic Launch banner."""
     try:
-        subprocess.run([sys.executable, "-m", "pytest", "tests/"], check=True)
-        log.success("All tests passed!", source="LaunchPad")
-    except subprocess.CalledProcessError:
-        log.error("Some tests failed!", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
+        from pyfiglet import Figlet
+        art = Figlet(font="slant").renderText("Sonic Launch")
+        console.print(Text(art, style="cyan"))
+    except Exception:
+        console.print(Text("Sonic Launch", style="bold cyan italic"), justify="center")
+        console.print()
 
-@timed_operation
-def run_flask():
-    """Run Flask app."""
-    log.info("Starting Flask server...", source="LaunchPad")
+
+def launch_sonic_web():
+    """Start the Sonic web server and open the browser."""
+    console.print("[bold green]Launching Sonic Web...[/bold green]")
+    proc = subprocess.Popen([sys.executable, "sonic_app.py"])
+    time.sleep(2)
+    webbrowser.open("http://127.0.0.1:5000")
     try:
-        subprocess.run([sys.executable, "sonic_app.py"], check=True)
-    except subprocess.CalledProcessError as e:
-        log.error(f"Flask server failed to start: {e}", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
 
-@timed_operation
-def run_path_audit():
-    """Run the path audit tool."""
-    log.info("Running Path Audit...", source="LaunchPad")
-    try:
-        subprocess.run([sys.executable, "utils/path_audit.py"], check=True)
-        log.success("Path audit completed successfully!", source="LaunchPad")
-    except subprocess.CalledProcessError as e:
-        log.error(f"Path audit failed: {e}", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_health_check():
-    """Run a system health check."""
-    log.info("Running Health Check...", source="LaunchPad")
-    try:
-        subprocess.run([sys.executable, "-m", "pytest", "tests/test_alert_controller.py"], check=True)
-        log.success("Health check passed!", source="LaunchPad")
-    except subprocess.CalledProcessError:
-        log.error("Health check FAILED!", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_cyclone_tests():
-    """Run Cyclone system tests."""
-    log.info("Running Cyclone system tests...", source="LaunchPad")
-    try:
-        subprocess.run([sys.executable, "-m", "pytest", "tests/test_cyclone.py"], check=True)
-        log.success("Cyclone tests passed!", source="LaunchPad")
-    except subprocess.CalledProcessError:
-        log.error("Cyclone tests FAILED!", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_clear_caches():
-    """Clear Python caches."""
-    log.info("Clearing Python caches...", source="LaunchPad")
-    try:
-        subprocess.run([sys.executable, "utils/clear_caches.py"], check=True)
-        log.success("Cache clearing completed!", source="LaunchPad")
-    except subprocess.CalledProcessError:
-        log.error("Cache clearing failed!", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_schema_validation_service():
-    """Run the Schema Validation Service."""
-    log.info("Running Schema Validation Service...", source="LaunchPad")
-    SchemaValidationService.batch_validate()
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_operations_monitor():
-    """Run Operations Monitor Console."""
-    log.info("Launching Operations Monitor Console...", source="LaunchPad")
-    try:
-        subprocess.run([sys.executable, "monitor/operations_monitor_console.py"], check=True)
-    except subprocess.CalledProcessError:
-        log.error("Operations Monitor Console failed to start!", source="LaunchPad")
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-@timed_operation
-def run_test_manager():
-
-    """Simple interactive test runner using :class:`TestCore`."""
-    core = TestCore()
-    while True:
-        print("\n=== 🔍 Test Runner Console ===")
-        print("1) Run all tests")
-        print("2) Run test file pattern")
-        print("3) Exit")
-
-        choice = input("Enter your choice (1-3): ").strip()
-        if choice == "1":
-            core.run_all()
-        elif choice == "2":
-            pattern = input("Pattern (e.g., tests/test_*.py): ").strip()
-            core.run_glob(pattern)
-        elif choice == "3":
-            break
-        else:
-            print("Invalid choice. Try again.")
-
-    input("\nPress ENTER to return to menu...")
-    clear_screen()
-
-
-def show_launchpad_banner():
-    print("\n" + "=" * 60)
-    print(r"""\
-   __                          __       ____            __
-  / /  ____ ___  ______  _____/ /_     / __ \____ _____/ /
- / /  / __ `/ / / / __ \/ ___/ __ \   / /_/ / __ `/ __  / 
-/ /__/ /_/ / /_/ / / / / /__/ / / /  / ____/ /_/ / /_/ /   
-\____/\__,_/\__,_/_/ /_/\___/_/ /_/  /_/    \__,_/\__,_/   
-""")
-    print("".center(60))
-    print("=" * 60 + "\n")
-
-
-# --- Menu ---
 
 def main_menu():
-    clear_screen()
-    log.banner("🚀 LAUNCH PAD - CONTROL CENTER 🚀")
-
-    print("""
-    🖥️  CORE SERVICES
-    ---------------------------
-    1) 🚀 Start Flask App
-    2) 🧪 Launch Test Manager
-    3) 🛡️ Launch Operations Monitor
-
-    🛠️  UTILITIES
-    ---------------------------
-    4) 🧹 Clear Python Caches
-    5) 📋 Run Schema Validation Service
-
-    🩺  SYSTEM HEALTH
-    ---------------------------
-    6) 🩺 Run System Health Check
-    7) 🌀 Run Cyclone System Tests
-
-    ❌  OTHER
-    ---------------------------
-    0) ❌ Exit
-    """)
-
-    choice = input("Enter your choice (0-7): ").strip()
-
-    if choice == "1":
+    while True:
         clear_screen()
-        run_flask()
-    elif choice == "2":
-        clear_screen()
-        run_test_manager()
-    elif choice == "3":
-        clear_screen()
-        run_operations_monitor()
-    elif choice == "4":
-        clear_screen()
-        run_clear_caches()
-    elif choice == "5":
-        clear_screen()
-        run_schema_validation_service()
-    elif choice == "6":
-        clear_screen()
-        run_health_check()
-    elif choice == "7":
-        clear_screen()
-        run_cyclone_tests()
-    elif choice == "0":
-        log.success("Goodbye! 👋", source="LaunchPad")
-        sys.exit(0)
-    else:
-        log.warning("Invalid selection. Please try again.", source="LaunchPad")
-        input("\nPress ENTER to continue...")
-        clear_screen()
+        show_banner()
+        console.print("1) Launch Sonic Web")
+        console.print("2) Operations (coming soon)")
+        console.print("3) Exit")
+        choice = input("→ ").strip()
+        if choice == "1":
+            launch_sonic_web()
+        elif choice == "2":
+            console.print("Operations placeholder...", style="yellow")
+            input("Press ENTER to return...")
+        elif choice == "3":
+            console.print("Goodbye!", style="green")
+            break
+        else:
+            console.print("Invalid selection.", style="red")
+            time.sleep(1)
 
 
 if __name__ == "__main__":
