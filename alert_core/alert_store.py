@@ -236,7 +236,8 @@ class AlertStore:
 
                 for spec in alerts:
                     metric_cfg = pos_cfg.get(spec["description"], {})
-                    if metric_cfg.get("enabled") is False:
+                    # Skip alert creation if explicitly disabled or key is missing
+                    if not metric_cfg.get("enabled", True):
                         continue
 
                     trig_val = metric_cfg.get("medium", spec["trigger_value"])
@@ -295,7 +296,8 @@ class AlertStore:
 
         for alert_type, description, trigger_value, condition in metrics:
             metric_cfg = port_cfg.get(description, {})
-            if metric_cfg.get("enabled") is False:
+            # Skip when disabled or missing in config
+            if not metric_cfg.get("enabled", True):
                 continue
 
             trig_val = metric_cfg.get("medium", trigger_value)
