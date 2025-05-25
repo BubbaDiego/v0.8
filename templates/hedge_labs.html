@@ -44,7 +44,7 @@
             <span class="mx-1">⛓️</span>
             <img class="wallet-icon ms-1" src="{{ url_for('static', filename='images/' + h.wallet_image) }}" alt="wallet">
           </td>
-          <td>Tot&nbsp;Value&nbsp;=&nbsp;{{ h.total_value }} Size ({{ h.total_long_size }}/{{ h.total_short_size }}), Leverage ({{ h.long_leverage }}/{{ h.short_leverage }})</td>
+          <td>Tot&nbsp;Value&nbsp;=&nbsp;{{ h.total_value }} Ratio ({{ h.long_size_ratio }}%, {{ h.short_size_ratio }}%), Leverage ({{ h.long_leverage }}/{{ h.short_leverage }})</td>
           <td>{{ h.total_heat_index }}</td>
         </tr>
         {% endfor %}

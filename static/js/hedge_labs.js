@@ -9,7 +9,7 @@ function loadHedges() {
           const tr = document.createElement('tr');
           const assetImg = `/static/images/${h.asset_image}`;
           const walletImg = `/static/images/${h.wallet_image}`;
-          const info = `Total Value = ${h.total_value} Size (${h.total_long_size}/${h.total_short_size}), Leverage (${h.long_leverage}/${h.short_leverage})`;
+          const info = `Total Value = ${h.total_value} Ratio (${h.long_size_ratio}%, ${h.short_size_ratio}%), Leverage (${h.long_leverage}/${h.short_leverage})`;
           tr.innerHTML = `
             <td>
               <img class="asset-icon me-1" src="${assetImg}" alt="asset">
