@@ -4,9 +4,9 @@ import os
 from core.core_imports import retry_on_locked
 
 @retry_on_locked()
-def create_temp_alert_limits_json(filepath="alert_limitsz.json"):
+def create_temp_alert_limits_json(filepath="alert_limits.json"):
     """
-    Create a dummy alert_limitsz.json if it doesn't exist.
+    Create a dummy alert_limits.json if it doesn't exist.
     """
     if os.path.exists(filepath):
         return  # ✅ Already exists, do nothing

@@ -9,7 +9,7 @@ from core.core_imports import log
 def save_config(filename: str, data: dict) -> None:
     """Save ``data`` to ``filename`` resolving default locations."""
     path = Path(filename)
-    if path.name in {"alert_limits.json", "alert_limitsz.json"}:
+    if path.name == "alert_limits.json":
         path = ALERT_LIMITS_PATH
     elif not path.is_absolute():
         path = CONFIG_DIR / path

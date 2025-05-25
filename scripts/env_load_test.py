@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+
 try:  # optional dependency
     from dotenv import load_dotenv, dotenv_values
 except Exception:  # pragma: no cover - optional dependency is missing
@@ -22,6 +23,7 @@ def main() -> int:
     if load_dotenv is None or dotenv_values is None:
         print("python-dotenv is not installed; cannot load .env file")
         return 1
+
     repo_root = Path(__file__).resolve().parent.parent
     env_path = repo_root / ".env"
     if not env_path.exists():

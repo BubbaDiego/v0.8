@@ -131,7 +131,7 @@ class StartUpService:
     @staticmethod
     def ensure_alert_limits():
         if not os.path.exists(ALERT_LIMITS_PATH):
-            log.warning("⚠️ alert_limitsz.json not found. Creating default template...")
+            log.warning("⚠️ alert_limits.json not found. Creating default template...")
             default = {
                 "alert_ranges": {},
                 "global_alert_config": {
@@ -140,10 +140,10 @@ class StartUpService:
                     "thresholds": {}
                 }
             }
-            save_config("alert_limitsz.json", default)
-            log.success("✅ Default alert_limitsz.json created.", source="StartUpService")
+            save_config("alert_limits.json", default)
+            log.success("✅ Default alert_limits.json created.", source="StartUpService")
         else:
-            log.info("✅ alert_limitsz.json found.", source="StartUpService")
+            log.info("✅ alert_limits.json found.", source="StartUpService")
             valid = SchemaValidationService.validate_schema(
                 str(ALERT_LIMITS_PATH),
                 SchemaValidationService.ALERT_LIMITS_SCHEMA,
