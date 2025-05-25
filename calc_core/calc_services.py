@@ -67,11 +67,22 @@ class CalcServices:
             log.error(f"Risk index calculation failed: {e}", "calculate_composite_risk_index", position)
             return None
 
-    def calculate_value(self, position):
+    def calculate_value(self, position: dict) -> float:
+        """Return the current value of a position.
 
-        value = round(float(position.get("size") or 0.0), 2)
-        log.debug("Calculated value", "calculate_value", {"value": value})
-        return value
+        The value is calculated as ``size * current_price`` which matches
+        how values are derived during enrichment.  This maintains a
+        consistent definition across the codebase.
+        """
+        try:
+            size = float(position.get("size") or 0.0)
+            price = float(position.get("current_price") or 0.0)
+            value = round(size * price, 2)
+            log.debug("Calculated value", "calculate_value", {"value": value})
+            return value
+        except Exception as e:
+            log.error(f"Failed to calculate value: {e}", "calculate_value")
+            return 0.0
 
     def calculate_leverage(self, size: float, collateral: float) -> float:
         leverage = round(size / collateral, 2) if size > 0 and collateral > 0 else 0.0
