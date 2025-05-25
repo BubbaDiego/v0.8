@@ -44,7 +44,7 @@
             <span class="mx-1">⛓️</span>
             <img class="wallet-icon ms-1" src="{{ url_for('static', filename='images/' + h.wallet_image) }}" alt="wallet">
           </td>
-          <td>{{ h.positions|join(', ') }}</td>
+          <td>Tot&nbsp;Value&nbsp;=&nbsp;{{ h.total_value }} Size ({{ h.total_long_size }}/{{ h.total_short_size }}), Leverage ({{ h.long_leverage }}/{{ h.short_leverage }})</td>
           <td>{{ h.total_heat_index }}</td>
         </tr>
         {% endfor %}
@@ -57,6 +57,11 @@
     <div class="row mb-3">
       <div class="col-md-4">
         <label for="hedgeSelect" class="form-label"><strong>Select Hedge</strong></label>
+        <div class="mb-1">
+          <img id="selectAssetIcon" class="asset-icon me-1 d-none" alt="asset">
+          <span class="mx-1">⛓️</span>
+          <img id="selectWalletIcon" class="wallet-icon ms-1 d-none" alt="wallet">
+        </div>
         <select id="hedgeSelect" class="form-select">
           <option value="" disabled selected>-- Choose Hedge --</option>
           {% for h in hedges %}
