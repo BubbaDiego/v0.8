@@ -56,7 +56,7 @@
 
   <div class="card mt-4">
     <div class="card-header">
-      <strong><span class="me-1">🧮</span>Calculator</strong>
+      <strong><span class="me-1">🖩</span>Calculator</strong>
     </div>
     <div class="card-body">
       <div class="row mb-3">
@@ -72,7 +72,10 @@
         <div class="col-md-8">
           <label for="priceSlider" class="form-label"><strong>Simulated Price</strong></label>
           <input type="range" id="priceSlider" class="form-range" step="0.01" disabled>
-          <div id="priceValue" class="mt-2">Price: 0</div>
+          <div id="priceValue" class="mt-2 d-flex align-items-center">
+            <img id="priceAssetIcon" class="asset-icon me-1 d-none" alt="asset">
+            <strong id="priceText">Price: 0</strong>
+          </div>
         </div>
       </div>
       <table class="table table-sm" id="evalTable">
