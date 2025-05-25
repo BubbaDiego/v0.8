@@ -1,7 +1,7 @@
 # 🧠 SystemCore — updated for theme profile support
 
 from alert_core.threshold_service import ThresholdService
-from system.wallet_service import WalletService
+from wallets.wallet_service import WalletService
 from wallets.wallet_core import WalletCore
 from system.theme_service import ThemeService
 from xcom.xcom_core import XComCore
@@ -11,7 +11,7 @@ from core.logging import log
 class SystemCore:
     def __init__(self, data_locker):
         self.log = log
-        self.wallets = WalletService(data_locker)
+        self.wallets = WalletService()
         self.wallet_core = WalletCore()
         self.theme = ThemeService(data_locker)
         self.xcom = XComCore(data_locker)
