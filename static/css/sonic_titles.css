@@ -37,8 +37,9 @@
 }
 
 .sonic-title-pill.dashboard {
-  background-color: #7c3aed;
-  color: #fff;
+  /* Match default styling */
+  background-color: #cce5ff;
+  color: #232946;
 }
 
 .sonic-title-pill.shimmer {
@@ -47,7 +48,7 @@
     rgba(255, 255, 255, 0.6) 50%,
     rgba(255, 255, 255, 0) 100%);
   background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
+  animation: shimmer 3s infinite;
 }
 
 .sonic-title-image {
