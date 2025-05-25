@@ -9,7 +9,12 @@ import webbrowser
 from rich.console import Console
 from rich.text import Text
 
+from core.core_imports import configure_console_log
+from core.logging import log
+from monitor.operations_monitor import OperationsMonitor
+
 console = Console()
+configure_console_log()
 
 
 def clear_screen():
@@ -39,19 +44,38 @@ def launch_sonic_web():
         proc.terminate()
 
 
+def operations_menu():
+    """Operations utilities."""
+    while True:
+        clear_screen()
+        console.print("[bold cyan]Operations[/bold cyan]")
+        console.print("1) 🛠️ Core Config Test")
+        console.print("b) Back")
+        choice = input("→ ").strip().lower()
+        if choice == "1":
+            monitor = OperationsMonitor()
+            result = monitor.run_startup_configuration_test()
+            log.info("Config Test Result", payload=result)
+            input("Press ENTER to continue...")
+        elif choice == "b":
+            break
+        else:
+            console.print("Invalid selection.", style="red")
+            time.sleep(1)
+
+
 def main_menu():
     while True:
         clear_screen()
         show_banner()
         console.print("1) Launch Sonic Web")
-        console.print("2) Operations (coming soon)")
+        console.print("2) ⚙️ Operations")
         console.print("3) Exit")
         choice = input("→ ").strip()
         if choice == "1":
             launch_sonic_web()
         elif choice == "2":
-            console.print("Operations placeholder...", style="yellow")
-            input("Press ENTER to return...")
+            operations_menu()
         elif choice == "3":
             console.print("Goodbye!", style="green")
             break
