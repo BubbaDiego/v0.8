@@ -73,14 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Theme toggle handled globally by sonic_theme_toggle.js
 
-  // Allow dismissing the profit badge with a click
-  const profitBadge = document.querySelector('.profit-badge');
-  if (profitBadge) {
-    profitBadge.addEventListener('click', function () {
-      profitBadge.classList.add('dismissed');
-    });
-  }
-
   // Apply shimmer animation to the title pill on load
   const titlePill = document.querySelector('.sonic-title-pill');
   if (titlePill) {
