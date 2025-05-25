@@ -19,7 +19,19 @@
 <div class="sonic-section-container sonic-section-middle mt-3">
   <div class="sonic-content-panel">
       <div class="alert-table">
-        <div class="section-title">Alerts</div>
+        <div class="section-title d-flex justify-content-between align-items-center">
+          <span>Alerts</span>
+          <div class="dropdown">
+            <a href="#" class="btn btn-light btn-sm dropdown-toggle" id="alertMenu" data-bs-toggle="dropdown" aria-expanded="false" title="Manage Alerts">
+              <i class="fas fa-ellipsis-v"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="alertMenu">
+              <li><a class="dropdown-item alert-add" href="#">Add Alerts</a></li>
+              <li><a class="dropdown-item alert-delete" href="#">Delete Alerts</a></li>
+              <li><a class="dropdown-item alert-update" href="#">Update Alert State</a></li>
+            </ul>
+          </div>
+        </div>
         {% set type_icons = {
           'pricethreshold': '💵',
           'deltachange': '📊',
@@ -204,4 +216,5 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 <script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
 <script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alert_status_actions.js') }}"></script>
 {% endblock %}
