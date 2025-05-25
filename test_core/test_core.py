@@ -67,11 +67,11 @@ class TestCore:
 
 
 
-        # Prevent auto-loading of external plugins which may introduce
-        # unwanted dependencies (e.g. anchorpy's pytest plugin requiring
-        # ``pytest_xprocess``).  Only the explicitly specified plugins
-        # should be loaded during the test run.
-        os.environ.setdefault("PYTEST_DISABLE_PLUGIN_AUTOLOAD", "1")
+        # Disable auto-loading of external plugins. Some external pytest
+        # plugins may rely on optional dependencies that are not installed in
+        # the environment, leading to import errors. Only the explicitly
+        # specified plugins should be loaded during the test run.
+        os.environ["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
 
         with open(txt_log, "w", encoding="utf-8") as f, \
              contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
