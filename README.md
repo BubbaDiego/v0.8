@@ -57,8 +57,17 @@ python -m data.threshold_seeder
 ```
 
 However, the main database initializer now exposes the same functionality via
+
 the `--seed-thresholds` flag, allowing all seeding tasks to be consolidated into
 a single command.
+
+## Exporting Alert Thresholds
+
+Use the **Export** button on the Alert Thresholds page (or the
+`/system/alert_thresholds/export` API endpoint) to download a JSON snapshot of
+the threshold limits currently stored in the database. These exported values are
+the limits the system uses when evaluating alerts—they do **not** represent the
+current alerts themselves.
 
 ## Running `sonic_app.py`
 
