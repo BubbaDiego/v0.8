@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_titles.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_middle.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_parallax.css') }}">
@@ -13,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-  {% include "title_bar.html" %}
+  {% include "title_bar.html" with title_text='Dashboard', title_theme='dashboard' %}
   {% include "dash_top.html" %}
   {% include "dash_middle.html" %}
   {% include "dash_bottom.html" %}
