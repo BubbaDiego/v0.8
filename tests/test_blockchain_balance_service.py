@@ -1,11 +1,11 @@
 import types
 from unittest.mock import MagicMock
 
-import wallets.check_wallet_balance_service as svc
+import wallets.blockchain_balance_service as svc
 
 
 def test_get_balance_eth(monkeypatch):
-    service = svc.CheckWalletBalanceService()
+    service = svc.BlockchainBalanceService()
     mock_web3 = MagicMock()
     mock_web3.eth.get_balance.return_value = 10**18
     mock_web3.from_wei.return_value = 1.0
@@ -17,7 +17,7 @@ def test_get_balance_eth(monkeypatch):
 
 
 def test_get_balance_solana(monkeypatch):
-    service = svc.CheckWalletBalanceService()
+    service = svc.BlockchainBalanceService()
     mock_client = MagicMock()
     mock_client.get_balance.return_value = {"result": {"value": 2 * svc.LAMPORTS_PER_SOL}}
     monkeypatch.setattr(service, "_sol", mock_client)

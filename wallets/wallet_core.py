@@ -22,7 +22,7 @@ from solana.publickey import PublicKey
 from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
 
-from wallets.check_wallet_balance_service import CheckWalletBalanceService
+from wallets.blockchain_balance_service import BlockchainBalanceService
 
 from wallets.wallet_service import WalletService
 from wallets.wallet import Wallet
@@ -38,7 +38,7 @@ class WalletCore:
         self.service = WalletService()
         self.rpc_endpoint = rpc_endpoint
         self.client = Client(rpc_endpoint)
-        self.balance_service = CheckWalletBalanceService()
+        self.balance_service = BlockchainBalanceService()
         log.debug(f"WalletCore initialized with RPC {rpc_endpoint}", source="WalletCore")
 
     # ------------------------------------------------------------------

@@ -5,26 +5,28 @@
 {% block extra_styles %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
 {% endblock %}
 
 {% block content %}
 {% include "title_bar.html" %}
-<div class="container pt-4">
-  <h1 class="mb-4">💼 Wallets</h1>
+<h1 class="mb-4 ps-3">💼 Wallets</h1>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="flash-messages">
-        {% for category, message in messages %}
-          <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flash-messages">
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
-  <div class="mini-table-box mb-4">
-    <table class="table table-striped align-middle mb-0">
+<div class="sonic-section-container sonic-section-middle mt-3">
+  <div class="sonic-content-panel">
+    <div class="mini-table-box mb-4">
+      <table class="table table-striped align-middle mb-0">
       <thead>
         <tr>
           <th>🖼️</th>
@@ -75,13 +77,11 @@
       </tbody>
     </table>
     </div>
-
-    <div class="card mb-4">
-      <div class="card-header">
-        <strong>Blockchain Balance</strong>
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-striped align-middle mb-0">
+  </div>
+  <div class="sonic-content-panel">
+    <div class="section-title mb-2">Blockchain Balance</div>
+    <div class="mini-table-box">
+      <table class="table table-striped align-middle mb-0">
           <thead>
             <tr>
               <th>🖼️</th>
@@ -112,17 +112,22 @@
         </table>
       </div>
     </div>
+</div>
 
+<div class="sonic-section-container sonic-section-middle">
+  <div class="sonic-content-panel">
     {% include "wallets/wallet_form.html" %}
 
-  <div class="mt-4">
-    <form action="{{ url_for('system.export_wallets') }}" method="post" class="d-inline">
-      <button type="submit" class="btn btn-secondary">💾 Export to JSON</button>
-    </form>
-    <form action="{{ url_for('system.import_wallets') }}" method="post" class="d-inline">
-      <button type="submit" class="btn btn-secondary">♻️ Import from JSON</button>
-    </form>
+    <div class="mt-4">
+      <form action="{{ url_for('system.export_wallets') }}" method="post" class="d-inline">
+        <button type="submit" class="btn btn-secondary">💾 Export to JSON</button>
+      </form>
+      <form action="{{ url_for('system.import_wallets') }}" method="post" class="d-inline">
+        <button type="submit" class="btn btn-secondary">♻️ Import from JSON</button>
+      </form>
+    </div>
   </div>
+</div>
 
   <!-- Edit Wallet Modal -->
   <div class="modal fade" id="editWalletModal" tabindex="-1" aria-hidden="true">

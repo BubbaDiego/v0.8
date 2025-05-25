@@ -9,11 +9,13 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 
 from wallets.wallet_service import WalletService
+from wallets.wallet_core import WalletCore
 from wallets.wallet_schema import WalletIn
 from core.core_imports import retry_on_locked
 
 wallet_bp = Blueprint("wallets", __name__, url_prefix="/wallets")
 service = WalletService()
+core = WalletCore()
 
 # 📁 Where uploaded wallet images go
 UPLOAD_FOLDER = os.path.join("static", "uploads", "wallets")
@@ -24,7 +26,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @retry_on_locked()
 def list_wallets():
     try:
-        wallets = service.list_wallets()
+        wallets = core.load_wallets()
         return render_template("wallets/wallet_list.html", wallets=wallets)
     except Exception as e:
         import traceback
