@@ -74,9 +74,46 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
+    </div>
 
-  {% include "wallets/wallet_form.html" %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <strong>Blockchain Balance</strong>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>🖼️</th>
+              <th>🧠 Name</th>
+              <th>Sol</th>
+              <th>ETH</th>
+              <th>Polygon</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for wallet in wallets %}
+            {% set is_eth = wallet.public_address.startswith('0x') %}
+            <tr>
+              <td>
+                {% if wallet.image_path %}
+                  <img src="{{ wallet.image_path }}" alt="wallet avatar" class="wallet-icon">
+                {% else %}
+                  <span>No Image</span>
+                {% endif %}
+              </td>
+              <td>{{ wallet.name }}</td>
+              <td>{{ '%.2f'|format(wallet.balance) if not is_eth else '0' }}</td>
+              <td>{{ '%.2f'|format(wallet.balance) if is_eth else '0' }}</td>
+              <td>{{ '%.2f'|format(wallet.balance) if is_eth else '0' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% include "wallets/wallet_form.html" %}
 
   <div class="mt-4">
     <form action="{{ url_for('system.export_wallets') }}" method="post" class="d-inline">
