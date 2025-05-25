@@ -9,13 +9,14 @@ function loadHedges() {
           const tr = document.createElement('tr');
           const assetImg = `/static/images/${h.asset_image}`;
           const walletImg = `/static/images/${h.wallet_image}`;
+          const info = `Total Value = ${h.total_value} Size (${h.total_long_size}/${h.total_short_size}), Leverage (${h.long_leverage}/${h.short_leverage})`;
           tr.innerHTML = `
             <td>
               <img class="asset-icon me-1" src="${assetImg}" alt="asset">
               <span class="mx-1">⛓️</span>
               <img class="wallet-icon ms-1" src="${walletImg}" alt="wallet">
             </td>
-            <td>${h.positions.join(', ')}</td>
+            <td>${info}</td>
             <td>${h.total_heat_index}</td>`;
           tbody.appendChild(tr);
         });
@@ -33,6 +34,23 @@ function postAction(url) {
 
 let currentHedgeId = null;
 let hedgePositions = [];
+
+function updateSelectIcons() {
+  const assetImgEl = document.getElementById('selectAssetIcon');
+  const walletImgEl = document.getElementById('selectWalletIcon');
+  const select = document.getElementById('hedgeSelect');
+  if (!assetImgEl || !walletImgEl || !select) return;
+  const hedge = (window.initialHedges || []).find(h => String(h.id) === String(select.value));
+  if (hedge) {
+    assetImgEl.src = `/static/images/${hedge.asset_image}`;
+    walletImgEl.src = `/static/images/${hedge.wallet_image}`;
+    assetImgEl.classList.remove('d-none');
+    walletImgEl.classList.remove('d-none');
+  } else {
+    assetImgEl.classList.add('d-none');
+    walletImgEl.classList.add('d-none');
+  }
+}
 
 function setPriceDisplay(price) {
   const wrapper = document.getElementById('priceValue');
@@ -134,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       select.value = currentHedgeId;
       loadHedgePositions(currentHedgeId);
     }
+    updateSelectIcons();
   });
   const linkBtn = document.getElementById('linkHedgesBtn');
   const unlinkBtn = document.getElementById('unlinkHedgesBtn');
@@ -145,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (select) {
     select.addEventListener('change', () => {
       currentHedgeId = select.value;
+      updateSelectIcons();
       if (currentHedgeId) loadHedgePositions(currentHedgeId);
     });
   }

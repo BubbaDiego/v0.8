@@ -80,12 +80,23 @@ def hedge_labs_page():
     def hedge_to_dict(h):
         asset_img = DEFAULT_ASSET_IMAGE
         wallet_img = DEFAULT_WALLET_IMAGE
+        long_pos = None
+        short_pos = None
         if h.positions:
-            pos = dl.positions.get_position_by_id(h.positions[0])
-            if pos:
-                asset_key = str(pos.get("asset_type") or "").upper()
+            for pid in h.positions:
+                pos = dl.positions.get_position_by_id(pid)
+                if not pos:
+                    continue
+                ptype = str(pos.get("position_type") or "").lower()
+                if ptype == "long" and long_pos is None:
+                    long_pos = pos
+                elif ptype == "short" and short_pos is None:
+                    short_pos = pos
+            ref_pos = long_pos or short_pos
+            if ref_pos:
+                asset_key = str(ref_pos.get("asset_type") or "").upper()
                 asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
-                wallet_name = pos.get("wallet_name") or pos.get("wallet")
+                wallet_name = ref_pos.get("wallet_name") or ref_pos.get("wallet")
                 wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
         return {
             "id": h.id,
@@ -95,6 +106,12 @@ def hedge_labs_page():
             "long_heat_index": h.long_heat_index,
             "short_heat_index": h.short_heat_index,
             "total_heat_index": h.total_heat_index,
+            "long_leverage": float(long_pos.get("leverage", 0.0)) if long_pos else 0.0,
+            "short_leverage": float(short_pos.get("leverage", 0.0)) if short_pos else 0.0,
+            "total_value": (
+                (float(long_pos.get("value", 0.0)) if long_pos else 0.0)
+                + (float(short_pos.get("value", 0.0)) if short_pos else 0.0)
+            ),
             "asset_image": asset_img,
             "wallet_image": wallet_img,
             "created_at": h.created_at.isoformat() if hasattr(h.created_at, "isoformat") else h.created_at,
@@ -121,12 +138,23 @@ def api_get_hedges():
     def hedge_info(h):
         asset_img = DEFAULT_ASSET_IMAGE
         wallet_img = DEFAULT_WALLET_IMAGE
+        long_pos = None
+        short_pos = None
         if h.positions:
-            pos = dl.positions.get_position_by_id(h.positions[0])
-            if pos:
-                asset_key = str(pos.get("asset_type") or "").upper()
+            for pid in h.positions:
+                pos = dl.positions.get_position_by_id(pid)
+                if not pos:
+                    continue
+                ptype = str(pos.get("position_type") or "").lower()
+                if ptype == "long" and long_pos is None:
+                    long_pos = pos
+                elif ptype == "short" and short_pos is None:
+                    short_pos = pos
+            ref_pos = long_pos or short_pos
+            if ref_pos:
+                asset_key = str(ref_pos.get("asset_type") or "").upper()
                 asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
-                wallet_name = pos.get("wallet_name") or pos.get("wallet")
+                wallet_name = ref_pos.get("wallet_name") or ref_pos.get("wallet")
                 wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
         return {
             "id": h.id,
@@ -134,6 +162,12 @@ def api_get_hedges():
             "total_long_size": h.total_long_size,
             "total_short_size": h.total_short_size,
             "total_heat_index": h.total_heat_index,
+            "long_leverage": float(long_pos.get("leverage", 0.0)) if long_pos else 0.0,
+            "short_leverage": float(short_pos.get("leverage", 0.0)) if short_pos else 0.0,
+            "total_value": (
+                (float(long_pos.get("value", 0.0)) if long_pos else 0.0)
+                + (float(short_pos.get("value", 0.0)) if short_pos else 0.0)
+            ),
             "asset_image": asset_img,
             "wallet_image": wallet_img,
         }

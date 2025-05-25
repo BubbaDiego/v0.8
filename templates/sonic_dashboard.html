@@ -14,9 +14,10 @@
 {% endblock %}
 
 {% block content %}
+
   {% set title_text = 'Dashboard' %}
   {% set title_theme = 'dashboard' %}
-  {% include "title_bar.html" %}
+  {% include "title_bar.html" with title_text='Dashboard', title_theme='dashboard' %}
   {% include "dash_top.html" %}
   {% include "dash_middle.html" %}
   {% include "dash_bottom.html" %}
