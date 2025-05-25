@@ -1,97 +1,103 @@
 import pytest
+
 from data.alert import Alert, AlertType, AlertLevel, Condition
 from alert_core.alert_evaluation_service import AlertEvaluationService
-from core.core_imports import log
+from data.models import AlertThreshold
+
+
+class DummyThresholdService:
+    """Simple stand-in that returns static thresholds per type."""
+
+    def __init__(self, values: dict[str, dict[str, float]]):
+        self.values = values
+
+    def get_thresholds(self, alert_type: str, alert_class: str, condition: str):
+        vals = self.values.get(alert_type)
+        if not vals:
+            return None
+        return AlertThreshold(
+            id="t1",
+            alert_type=alert_type,
+            alert_class=alert_class,
+            metric_key="m",
+            condition=condition,
+            low=vals["LOW"],
+            medium=vals["MEDIUM"],
+            high=vals["HIGH"],
+        )
+
 
 @pytest.fixture
 def evaluation_service():
-    """Create an evaluation service with mock thresholds for all types."""
-    return AlertEvaluationService(thresholds={
-        "PriceThreshold": {
-            "LOW": 5000,
-            "MEDIUM": 10000,
-            "HIGH": 15000
-        },
-        "TravelPercentLiquid": {
-            "LOW": -10,
-            "MEDIUM": -25,
-            "HIGH": -50
-        },
-        "Profit": {
-            "LOW": 500,
-            "MEDIUM": 1000,
-            "HIGH": 2000
-        },
-        "HeatIndex": {
-            "LOW": 30,
-            "MEDIUM": 60,
-            "HIGH": 90
-        }
-    })
+    thresholds = {
+        "PriceThreshold": {"LOW": 5000, "MEDIUM": 10000, "HIGH": 15000},
+        "TravelPercentLiquid": {"LOW": -10, "MEDIUM": -25, "HIGH": -50},
+    }
+    return AlertEvaluationService(DummyThresholdService(thresholds))
 
-@pytest.mark.asyncio
-async def test_evaluate_price_threshold_above_high(evaluation_service):
-    """Test evaluating a PriceThreshold alert ABOVE condition."""
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (5000, AlertLevel.LOW),
+        (10000, AlertLevel.MEDIUM),
+        (15000, AlertLevel.HIGH),
+    ],
+)
+def test_above_boundaries(evaluation_service, value, expected):
     alert = Alert(
-        id="price-above-high",
+        id=f"above-{value}",
         alert_type=AlertType.PriceThreshold,
         asset="BTC",
-        trigger_value=60000,
+        trigger_value=0,
         condition=Condition.ABOVE,
-        evaluated_value=12000.0  # Simulated price
+        evaluated_value=value,
     )
+    result = evaluation_service.evaluate(alert)
+    assert result.level == expected
 
-    evaluated_alert = evaluation_service.evaluate(alert)
-    log.success(f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}", source="TestEval")
-    assert evaluated_alert.level == AlertLevel.MEDIUM
 
-@pytest.mark.asyncio
-async def test_evaluate_travel_percent_below_medium(evaluation_service):
-    """Test evaluating a TravelPercentLiquid alert BELOW condition."""
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (-10, AlertLevel.LOW),
+        (-25, AlertLevel.MEDIUM),
+        (-50, AlertLevel.HIGH),
+    ],
+)
+def test_below_boundaries(evaluation_service, value, expected):
     alert = Alert(
-        id="travel-below-medium",
+        id=f"below-{abs(value)}",
         alert_type=AlertType.TravelPercentLiquid,
         asset="BTC",
-        trigger_value=-50,
+        trigger_value=0,
         condition=Condition.BELOW,
-        evaluated_value=-30.0
+        evaluated_value=value,
     )
+    result = evaluation_service.evaluate(alert)
+    assert result.level == expected
 
-    evaluated_alert = evaluation_service.evaluate(alert)
-    log.success(f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}", source="TestEval")
-    assert evaluated_alert.level in [AlertLevel.MEDIUM, AlertLevel.HIGH]
 
-@pytest.mark.asyncio
-async def test_evaluate_profit_no_thresholds(evaluation_service):
-    """Test evaluating a Profit alert without specific thresholds."""
+@pytest.mark.parametrize(
+    "alter_type,evaluated,expected_eval,expected_level",
+    [
+        ("UnknownType", 150, 150, AlertLevel.HIGH),
+        (AlertType.PriceThreshold, None, 0.0, AlertLevel.NORMAL),
+    ],
+)
+def test_fallback_and_default(evaluation_service, alter_type, evaluated, expected_eval, expected_level):
     alert = Alert(
-        id="profit-no-thresholds",
-        alert_type=AlertType.Profit,
+        id="case",
+        alert_type=AlertType.PriceThreshold,
         asset="BTC",
-        trigger_value=500,
+        trigger_value=100,
         condition=Condition.ABOVE,
-        evaluated_value=600
+        evaluated_value=evaluated,
     )
+    # mutate type after validation to trigger fuzzy matching failure when needed
+    alert.alert_type = alter_type
 
-    evaluated_alert = evaluation_service.evaluate(alert)
-    log.success(f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}", source="TestEval")
-    assert evaluated_alert.level == AlertLevel.LOW or evaluated_alert.level == AlertLevel.MEDIUM
+    result = evaluation_service.evaluate(alert)
+    assert result.evaluated_value == expected_eval
+    assert result.level == expected_level
 
-@pytest.mark.asyncio
-async def test_evaluate_heat_index_below_low(evaluation_service):
-    """Test evaluating a HeatIndex alert BELOW condition."""
-    alert = Alert(
-        id="heatindex-low",
-        alert_type=AlertType.HeatIndex,
-        asset="BTC",
-        trigger_value=50,
-        condition=Condition.BELOW,
-        evaluated_value=20
-    )
-
-    evaluated_alert = evaluation_service.evaluate(alert)
-    log.success(
-        f"✅ Evaluated {evaluated_alert.id} as {evaluated_alert.level}",
-        source="TestEval",
-    )
-    assert evaluated_alert.level == AlertLevel.HIGH
