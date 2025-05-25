@@ -16,9 +16,6 @@ from operations_monitor import OperationsMonitor
 from latency_monitor import LatencyMonitor
 from position_monitor import PositionMonitor
 from core.logging import log
-
-
-from utils.console_logger import ConsoleLogger as log
 from core.core_imports import configure_console_log
 
 from data.data_locker import DataLocker

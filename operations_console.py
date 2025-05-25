@@ -5,8 +5,6 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 
 from core.logging import log
-
-from utils.console_logger import ConsoleLogger as log
 from core.core_imports import configure_console_log, DB_PATH
 
 from data.data_locker import DataLocker
