@@ -61,48 +61,11 @@
       bindThemeButtons();
     });
   </script>
-  <!-- JS: Cyclone Action Toasts -->
-  <script>
-    function showToast(message, type = "info") {
-      const toastContainer = document.getElementById("toastContainer");
-      if (!toastContainer) return;
-      const toast = document.createElement("div");
-      toast.className = `sonic-toast ${type}`;
-      toast.innerHTML = message;
-      toastContainer.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = "0";
-        setTimeout(() => toast.remove(), 600);
-      }, 2500);
-    }
-    function refreshDashboardPanels() {
-      window.location.reload();
-    }
-    document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll(".cyclone-btn").forEach(btn => {
-        btn.addEventListener("click", function () {
-          const action = btn.getAttribute("data-action");
-          let api = null;
-          let label = "";
-          switch (action) {
-            case "sync":   api = "/cyclone_sync"; label = "Jupiter Sync"; break;
-            case "market": api = "/cyclone_market_update"; label = "Market Update"; break;
-            case "full":   api = "/cyclone_full_cycle"; label = "Full Cycle"; break;
-            case "wipe":   api = "/cyclone_wipe_all"; label = "Wipe All"; break;
-          }
-          if (!api) return;
-          fetch(api, {method:"POST"}).then(resp => resp.json()).then(result => {
-            if (result.success) {
-              showToast(`✅ ${label} complete!`, 'success');
-              refreshDashboardPanels();
-            } else {
-              showToast(`❌ ${label} failed: ${result.error || result.message}`, 'error');
-            }
-          }).catch(err => showToast(`❌ ${label} failed: ${err.message}`, 'error'));
-        });
-      });
-    });
-  </script>
+  <!-- The title bar includes title_bar.js which already attaches
+       click handlers to the `.cyclone-btn` elements and displays
+       Bootstrap toasts. The legacy inline handler below duplicated
+       that logic, causing multiple API calls and duplicate toasts.
+       It has been removed to prevent double execution. -->
   <script src="{{ url_for('static', filename='js/dashboard_top.js') }}"></script>
   <script src="{{ url_for('static', filename='js/dashboard_middle.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
