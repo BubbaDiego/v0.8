@@ -3,7 +3,17 @@ import json
 import time
 import inspect
 from datetime import datetime
-from rich.logging import RichHandler
+try:
+    from rich.logging import RichHandler  # type: ignore
+except Exception:  # pragma: no cover - fallback for minimal env
+    import logging
+
+    class RichHandler(logging.StreamHandler):
+        """Simple stand-in if rich is unavailable."""
+
+        def __init__(self, *args, **kwargs):
+            super().__init__()
+            self.level_styles = {}
 
 
 class ModuleFilter(logging.Filter):
