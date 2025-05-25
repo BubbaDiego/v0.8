@@ -265,3 +265,18 @@ body.mobile-mode .sonic-section-container {
   flex-direction: column !important;
   align-items: center !important;
 }
+
+/* --------------------------------------------------------------------- */
+/* Wallet Page Tweaks */
+#editWalletModal .modal-content {
+  border-radius: 1rem;
+}
+
+.mini-table-box {
+  border-radius: 0.75rem;
+}
+
+.mini-table-box table {
+  width: 100%;
+  margin: 0 auto;
+}
