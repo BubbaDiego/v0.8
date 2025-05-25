@@ -5,7 +5,7 @@ This repository contains multiple subsystems that make up the overall trading an
 ## Modules
 
 ### Cyclone
-The [Cyclone module](cyclone/cyclone_module_spec.md) drives workflow orchestration and alert management. It processes market updates, evaluates portfolio risk and positions, generates alerts, and coordinates hedging logic.
+The Cyclone module drives workflow orchestration and alert management. It processes market updates, evaluates portfolio risk and positions, generates alerts, and coordinates hedging logic.
 For a focused look at the main engine see the [Cyclone Core specification](cyclone/cyclone_core_spec.md).
 
 ### Positions
