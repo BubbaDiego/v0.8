@@ -11,10 +11,12 @@ import time
 from datetime import datetime
 from functools import wraps
 from time import time as timer_time
+
 from test_core import TestCore
 from utils.schema_validation_service import SchemaValidationService
 from tests.verification_console import VerificationConsole
 from core.core_imports import log
+from test_core import TestCore
 
 
 
@@ -162,6 +164,7 @@ def run_operations_monitor():
 
 @timed_operation
 def run_test_manager():
+
     """Simple interactive test runner using :class:`TestCore`."""
     core = TestCore()
     while True:
@@ -183,6 +186,7 @@ def run_test_manager():
 
     input("\nPress ENTER to return to menu...")
     clear_screen()
+
 
 def show_launchpad_banner():
     print("\n" + "=" * 60)
