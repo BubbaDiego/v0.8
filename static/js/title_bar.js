@@ -71,37 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ========== Theme Toggle (cyclic) ==========
-  const THEMES = ["light", "dark", "funky"];
-  const THEME_ICONS = ["☀️", "🌙", "🎨"];
-  let themeIndex = 0;
-
-  function setTheme(idx) {
-    const theme = THEMES[idx];
-    if (theme === "light") {
-      // Apply theme on <html> so CSS :root selectors work
-      document.documentElement.removeAttribute("data-theme");
-    } else {
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-    localStorage.setItem("dashboardTheme", theme);
-    const icon = document.getElementById("currentThemeIcon");
-    if (icon) icon.innerText = THEME_ICONS[idx];
-  }
-
-  const savedTheme = localStorage.getItem("dashboardTheme") || "light";
-  themeIndex = THEMES.indexOf(savedTheme);
-  if (themeIndex === -1) themeIndex = 0;
-  setTheme(themeIndex);
-
-  const themeToggle = document.getElementById("themeModeToggle");
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function(e) {
-      e.preventDefault();
-      themeIndex = (themeIndex + 1) % THEMES.length;
-      setTheme(themeIndex);
-    });
-  }
+  // Theme toggle handled globally by sonic_theme_toggle.js
 
   // Allow dismissing the profit badge with a click
   const profitBadge = document.querySelector('.profit-badge');
