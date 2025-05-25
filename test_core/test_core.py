@@ -67,7 +67,16 @@ class TestCore:
         if result == 0:
             log.success("✅ All tests completed!", source="TestCore")
         else:
-            log.error("❌ Test run failed. Check reports for details.", source="TestCore")
+            log.error("❌ Test run failed.", source="TestCore")
+            try:
+                with open(txt_log, "r", encoding="utf-8") as lf:
+                    last_lines = lf.readlines()[-20:]
+                print("\n==== ERROR DETAILS ====")
+                for line in last_lines:
+                    print(line.rstrip())
+                print("=======================\n")
+            except Exception as e:
+                log.error(f"Failed to read log file: {e}", source="TestCore")
 
         log.info(f"📄 HTML Report: {html_report}", source="TestCore")
         log.info(f"🪵 Log File:    {txt_log}", source="TestCore")
