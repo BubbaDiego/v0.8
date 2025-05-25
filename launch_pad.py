@@ -13,6 +13,8 @@ from core.core_imports import configure_console_log
 from core.logging import log
 from monitor.operations_monitor import OperationsMonitor
 from test_core import TestCore
+from data.data_locker import DataLocker
+from core.constants import DB_PATH
 
 console = Console()
 configure_console_log()
@@ -66,6 +68,7 @@ def operations_menu():
         console.print("[bold cyan]Operations[/bold cyan]")
         console.print("1) Run POST")
         console.print("2) 🛠️ Core Config Test")
+        console.print("3) Recover Database")
         console.print("b) Back")
         choice = input("→ ").strip().lower()
         if choice == "1":
@@ -79,6 +82,17 @@ def operations_menu():
 
             result = monitor.run_configuration_test()
             log.info("Config Test Result", payload=result)
+            input("Press ENTER to continue...")
+        elif choice == "3":
+            console.print("[yellow]Attempting database recovery...[/yellow]")
+            dl = DataLocker(str(DB_PATH))
+            dl.db.recover_database()
+            dl.initialize_database()
+            dl._seed_modifiers_if_empty()
+            dl._seed_wallets_if_empty()
+            dl._seed_thresholds_if_empty()
+            dl.close()
+            console.print("[green]Database recovery complete.[/green]")
             input("Press ENTER to continue...")
         elif choice == "b":
             break

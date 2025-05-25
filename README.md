@@ -111,6 +111,18 @@ ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
 for required configuration files and creates the `logs/` and `data/` directories
 if needed. Invoke this at application launch to verify the environment is ready.
 
+## Database Recovery
+
+If the SQLite file becomes corrupted, you can rebuild it directly from the
+Launch Pad utility:
+
+```bash
+python launch_pad.py
+```
+
+Open the **Operations** menu and choose **Recover Database**. This deletes the
+damaged `mother_brain.db` and recreates it with the required tables.
+
 ## Windows Branch Name Compatibility
 If a remote branch name contains characters that are invalid on Windows (such as `>` or `:`), Git cannot create the local reference. Rename the branch on a Unix-like system or ask the author to rename it. For example:
 
