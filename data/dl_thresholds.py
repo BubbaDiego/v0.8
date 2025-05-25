@@ -7,6 +7,9 @@ from datetime import datetime, timezone
 from data.models import AlertThreshold
 from uuid import uuid4
 from datetime import datetime
+import json
+
+ALERT_THRESHOLDS_JSON_PATH = "alert_thresholds.json"
 
 class DLThresholdManager:
     def __init__(self, db):
@@ -87,3 +90,37 @@ class DLThresholdManager:
         except Exception as e:
             log.error(f"❌ Failed to delete threshold {threshold_id}: {e}", source="DLThresholdManager")
             return False
+
+    def get_by_id(self, threshold_id: str):
+        """Return a threshold row by its ID or None."""
+        cursor = self.db.get_cursor()
+        row = cursor.execute(
+            "SELECT * FROM alert_thresholds WHERE id = ?",
+            (threshold_id,),
+        ).fetchone()
+        return AlertThreshold(**dict(row)) if row else None
+
+    def export_to_json(self, path: str = ALERT_THRESHOLDS_JSON_PATH) -> None:
+        """Write all thresholds to a JSON file."""
+        thresholds = self.get_all()
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump([t.to_dict() for t in thresholds], f, indent=2)
+
+    def import_from_json(self, path: str = ALERT_THRESHOLDS_JSON_PATH) -> int:
+        """Import thresholds from JSON file, inserting or updating as needed."""
+        if not os.path.exists(path):
+            return 0
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        count = 0
+        for item in data:
+            tid = item.get("id")
+            if not tid:
+                continue
+            if self.get_by_id(tid):
+                self.update(tid, item)
+            else:
+                self.insert(AlertThreshold(**item))
+            count += 1
+        return count
