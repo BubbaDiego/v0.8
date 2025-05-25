@@ -5,13 +5,10 @@ import asyncio
 import os
 from types import SimpleNamespace
 from flask import current_app
-from config.config_loader import load_config
-from core.core_imports import ALERT_LIMITS_PATH
 from alert_core.alert_utils import resolve_wallet_metadata
 from dashboard.dashboard_service import WALLET_IMAGE_MAP, DEFAULT_WALLET_IMAGE
 
 from flask import Blueprint, jsonify, render_template, render_template_string, request, session
-from data.data_locker import DataLocker
 from config.config_loader import update_config as merge_config
 
 APP_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app'))
@@ -139,7 +136,7 @@ def alert_config_page():
 
     """Render the alert limits configuration page with config data."""
     try:
-        config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
+        config_data = current_app.data_locker.system.get_var("alert_limits") or {}
         alert_ranges = config_data.get("alert_ranges", {})
         price_alerts = alert_ranges.get("price_alerts", {})
         portfolio_alerts = alert_ranges.get("portfolio_alerts", {})
@@ -273,7 +270,7 @@ def update_config():
         parsed = _parse_nested_form(form_data)
         parsed = convert_types_in_dict(parsed)
 
-        merge_config(parsed, str(ALERT_LIMITS_PATH))
+        merge_config(parsed)
 
         return jsonify({"success": True, "message": "Configuration updated"})
     except Exception as e:

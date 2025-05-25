@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from core.core_imports import ALERT_LIMITS_PATH, log
+from core.locker_factory import get_locker
 
 
 def _deep_merge(base: dict, overrides: dict) -> dict:
@@ -19,32 +20,60 @@ def _deep_merge(base: dict, overrides: dict) -> dict:
     return result
 
 def load_config(filename=None):
+    """Load alert configuration.
+
+    If ``filename`` is provided, the JSON file at that path is loaded.
+    Otherwise the configuration is read from the ``global_config`` table
+    via :func:`~data.dl_system_data.DLSystemDataManager.get_var` using the
+    ``"alert_limits"`` key.
     """
-    Always loads from ALERT_LIMITS_PATH unless explicitly overridden with a full absolute path.
-    """
-    if not filename or Path(filename).name == "alert_limitsz.json":
-        filename = str(ALERT_LIMITS_PATH)
 
-    if not os.path.isabs(filename):
-        filename = os.path.abspath(filename)
+    if filename:
+        if not os.path.isabs(filename):
+            filename = os.path.abspath(filename)
 
-    if os.path.exists(filename):
-        log.info(f"✅ [ConfigLoader] Loading config from: {filename}", source="ConfigLoader")
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
+        if os.path.exists(filename):
+            log.info(
+                f"✅ [ConfigLoader] Loading config from: {filename}",
+                source="ConfigLoader",
+            )
+            with open(filename, "r", encoding="utf-8") as f:
+                return json.load(f)
 
-    log.error(f"❌ [ConfigLoader] Config not found at: {filename}", source="ConfigLoader")
-    return {}
+        log.error(
+            f"❌ [ConfigLoader] Config not found at: {filename}",
+            source="ConfigLoader",
+        )
+        return {}
+
+    # Default: load from database
+    locker = get_locker()
+    config = locker.system.get_var("alert_limits") or {}
+    log.info("✅ [ConfigLoader] Loaded config from DB", source="ConfigLoader")
+    return config
 
 
 def update_config(new_config: dict, filename: str | None = None) -> dict:
     """Merge ``new_config`` into the existing config and persist the result."""
-    filename = str(ALERT_LIMITS_PATH) if not filename or Path(filename).name == "alert_limitsz.json" else os.path.abspath(filename)
 
-    current = load_config(filename)
+    if filename:
+        filename = (
+            str(ALERT_LIMITS_PATH)
+            if Path(filename).name in {"alert_limits.json", "alert_limitsz.json"}
+            else os.path.abspath(filename)
+        )
+
+        current = load_config(filename)
+        merged = _deep_merge(current, new_config)
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(merged, f, indent=2)
+        return merged
+
+    # Default: update database entry
+    locker = get_locker()
+    current = locker.system.get_var("alert_limits") or {}
     merged = _deep_merge(current, new_config)
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(merged, f, indent=2)
+    locker.system.set_var("alert_limits", merged)
     return merged
 
 

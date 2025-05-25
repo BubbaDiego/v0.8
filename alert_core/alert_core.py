@@ -9,14 +9,16 @@ from alert_core.alert_store import AlertStore
 from core.core_imports import log
 
 class AlertCore:
-    def __init__(self, data_locker, config_loader):
+    def __init__(self, data_locker, config_loader=None):
         self.data_locker = data_locker
-        self.config_loader = config_loader
-        self.repo = AlertStore(data_locker, config_loader)
+        self.config_loader = config_loader or (
+            lambda: self.data_locker.system.get_var("alert_limits") or {}
+        )
+        self.repo = AlertStore(data_locker, self.config_loader)
         self.enricher = AlertEnrichmentService(data_locker)
         threshold_service = ThresholdService(data_locker.db)
         self.evaluator = AlertEvaluationService(threshold_service)
-        self.alert_store = AlertStore(data_locker, config_loader)
+        self.alert_store = AlertStore(data_locker, self.config_loader)
         self.evaluator.inject_repo(self.repo)  # ⚡️ enable DB updates
 
     async def create_alert(self, alert_dict: dict) -> bool:
