@@ -1,4 +1,5 @@
 import sys
+
 import os
 import importlib
 from types import SimpleNamespace
@@ -7,6 +8,7 @@ from unittest.mock import patch
 
 # Ensure repository root is on sys.path for direct execution
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 
 class DummyResponse:
@@ -93,5 +95,57 @@ class JupiterServiceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+def load_service(monkeypatch, mock_post):
+    requests_stub = SimpleNamespace(post=mock_post)
+    monkeypatch.setitem(sys.modules, 'requests', requests_stub)
+    import wallets.jupiter_service as js
+    importlib.reload(js)
+    return js, js.JupiterService
+
+
+def test_increase_position_success(monkeypatch):
+    calls = {}
+
+    def mock_post(url, json=None, timeout=None):
+        calls['url'] = url
+        calls['json'] = json
+        return DummyResponse({'ok': True})
+
+    js, JupiterService = load_service(monkeypatch, mock_post)
+    svc = JupiterService(api_base='http://test')
+    result = svc.increase_position('wallet1', 'BTC', 5.0)
+
+    assert result == {'ok': True}
+    assert calls['url'] == 'http://test/v1/increase_position'
+    assert calls['json'] == {
+        'wallet': 'wallet1',
+        'market': 'BTC',
+        'collateral_delta': 5.0,
+        'size_usd_delta': 0,
+    }
+
+
+def test_decrease_position_success(monkeypatch):
+    def mock_post(url, json=None, timeout=None):
+        return DummyResponse({'ok': True})
+
+    js, JupiterService = load_service(monkeypatch, mock_post)
+    svc = JupiterService(api_base='http://test')
+    result = svc.decrease_position('w', 'ETH', 1.2)
+
+    assert result == {'ok': True}
+
+
+def test_increase_position_error(monkeypatch):
+    def mock_post(url, json=None, timeout=None):
+        return DummyResponse(status=500)
+
+    js, JupiterService = load_service(monkeypatch, mock_post)
+    svc = JupiterService(api_base='http://test')
+    with pytest.raises(Exception):
+        svc.increase_position('w', 'BTC', 1.0)
 
 

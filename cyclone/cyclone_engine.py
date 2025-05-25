@@ -9,7 +9,7 @@ import traceback  # PATCH: for full stack info
 
 from alert_core.alert_core import AlertCore #alert_service_manager import AlertServiceManager
 from data.data_locker import DataLocker
-from core.constants import DB_PATH
+from core.constants import DB_PATH, ALERT_LIMITS_PATH
 from core.logging import log
 
 # PATCH: Import SystemCore for death screams
@@ -75,6 +75,18 @@ class Cyclone:
         self.data_locker = global_data_locker
         self.price_sync = PriceSyncService(self.data_locker)
         self.config = self.data_locker.system.get_var("alert_limits") or {}
+        if not self.config:
+            from config.config_loader import load_config
+            from core.constants import ALERT_LIMITS_PATH
+            try:
+                self.config = load_config(str(ALERT_LIMITS_PATH)) or {}
+                if self.config:
+                    self.data_locker.system.set_var("alert_limits", self.config)
+            except Exception as e:
+                log.warning(
+                    f"⚠️ Failed to load alert_limits config: {e}",
+                    source="Cyclone",
+                )
 
         self.position_core = PositionCore(self.data_locker)
         # Pass alert limits config to AlertCore so alert creation respects
