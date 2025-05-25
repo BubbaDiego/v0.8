@@ -1,22 +1,25 @@
 
 import asyncio
 import random
+from datetime import datetime
+
 from alert_core.alert_service import AlertService
 from alert_core.alert_repository import AlertRepository
 from alert_core.alert_enrichment_service import AlertEnrichmentService
 from xcom.notification_service import NotificationService
 from data.alert import Alert, AlertType
 from utils.config_loader import load_config
+from core.core_imports import log, retry_on_locked
 
 # Mock DataLocker with Live Price Updates
 class LiveMockDataLocker:
     @retry_on_locked()
-def __init__(self):
+    def __init__(self):
         self.alerts = []
         self.prices = {
             "BTC": {"current_price": 60000},
             "ETH": {"current_price": 1900},
-            "SOL": {"current_price": 130}
+            "SOL": {"current_price": 130},
         }
 
     def get_alerts(self):
@@ -43,8 +46,6 @@ def __init__(self):
                     setattr(a, key, val)
 
     def get_current_timestamp(self):
-from datetime import datetime
-from core.core_imports import log, retry_on_locked
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def simulate_price_tick(self):
