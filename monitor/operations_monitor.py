@@ -10,7 +10,9 @@ import subprocess
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from core.logging import log
-from core.constants import DB_PATH
+from core.constants import DB_PATH, ALERT_LIMITS_PATH
+from config.config_loader import load_config
+from utils.schema_validation_service import SchemaValidationService
 
 
 class OperationsMonitor(BaseMonitor):
@@ -33,11 +35,21 @@ class OperationsMonitor(BaseMonitor):
         """
         Perform a POST check and log to database ledger.
         """
-        result = self.run_startup_post()
+        config_result = self.run_startup_configuration_test()
+        post_result = self.run_startup_post()
+
+        result = {
+            "config_success": config_result.get("config_success"),
+            "config_duration_seconds": config_result.get("duration_seconds"),
+            "post_success": post_result.get("post_success"),
+            "post_duration_seconds": post_result.get("duration_seconds"),
+        }
+
+        overall_success = result["config_success"] and result["post_success"]
         self.data_locker.ledger.insert_ledger_entry(
             monitor_name=self.name,
-            status="Success" if result.get("post_success") else "Failed",
-            metadata=result
+            status="Success" if overall_success else "Failed",
+            metadata=result,
         )
         return result
 
@@ -69,6 +81,39 @@ class OperationsMonitor(BaseMonitor):
             log.success("Startup POST tests passed.", source=self.name)
 
         return {"post_success": success, "duration_seconds": duration}
+
+    def run_startup_configuration_test(self) -> dict:
+        """Validate alert_limits configuration on startup."""
+        log.banner("🧪 Running startup configuration test...")
+        start_time = datetime.now()
+
+        config_path = str(ALERT_LIMITS_PATH)
+        file_exists = os.path.exists(config_path)
+        config_data = load_config(config_path)
+
+        success = False
+
+        if not file_exists:
+            log.error(
+                f"Config not found at {config_path}", source=self.name
+            )
+        elif not config_data:
+            log.error(
+                f"Config data empty at {config_path}", source=self.name
+            )
+        else:
+            success = SchemaValidationService.validate_alert_ranges()
+            if success:
+                log.success(
+                    "Alert limits configuration valid.", source=self.name
+                )
+            else:
+                log.error(
+                    "Alert limits configuration invalid.", source=self.name
+                )
+
+        duration = (datetime.now() - start_time).total_seconds()
+        return {"config_success": success, "duration_seconds": duration}
 
 if __name__ == "__main__":
     from core.core_imports import configure_console_log

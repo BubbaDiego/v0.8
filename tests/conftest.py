@@ -21,6 +21,17 @@ rich_logger_stub.ModuleFilter = ModuleFilter
 sys.modules.setdefault("utils.rich_logger", rich_logger_stub)
 sys.modules.setdefault("winsound", types.ModuleType("winsound"))
 
+# Stub jsonschema if not installed
+if "jsonschema" not in sys.modules:
+    jsonschema_stub = types.ModuleType("jsonschema")
+    class ValidationError(Exception):
+        pass
+    def validate(instance=None, schema=None):
+        return True
+    jsonschema_stub.validate = validate
+    jsonschema_stub.exceptions = types.SimpleNamespace(ValidationError=ValidationError)
+    sys.modules["jsonschema"] = jsonschema_stub
+
 # Stub positions.hedge_manager to avoid circular import during DataLocker init
 hedge_stub = types.ModuleType("positions.hedge_manager")
 class HedgeManager:
