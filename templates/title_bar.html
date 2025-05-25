@@ -9,7 +9,11 @@
     <a class="btn nav-btn" href="/system/wallets" title="Wallet Manager"><span>💼</span></a>
   </div>
   <div class="title-bar-center text-center" style="font-size:1.3rem;font-weight:bold;letter-spacing:0.04em;">
-    {% if title_text %}
+    {% if title_image %}
+    <div class="sonic-title-pill {{ title_theme|default('default') }} mx-2">
+      <img src="{{ title_image }}" alt="{{ title_text or 'title' }}" class="sonic-title-image">
+    </div>
+    {% elif title_text %}
     <div class="sonic-title-pill {{ title_theme|default('default') }} mx-2">{{ title_text }}</div>
     {% endif %}
     {% if profit_badge_value %}
