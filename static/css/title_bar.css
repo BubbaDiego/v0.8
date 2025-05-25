@@ -163,6 +163,12 @@
   transition: transform 0.2s ease;
 }
 
+.settings-btn {
+  font-size: 1.6rem;
+  min-width: 32px;
+  min-height: 32px;
+}
+
 /* Navigation buttons on the left */
 .nav-btn {
   font-size: 1.2rem;
