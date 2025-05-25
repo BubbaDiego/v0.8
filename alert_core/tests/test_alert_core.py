@@ -1,111 +1,67 @@
-import sys
+import asyncio
 import os
-# Ensure repository root is on the path for imports
+import sys
+from uuid import uuid4
+from datetime import datetime
+
+# Ensure repo root is on path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-import asyncio
-from datetime import datetime
-from uuid import uuid4
-
 from data.data_locker import DataLocker
-from config.config_loader import load_config
 from alert_core.alert_core import AlertCore
 from data.alert import AlertType, Condition
-from core.constants import DB_PATH
 
 
-def build_portfolio_alert():
-    return {
-        "id": str(uuid4()),
-        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "alert_type": AlertType.TotalValue.value,
-        "alert_class": "Portfolio",
-        "asset": "PORTFOLIO",
-        "asset_type": "ALL",
-        "trigger_value": 50000.0,
-        "condition": Condition.ABOVE.value,
-        "notification_type": "SMS",
-        "level": "Normal",
-        "last_triggered": None,
-        "status": "Active",
-        "frequency": 1,
-        "counter": 0,
-        "liquidation_distance": 0.0,
+def _create_position(dl, pos_id="pos1"):
+    position = {
+        "id": pos_id,
+        "asset_type": "BTC",
+        "entry_price": 10000.0,
+        "liquidation_price": 5000.0,
+        "position_type": "LONG",
+        "wallet_name": "test",
+        "current_heat_index": 10.0,
+        "pnl_after_fees_usd": 150.0,
         "travel_percent": 0.0,
-        "liquidation_price": 0.0,
-        "notes": "Test portfolio alert",
-        "description": "total_value",
-        "position_reference_id": None,
-        "evaluated_value": 0.0,
-        "position_type": "N/A"
+        "liquidation_distance": 0.0,
     }
+    dl.positions.create_position(position)
 
 
-def build_position_alert(position_id="TEST_POS_123", asset_type="BTC"):
+def _profit_alert(pos_id="pos1"):
     return {
         "id": str(uuid4()),
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "alert_type": AlertType.HeatIndex.value,
+        "alert_type": AlertType.Profit.value,
         "alert_class": "Position",
-        "asset": asset_type,
-        "asset_type": asset_type,
+        "asset_type": "BTC",
         "trigger_value": 50.0,
         "condition": Condition.ABOVE.value,
-        "notification_type": "SMS",
-        "level": "Normal",
-        "last_triggered": None,
-        "status": "Active",
-        "frequency": 1,
-        "counter": 0,
-        "liquidation_distance": 0.0,
-        "travel_percent": 0.0,
-        "liquidation_price": 0.0,
-        "notes": "Test position alert",
-        "description": "heatindex",
-        "position_reference_id": position_id,
-        "evaluated_value": 0.0,
-        "position_type": "long"
+        "notification_type": "Email",
+        "position_reference_id": pos_id,
     }
 
 
-async def run_test():
-    print("\n🚀 Initializing AlertCore test run...")
+def test_alert_core_create_and_process(tmp_path, monkeypatch):
+    monkeypatch.setattr(DataLocker, "_seed_modifiers_if_empty", lambda self: None)
+    monkeypatch.setattr(DataLocker, "_seed_wallets_if_empty", lambda self: None)
+    monkeypatch.setattr(DataLocker, "_seed_thresholds_if_empty", lambda self: None)
 
-    # Core bootstrapping
-    data_locker = DataLocker(str(DB_PATH))
-    config_loader = lambda: load_config()
-    core = AlertCore(data_locker, config_loader)
+    dl = DataLocker(str(tmp_path / "core.db"))
+    core = AlertCore(dl, lambda: {})
 
-    # Create alerts
-    portfolio_alert = build_portfolio_alert()
-    position_alert = build_position_alert()
+    _create_position(dl)
+    alert = _profit_alert()
 
-    print("\n📦 Creating Portfolio Alert...")
-    await core.create_alert(portfolio_alert)
+    asyncio.run(core.create_alert(alert))
+    results = asyncio.run(core.process_alerts())
 
-    print("📦 Creating Position Alert...")
-    await core.create_alert(position_alert)
+    assert len(results) == 1
+    processed = results[0]
+    assert processed.evaluated_value == 150.0
 
-    # Process them
-    print("\n🔬 Enrich + Evaluate")
-    await core.process_alerts()
+    stored = dl.db.fetch_all("alerts")[0]
+    assert stored["evaluated_value"] == 150.0
+    assert stored["level"].lower() in {"normal", "low", "medium", "high"}
 
-    # Dump results
-    alerts = core.repo.get_all_alerts()
-    print(f"\n📊 Final Alert Snapshot ({len(alerts)} alerts):")
-    for a in alerts:
-        print(f"  - {a['id'][:8]} | {a['alert_class']} | {a['alert_type']} | val={a['evaluated_value']} | level={a['level']}")
-
-    print("\n✅ AlertCore test run complete.")
-
-
-if __name__ == "__main__":
-    asyncio.run(run_test())
-
-
-import pytest
-
-
-@pytest.mark.asyncio
-async def test_alert_core_basic():
-    await run_test()
+    dl.db.close()

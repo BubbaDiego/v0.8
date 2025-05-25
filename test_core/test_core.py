@@ -19,8 +19,15 @@ class TestCore:
 
     # ------------------------------------------------------------------
     def run_all(self) -> None:
-        """Run all tests matching the default pattern."""
-        self.run_glob(self.default_pattern)
+        """Run all standard and AlertCore tests."""
+        patterns = ["tests/test_*.py", "alert_core/tests/test_*.py"]
+        files: list[Path] = []
+        for pattern in patterns:
+            files.extend(Path(".").rglob(pattern))
+        if not files:
+            log.warning("⚠️ No test files found", source="TestCore")
+            return
+        self.run_files(files)
 
     def run_glob(self, pattern: str | None = None) -> None:
         """Discover test files matching *pattern* and run them."""
