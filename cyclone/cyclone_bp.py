@@ -107,6 +107,27 @@ def clear_all_data():
         log.error(f"Clear All Data Error: {e}", source="CycloneAPI")
         return jsonify({"error": str(e)}), 500
 
+# --- Alert Management Endpoints ---
+@cyclone_bp.route("/run_create_alerts", methods=["POST"])
+def run_create_alerts():
+    try:
+        run_in_background(lambda: asyncio.run(current_app.cyclone.alert_core.create_all_alerts()),
+                          name="CreateAlerts")
+        return jsonify({"message": "Alert creation started."}), 202
+    except Exception as e:
+        log.error(f"Create Alerts Error: {e}", source="CycloneAPI")
+        return jsonify({"error": str(e)}), 500
+
+@cyclone_bp.route("/clear_alerts", methods=["POST"])
+def clear_alerts():
+    try:
+        run_in_background(current_app.cyclone.clear_alerts_backend,
+                          name="ClearAlerts")
+        return jsonify({"message": "Alert deletion started."}), 202
+    except Exception as e:
+        log.error(f"Clear Alerts Error: {e}", source="CycloneAPI")
+        return jsonify({"error": str(e)}), 500
+
 @cyclone_bp.route("/cyclone_logs", methods=["GET"])
 def api_cyclone_logs():
     try:
