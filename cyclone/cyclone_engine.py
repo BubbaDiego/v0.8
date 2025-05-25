@@ -277,6 +277,13 @@ class Cyclone:
         log.info("Starting Operations Monitor via MonitorCore", source="Cyclone")
         await asyncio.to_thread(self.monitor_core.run_by_name, "operations_monitor")
 
+        # Refresh alert limits configuration from the database each cycle. The
+        # OperationsMonitor will update the DB entry when the source file
+        # changes. Reloading here keeps ``self.config`` in sync for AlertCore.
+        new_config = self.data_locker.system.get_var("alert_limits") or {}
+        if new_config:
+            self.config = new_config
+
     async def enrich_positions(self):
         log.info("🚀 Enriching All Positions via PositionCore...", "Cyclone")
         await self.position_core.enrich_positions()

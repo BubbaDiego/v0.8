@@ -1,6 +1,7 @@
 import sys
 import os
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
 from datetime import datetime
@@ -19,8 +20,11 @@ from utils.schema_validation_service import SchemaValidationService
 
 
 class OperationsMonitor(BaseMonitor):
-    """
-    OperationsMonitor handles system POST tests, health monitoring, and optional alerting.
+    """Monitor responsible for basic operations health checks.
+
+    The monitor currently validates the alert limits configuration and can run
+    a lightweight POST suite. Additional operational checks can be added over
+    time to expand its responsibilities.
     """
     def __init__(self, timer_config_path=None, ledger_filename=None, monitor_interval=300, continuous_mode=False, notifications_enabled=False):
         super().__init__(
@@ -34,9 +38,39 @@ class OperationsMonitor(BaseMonitor):
         self.notifications_enabled = notifications_enabled
         self.logger = logging.getLogger("OperationsMonitor")
 
+    def check_for_config_updates(self) -> bool:
+        """Reload ``alert_limits`` from disk and update the DB entry if changed.
+
+        Returns ``True`` when an update was detected and persisted.
+        """
+        config_path = str(ALERT_LIMITS_PATH)
+        if not os.path.exists(config_path):
+            log.warning(
+                f"Config file not found at {config_path}", source=self.name
+            )
+            return False
+
+        file_config = load_config(config_path)
+        if not file_config:
+            log.warning("Config file empty or invalid", source=self.name)
+            return False
+
+        current = self.data_locker.system.get_var("alert_limits") or {}
+        if current != file_config:
+            self.data_locker.system.set_var("alert_limits", file_config)
+            log.info("🔄 alert_limits config updated", source=self.name)
+            return True
+        return False
+
 
     def _do_work(self):
-        """Perform startup tests and log to the ledger."""
+        """Perform startup tests and log to the ledger.
+
+        This also checks for configuration changes each cycle so the Cyclone
+        engine can reload ``alert_limits`` when updated externally.
+        """
+
+        self.check_for_config_updates()
         result = self.run_startup_post()
 
         overall_success = result.get("config_success") and result.get("post_success")
