@@ -43,6 +43,10 @@
 <div class="sonic-section-container sonic-section-middle mt-3">
   <div class="sonic-content-panel alert-limits-panel">
   <h1 class="mb-4">Alert Limits</h1>
+  <div class="alert alert-warning" role="alert">
+    ⚠️ This page is obsolete. Please use the <a href="/system/alert_thresholds" class="alert-link">Alert Thresholds</a> page instead.
+  </div>
+
   <p>This page will hold alert configuration options.</p>
 
   <form id="alertForm" method="POST" action="{{ url_for('alerts_bp.update_config') }}">
