@@ -47,6 +47,16 @@ def launch_sonic_web():
         proc.terminate()
 
 
+def launch_cyclone():
+    """Launch the Cyclone interactive console."""
+    console.print("[bold blue]Launching Cyclone...[/bold blue]")
+    proc = subprocess.Popen([sys.executable, "cyclone_app.py"])
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.terminate()
+
+
 def launch_web_and_monitor():
     """Start the Sonic web server and Sonic monitor together."""
     console.print("[bold green]Launching Sonic App and Monitor...[/bold green]")
@@ -113,20 +123,23 @@ def main_menu():
         clear_screen()
         show_banner()
         console.print("1) 🦔 Sonic App + 🖥️ Sonic Monitor")
-        console.print("2) Launch Sonic Web")
-        console.print("3) ⚙️ Operations")
-        console.print("4) 🧪 Test Core")
-        console.print("5) Exit")
+        console.print("2) 🌀 Launch Cyclone")
+        console.print("3) Launch Sonic Web")
+        console.print("4) ⚙️ Operations")
+        console.print("5) 🧪 Test Core")
+        console.print("6) Exit")
         choice = input("→ ").strip()
         if choice == "1":
             launch_web_and_monitor()
         elif choice == "2":
-            launch_sonic_web()
+            launch_cyclone()
         elif choice == "3":
-            operations_menu()
+            launch_sonic_web()
         elif choice == "4":
-            test_core_menu()
+            operations_menu()
         elif choice == "5":
+            test_core_menu()
+        elif choice == "6":
             console.print("Goodbye!", style="green")
             break
         else:
