@@ -7,7 +7,16 @@ function loadHedges() {
         tbody.innerHTML = '';
         (data.hedges || []).forEach(h => {
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${h.id}</td><td>${h.positions.join(', ')}</td><td>${h.total_heat_index}</td>`;
+          const assetImg = `/static/images/${h.asset_image}`;
+          const walletImg = `/static/images/${h.wallet_image}`;
+          tr.innerHTML = `
+            <td>
+              <img class="asset-icon me-1" src="${assetImg}" alt="asset">
+              <span class="mx-1">⛓️</span>
+              <img class="wallet-icon ms-1" src="${walletImg}" alt="wallet">
+            </td>
+            <td>${h.positions.join(', ')}</td>
+            <td>${h.total_heat_index}</td>`;
           tbody.appendChild(tr);
         });
       }
@@ -111,14 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const linkBtn = document.getElementById('linkHedgesBtn');
   const unlinkBtn = document.getElementById('unlinkHedgesBtn');
-  const testBtn = document.getElementById('testCalcsBtn');
   if (linkBtn) linkBtn.addEventListener('click', () => postAction('/sonic_labs/api/link_hedges'));
   if (unlinkBtn) unlinkBtn.addEventListener('click', () => postAction('/sonic_labs/api/unlink_hedges'));
-  if (testBtn) testBtn.addEventListener('click', () => {
-    fetch('/sonic_labs/api/test_calcs').then(resp => resp.json()).then(res => {
-      console.log('Calc Totals', res);
-    });
-  });
 
   const select = document.getElementById('hedgeSelect');
   const slider = document.getElementById('priceSlider');

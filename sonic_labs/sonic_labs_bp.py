@@ -9,6 +9,23 @@ from core.core_imports import retry_on_locked
 from calc_core.calc_services import CalcServices
 from app.system_bp import hedge_calculator_page, hedge_report_page
 
+# Mapping tables for simple icon lookups used on the UI
+ASSET_IMAGE_MAP = {
+    "BTC": "btc_logo.png",
+    "ETH": "eth_logo.png",
+    "SOL": "sol_logo.png",
+}
+DEFAULT_ASSET_IMAGE = "unknown.png"
+
+WALLET_IMAGE_MAP = {
+    "ObiVault": "obivault.jpg",
+    "R2Vault": "r2vault.jpg",
+    "LandoVault": "landovault.jpg",
+    "VaderVault": "vadervault.jpg",
+    "LandoVaultz": "landovault.jpg",
+}
+DEFAULT_WALLET_IMAGE = "unknown_wallet.jpg"
+
 sonic_labs_bp = Blueprint("sonic_labs", __name__, template_folder="templates")
 
 @sonic_labs_bp.route("/hedge_calculator", methods=["GET"])
@@ -59,7 +76,17 @@ def hedge_labs_page():
     """Render the Hedge Labs UI."""
     dl = current_app.data_locker
     hedges = dl.hedges.get_hedges() or []
+
     def hedge_to_dict(h):
+        asset_img = DEFAULT_ASSET_IMAGE
+        wallet_img = DEFAULT_WALLET_IMAGE
+        if h.positions:
+            pos = dl.positions.get_position_by_id(h.positions[0])
+            if pos:
+                asset_key = str(pos.get("asset_type") or "").upper()
+                asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
+                wallet_name = pos.get("wallet_name") or pos.get("wallet")
+                wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
         return {
             "id": h.id,
             "positions": h.positions,
@@ -68,10 +95,13 @@ def hedge_labs_page():
             "long_heat_index": h.long_heat_index,
             "short_heat_index": h.short_heat_index,
             "total_heat_index": h.total_heat_index,
+            "asset_image": asset_img,
+            "wallet_image": wallet_img,
             "created_at": h.created_at.isoformat() if hasattr(h.created_at, "isoformat") else h.created_at,
             "updated_at": h.updated_at.isoformat() if hasattr(h.updated_at, "isoformat") else h.updated_at,
             "notes": h.notes,
         }
+
     hedges_data = [hedge_to_dict(h) for h in hedges]
     theme_config = dl.system.get_active_theme_profile() or {}
     return render_template(
@@ -85,17 +115,30 @@ def hedge_labs_page():
 @retry_on_locked()
 def api_get_hedges():
     """Return current hedges as JSON."""
-    hedges = current_app.data_locker.hedges.get_hedges() or []
-    data = [
-        {
+    dl = current_app.data_locker
+    hedges = dl.hedges.get_hedges() or []
+
+    def hedge_info(h):
+        asset_img = DEFAULT_ASSET_IMAGE
+        wallet_img = DEFAULT_WALLET_IMAGE
+        if h.positions:
+            pos = dl.positions.get_position_by_id(h.positions[0])
+            if pos:
+                asset_key = str(pos.get("asset_type") or "").upper()
+                asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
+                wallet_name = pos.get("wallet_name") or pos.get("wallet")
+                wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
+        return {
             "id": h.id,
             "positions": h.positions,
             "total_long_size": h.total_long_size,
             "total_short_size": h.total_short_size,
             "total_heat_index": h.total_heat_index,
+            "asset_image": asset_img,
+            "wallet_image": wallet_img,
         }
-        for h in hedges
-    ]
+
+    data = [hedge_info(h) for h in hedges]
     return jsonify({"hedges": data})
 
 
