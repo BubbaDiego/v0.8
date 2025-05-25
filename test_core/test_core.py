@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 import contextlib
 import os
+# Disable auto loading of external pytest plugins **before** importing pytest.
+os.environ.setdefault("PYTEST_DISABLE_PLUGIN_AUTOLOAD", "1")
 import importlib
 from pathlib import Path
 import pytest
@@ -11,6 +13,9 @@ from core.core_imports import log
 
 class TestCore:
     """Utility to run pytest with rich reporting."""
+
+    # Prevent ``pytest`` from collecting this class as a test case.
+    __test__ = False
 
     def __init__(self, report_dir: str | Path = "reports", default_pattern: str = "tests/test_*.py") -> None:
         self.report_dir = Path(report_dir)

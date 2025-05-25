@@ -49,8 +49,8 @@ class MockDataLockerTravelPercent:
                     setattr(a, key, val)
 
     def get_current_timestamp(self):
-from datetime import datetime
-from core.core_imports import log
+        from datetime import datetime
+        from core.core_imports import log
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 # --- Test Case ---

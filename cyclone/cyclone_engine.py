@@ -66,11 +66,13 @@ def configure_cyclone_console_log():
 
 
 class Cyclone:
-    def __init__(self, monitor_core, poll_interval=60):
+    def __init__(self, monitor_core: MonitorCore | None = None, poll_interval: int = 60):
         self.logger = logging.getLogger("Cyclone")
         self.poll_interval = poll_interval
         self.logger.setLevel(logging.DEBUG)
-        self.monitor_core = monitor_core
+        # Allow tests and scripts to instantiate ``Cyclone`` without explicitly
+        # providing a ``MonitorCore`` instance.
+        self.monitor_core = monitor_core or MonitorCore()
 
         self.data_locker = global_data_locker
         self.price_sync = PriceSyncService(self.data_locker)
@@ -95,7 +97,6 @@ class Cyclone:
             self.data_locker,
             config_loader=lambda: self.config,
         )
-        self.monitor_core = monitor_core
         self.wallet_service = CycloneWalletService(self.data_locker)
         self.maintenance_service = CycloneMaintenanceService(self.data_locker)
         self.hedge_core = HedgeCore(self.data_locker)
@@ -234,20 +235,6 @@ class Cyclone:
         await self.alert_core.update_evaluated_values()
         log.success("✅ Evaluated alert values updated", source="Cyclone")
 
-    def clear_prices_backend(self):
-        self.sys.clear_prices()
-
-    def clear_wallets_backend(self):
-        self.sys.clear_wallets()
-
-    def clear_alerts_backend(self):
-        self.sys.clear_alerts()
-
-    def clear_positions_backend(self):
-        self.sys.clear_positions()
-
-    def _clear_all_data_core(self):
-        self.sys.clear_all_tables()
 
     # ⚙️ Corrected clear helpers
     def clear_prices_backend(self):
