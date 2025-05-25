@@ -107,3 +107,33 @@ th.sorted-desc .sort-indicator { color: var(--primary); }
 .alert-bars .level-high .liq-flame-container {
   background: #dc3545;
 }
+
+/* --- Alert Management Dropdown --- */
+.alert-menu-btn {
+  background: var(--title-bar-bg);
+  color: var(--panel-title);
+  border: 1px solid var(--panel-border);
+  padding: 0.25rem 0.55rem;
+  font-size: 1rem;
+}
+
+.alert-menu-btn:hover,
+.alert-menu-btn:focus {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.alert-menu-dropdown {
+  background: var(--card-bg);
+  border: 1px solid var(--panel-border);
+}
+
+.alert-menu-dropdown .dropdown-item {
+  color: var(--text);
+}
+
+.alert-menu-dropdown .dropdown-item:hover {
+  background: var(--accent);
+  color: var(--text);
+}
