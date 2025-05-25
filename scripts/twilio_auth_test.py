@@ -12,8 +12,14 @@ import argparse
 import os
 import sys
 
-from twilio.rest import Client
-from twilio.base.exceptions import TwilioRestException
+__test__ = False
+try:
+    from twilio.rest import Client
+    from twilio.base.exceptions import TwilioRestException
+except Exception:  # pragma: no cover - optional dependency
+    Client = None
+    class TwilioRestException(Exception):
+        pass
 import requests
 
 

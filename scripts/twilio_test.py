@@ -2,13 +2,19 @@
 """Twilio test script for authentication and optional Studio Flow trigger."""
 
 import argparse
+__test__ = False
 import os
 import sys
 from typing import Optional
 
 import requests
-from twilio.rest import Client
-from twilio.base.exceptions import TwilioRestException
+try:
+    from twilio.rest import Client
+    from twilio.base.exceptions import TwilioRestException
+except Exception:  # pragma: no cover - optional dependency
+    Client = None
+    class TwilioRestException(Exception):
+        pass
 
 
 def authenticate(account_sid: str, auth_token: str) -> Client:

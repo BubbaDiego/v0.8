@@ -5,6 +5,20 @@ import json
 import tempfile
 from system.theme_service import ThemeService
 from unittest.mock import MagicMock
+import pytest
+
+@pytest.fixture
+def dl():
+    mock = MagicMock()
+    mock.system.get_theme_mode.return_value = "dark"
+    mock.system.set_theme_mode.return_value = None
+    return mock
+
+@pytest.fixture
+def config_path(tmp_path):
+    path = tmp_path / "theme.json"
+    path.write_text('{"bg": "#ffffff", "fg": "#000000"}')
+    return str(path)
 
 def test_get_theme_mode_success(dl):
     service = ThemeService(dl)
