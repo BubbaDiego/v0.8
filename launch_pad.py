@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 from functools import wraps
 from time import time as timer_time
-#from tests.test_runner_manager import TestRunnerManager
+from test_core import TestCore
 from utils.schema_validation_service import SchemaValidationService
 from tests.verification_console import VerificationConsole
 from core.core_imports import log
@@ -162,9 +162,27 @@ def run_operations_monitor():
 
 @timed_operation
 def run_test_manager():
-    """Run the Test Runner Manager (interactive menu)."""
-    runner = TestRunnerManager(tests_folder="tests/")
-    runner.interactive_menu()
+    """Simple interactive test runner using :class:`TestCore`."""
+    core = TestCore()
+    while True:
+        print("\n=== 🔍 Test Runner Console ===")
+        print("1) Run all tests")
+        print("2) Run test file pattern")
+        print("3) Exit")
+
+        choice = input("Enter your choice (1-3): ").strip()
+        if choice == "1":
+            core.run_all()
+        elif choice == "2":
+            pattern = input("Pattern (e.g., tests/test_*.py): ").strip()
+            core.run_glob(pattern)
+        elif choice == "3":
+            break
+        else:
+            print("Invalid choice. Try again.")
+
+    input("\nPress ENTER to return to menu...")
+    clear_screen()
 
 def show_launchpad_banner():
     print("\n" + "=" * 60)
