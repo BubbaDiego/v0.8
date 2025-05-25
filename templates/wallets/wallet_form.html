@@ -1,13 +1,16 @@
 {% macro wallet_form() %}
-<h2 class="mt-5 mb-3">➕ Add Wallet</h2>
-<div class="container border rounded p-4 bg-light-subtle shadow-sm">
-  <form action="{{ url_for('system.add_wallet') }}" method="post" enctype="multipart/form-data">
-    <div class="row">
-      <div class="col-md-6">
-        <div class="mb-3">
-          <label for="name" class="form-label">Name:</label>
-          <input type="text" name="name" id="name" class="form-control" required>
-        </div>
+<div class="card mt-4">
+  <div class="card-header">
+    <strong>➕ Add Wallet</strong>
+  </div>
+  <div class="card-body">
+    <form action="{{ url_for('system.add_wallet') }}" method="post" enctype="multipart/form-data">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name:</label>
+            <input type="text" name="name" id="name" class="form-control" required>
+          </div>
         <div class="mb-3">
           <label for="public_address" class="form-label">Public Address:</label>
           <input type="text" name="public_address" id="public_address" class="form-control" required>
@@ -48,11 +51,12 @@
           <label for="is_active" class="form-check-label">Active</label>
         </div>
       </div>
-    </div>
-    <div class="text-end mt-2">
-      <button type="submit" class="btn btn-success">➕ Add Wallet</button>
-    </div>
-  </form>
+        </div>
+        <div class="text-end mt-2">
+          <button type="submit" class="btn btn-success">➕ Add Wallet</button>
+        </div>
+    </form>
+  </div>
 </div>
 {% endmacro %}
 {{ wallet_form() }}
