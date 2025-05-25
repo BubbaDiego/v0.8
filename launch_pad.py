@@ -45,6 +45,20 @@ def launch_sonic_web():
         proc.terminate()
 
 
+def launch_web_and_monitor():
+    """Start the Sonic web server and Sonic monitor together."""
+    console.print("[bold green]Launching Sonic App and Monitor...[/bold green]")
+    web_proc = subprocess.Popen([sys.executable, "sonic_app.py"])
+    monitor_proc = subprocess.Popen([sys.executable, os.path.join("monitor", "sonic_monitor.py")])
+    time.sleep(2)
+    webbrowser.open("http://127.0.0.1:5000")
+    try:
+        web_proc.wait()
+    except KeyboardInterrupt:
+        web_proc.terminate()
+        monitor_proc.terminate()
+
+
 def operations_menu():
     """Operations utilities."""
     while True:
@@ -84,18 +98,21 @@ def main_menu():
     while True:
         clear_screen()
         show_banner()
-        console.print("1) Launch Sonic Web")
-        console.print("2) ⚙️ Operations")
-        console.print("3) 🧪 Test Core")
-        console.print("4) Exit")
+        console.print("1) 🦔 Sonic App + 🖥️ Sonic Monitor")
+        console.print("2) Launch Sonic Web")
+        console.print("3) ⚙️ Operations")
+        console.print("4) 🧪 Test Core")
+        console.print("5) Exit")
         choice = input("→ ").strip()
         if choice == "1":
-            launch_sonic_web()
+            launch_web_and_monitor()
         elif choice == "2":
-            operations_menu()
+            launch_sonic_web()
         elif choice == "3":
-            test_core_menu()
+            operations_menu()
         elif choice == "4":
+            test_core_menu()
+        elif choice == "5":
             console.print("Goodbye!", style="green")
             break
         else:
