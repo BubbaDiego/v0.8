@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Ensure repository root is on the path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 import asyncio
 from datetime import datetime
 from uuid import uuid4
@@ -107,3 +108,11 @@ async def run_barrage():
 
 if __name__ == "__main__":
     asyncio.run(run_barrage())
+
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_alert_core_barrage():
+    await run_barrage()
