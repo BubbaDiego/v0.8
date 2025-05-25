@@ -2,16 +2,27 @@ import pytest
 from flask import Flask
 from app.alerts_bp import alerts_bp
 from core.core_imports import log
+from data.data_locker import DataLocker
 
 # Setup the Flask Test App
 @pytest.fixture
-def client():
+def client(tmp_path, monkeypatch):
+    monkeypatch.setattr(DataLocker, "_seed_modifiers_if_empty", lambda self: None)
+    monkeypatch.setattr(DataLocker, "_seed_wallets_if_empty", lambda self: None)
+    monkeypatch.setattr(DataLocker, "_seed_thresholds_if_empty", lambda self: None)
+
+    dl = DataLocker(str(tmp_path / "alerts.db"))
+
     app = Flask(__name__)
     app.register_blueprint(alerts_bp)
     app.json_manager = None  # Skip JsonManager for now if not needed in these tests
     app.config['TESTING'] = True
+    app.data_locker = dl
+
     with app.test_client() as client:
         yield client
+
+    dl.db.close()
 
 # --- API Endpoint Tests ---
 
@@ -29,16 +40,33 @@ def test_create_all_alerts(client):
     assert response.status_code == 200
     data = response.get_json()
     assert data.get("success") is True
-    log.success(f"✅ Create All Alerts API response: {response.status_code}", source="TestAlertsAPI")
+
+    alerts = client.application.data_locker.db.fetch_all("alerts")
+    assert len(alerts) == 1
+    assert alerts[0]["id"] == "alert-sample-1"
+
+    log.success(
+        f"✅ Create All Alerts API response: {response.status_code}",
+        source="TestAlertsAPI",
+    )
 
 def test_delete_all_alerts(client):
     """Test POST /alerts/delete_all endpoint."""
     log.banner("TEST: Delete All Alerts API Start")
+    client.post('/alerts/create_all')
+
     response = client.post('/alerts/delete_all')
     assert response.status_code == 200
     data = response.get_json()
     assert data.get("success") is True
-    log.success(f"✅ Delete All Alerts API response: {response.status_code}", source="TestAlertsAPI")
+
+    alerts = client.application.data_locker.db.fetch_all("alerts")
+    assert alerts == []
+
+    log.success(
+        f"✅ Delete All Alerts API response: {response.status_code}",
+        source="TestAlertsAPI",
+    )
 
 def test_monitor_alerts(client):
     """Test GET /alerts/monitor endpoint."""
