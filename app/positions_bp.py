@@ -13,8 +13,6 @@ from positions.position_core import PositionCore
 from calc_core.calculation_core import CalculationCore
 from calc_core.calc_services import CalcServices
 from utils.route_decorators import route_log_alert
-from config.config_loader import load_config
-from core.constants import ALERT_LIMITS_PATH
 
 
 positions_bp = Blueprint("positions", __name__, template_folder="../templates/positions")
@@ -42,7 +40,7 @@ def list_positions():
         core = PositionCore(current_app.data_locker)
         positions = core.get_active_positions()
 
-        config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
+        config_data = current_app.data_locker.system.get_var("alert_limits") or {}
         alert_dict = config_data.get("alert_ranges", {})
 
         def get_alert_class(value, low, med, high):
