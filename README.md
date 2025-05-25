@@ -104,6 +104,13 @@ If you have an older database created before version 0.8.5, add the new `status`
 ALTER TABLE positions ADD COLUMN status TEXT DEFAULT 'ACTIVE';
 ```
 
+## Startup Service
+
+`utils.startup_service` provides a unified `StartUpService` helper. Running
+`StartUpService.run_all()` ensures the `mother_brain.db` database exists, checks
+for required configuration files and creates the `logs/` and `data/` directories
+if needed. Invoke this at application launch to verify the environment is ready.
+
 ## Windows Branch Name Compatibility
 If a remote branch name contains characters that are invalid on Windows (such as `>` or `:`), Git cannot create the local reference. Rename the branch on a Unix-like system or ask the author to rename it. For example:
 

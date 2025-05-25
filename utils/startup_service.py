@@ -4,7 +4,7 @@ from core.constants import (
     ALERT_LIMITS_PATH,
     BASE_DIR,
 )
-# from utils.path_audit import check_for_mother_brain
+# from utils.path_audit import maybe_create_mother_brain
 import os
 from pathlib import Path
 import sqlite3
@@ -30,7 +30,7 @@ class StartUpService:
         StartUpService.verify_required_paths()
         StartUpService.ensure_alert_limits()
         StartUpService.ensure_required_directories()
-        log.success("✅ All startup checks passed.\n", source="StartUpCheck")
+        log.success("✅ All startup checks passed.\n", source="StartUpService")
 
     @staticmethod
     def check_for_mother_brain():
@@ -46,10 +46,10 @@ class StartUpService:
         if missing:
             log.critical("❌ Missing required file paths:")
             for p in missing:
-                log.error(f"  - {p}", source="StartUpCheck")
+                log.error(f"  - {p}", source="StartUpService")
             raise SystemExit("Startup check failed due to missing critical files.")
         else:
-            log.info("✅ All required file paths present.", source="StartUpCheck")
+            log.info("✅ All required file paths present.", source="StartUpService")
 
     @staticmethod
     def ensure_alert_limits():
@@ -64,16 +64,16 @@ class StartUpService:
                 }
             }
             save_config("alert_limitsz.json", default)
-            log.success("✅ Default alert_limitsz.json created.", source="StartUpCheck")
+            log.success("✅ Default alert_limitsz.json created.", source="StartUpService")
         else:
-            log.info("✅ alert_limitsz.json found.", source="StartUpCheck")
+            log.info("✅ alert_limitsz.json found.", source="StartUpService")
 
     @staticmethod
     def ensure_required_directories():
         required_dirs = [os.path.join(BASE_DIR, "logs"), os.path.join(BASE_DIR, "data")]
         for d in required_dirs:
             Path(d).mkdir(parents=True, exist_ok=True)
-            log.info(f"📁 Ensured directory exists: {d}", source="StartUpCheck")
+            log.info(f"📁 Ensured directory exists: {d}", source="StartUpService")
 
 # --- Allow Standalone Run ---
 if __name__ == "__main__":
