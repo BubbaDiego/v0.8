@@ -40,6 +40,11 @@ class RichLogger:
     def __init__(self, name: str = "cyclone") -> None:
         self.logger = logging.getLogger(name)
         handler = RichHandler(show_path=False, markup=True)
+        # Ensure INFO messages render in blue rather than the default green/red
+        try:
+            handler.level_styles["info"] = "blue"
+        except Exception:
+            pass
         handler.addFilter(ModuleFilter(self))
         formatter = logging.Formatter("%(message)s")
         handler.setFormatter(formatter)
