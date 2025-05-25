@@ -217,12 +217,32 @@ class DataLocker:
         """
         }
 
+        def _ensure_column(cursor, table, column_def):
+            """Add a column to ``table`` if missing."""
+            try:
+                col_name = column_def.split()[0]
+                existing = {row[1] for row in cursor.execute(f"PRAGMA table_info({table})")}
+                if col_name not in existing:
+                    cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column_def}")
+                    log.info(
+                        f"Added missing column {col_name} to {table}",
+                        source="DataLocker",
+                    )
+            except Exception as e:
+                log.error(
+                    f"❌ Failed to ensure column {column_def} on {table}: {e}",
+                    source="DataLocker",
+                )
+
         for name, ddl in table_defs.items():
             try:
                 cursor.execute(ddl)
                 log.debug(f"Table ensured: {name}", source="DataLocker")
             except Exception as e:
                 log.error(f"❌ Failed creating table {name}: {e}", source="DataLocker")
+
+        # --- Automatic schema migrations ---
+        _ensure_column(cursor, "positions", "status TEXT DEFAULT 'ACTIVE'")
 
         # Ensure a default row exists for system vars so lookups don't fail
         try:
