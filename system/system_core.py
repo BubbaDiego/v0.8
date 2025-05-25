@@ -11,7 +11,7 @@ from core.logging import log
 class SystemCore:
     def __init__(self, data_locker):
         self.log = log
-        self.wallets = WalletService(data_locker)
+        self.wallets = WalletService()
         self.wallet_core = WalletCore()
         self.theme = ThemeService(data_locker)
         self.xcom = XComCore(data_locker)
