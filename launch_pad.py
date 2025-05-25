@@ -49,12 +49,18 @@ def operations_menu():
     while True:
         clear_screen()
         console.print("[bold cyan]Operations[/bold cyan]")
-        console.print("1) 🛠️ Core Config Test")
+        console.print("1) Run POST")
+        console.print("2) 🛠️ Core Config Test")
         console.print("b) Back")
         choice = input("→ ").strip().lower()
         if choice == "1":
             monitor = OperationsMonitor()
-            result = monitor.run_startup_configuration_test()
+            result = monitor.run_startup_post()
+            log.info("POST Result", payload=result)
+            input("Press ENTER to continue...")
+        elif choice == "2":
+            monitor = OperationsMonitor()
+            result = monitor.run_configuration_test()
             log.info("Config Test Result", payload=result)
             input("Press ENTER to continue...")
         elif choice == "b":

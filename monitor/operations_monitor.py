@@ -3,9 +3,12 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 import subprocess
+import threading
+import itertools
+import time
 
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
@@ -31,21 +34,12 @@ class OperationsMonitor(BaseMonitor):
         self.notifications_enabled = notifications_enabled
         self.logger = logging.getLogger("OperationsMonitor")
 
+
     def _do_work(self):
-        """
-        Perform a POST check and log to database ledger.
-        """
-        config_result = self.run_startup_configuration_test()
-        post_result = self.run_startup_post()
+        """Perform startup tests and log to the ledger."""
+        result = self.run_startup_post()
 
-        result = {
-            "config_success": config_result.get("config_success"),
-            "config_duration_seconds": config_result.get("duration_seconds"),
-            "post_success": post_result.get("post_success"),
-            "post_duration_seconds": post_result.get("duration_seconds"),
-        }
-
-        overall_success = result["config_success"] and result["post_success"]
+        overall_success = result.get("config_success") and result.get("post_success")
         self.data_locker.ledger.insert_ledger_entry(
             monitor_name=self.name,
             status="Success" if overall_success else "Failed",
@@ -54,10 +48,11 @@ class OperationsMonitor(BaseMonitor):
         return result
 
     def run_startup_post(self) -> dict:
-        """
-        Run critical POST (Power-On Self Tests) during system startup.
-        """
-        log.banner("🧪 Running startup POST tests...")
+        """Run configuration validation and POST tests."""
+        log.banner("🧪 Operations Startup Tests")
+
+        config_result = self.run_configuration_test()
+
         test_path = os.path.join(os.getcwd(), "tests", "test_alert_controller.py")
 
         if not os.path.exists(test_path):
@@ -65,26 +60,65 @@ class OperationsMonitor(BaseMonitor):
             return {"post_success": True, "skipped": True}
 
         start_time = datetime.now()
+
+        stop_event = threading.Event()
+
+        def spin(msg: str):
+            spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
+            while not stop_event.is_set():
+                sys.stdout.write('\r' + next(spinner) + ' ' + msg)
+                sys.stdout.flush()
+                time.sleep(0.1)
+
+        t = threading.Thread(target=spin, args=("Running POST tests...",))
+        t.start()
         result = subprocess.run(
             [sys.executable, "-m", "pytest", test_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
+        stop_event.set()
+        t.join()
+        sys.stdout.write('\r')
+        sys.stdout.flush()
         success = (result.returncode == 0)
         duration = (datetime.now() - start_time).total_seconds()
 
+        stdout_text = result.stdout.decode()
         if not success:
             log.error("Startup POST tests failed!", source=self.name)
-            log.error(result.stdout.decode(), source=self.name)
+            log.error(stdout_text, source=self.name)
             log.error(result.stderr.decode(), source=self.name)
         else:
             log.success("Startup POST tests passed.", source=self.name)
 
-        return {"post_success": success, "duration_seconds": duration}
+        passed = 0
+        failed = 0
+        import re
+        m = re.search(r"(\d+) passed", stdout_text)
+        if m:
+            passed = int(m.group(1))
+        m = re.search(r"(\d+) failed", stdout_text)
+        if m:
+            failed = int(m.group(1))
+        total = passed + failed
+        if total:
+            if failed == 0:
+                log.success(f"🎉 {passed} of {total} passed 100%", source=self.name)
+            else:
+                pct = int(passed / total * 100)
+                log.error(f"💥 {passed} of {total} passed ({pct}%)", source=self.name)
 
-    def run_startup_configuration_test(self) -> dict:
-        """Validate alert_limits configuration on startup."""
-        log.banner("🧪 Running startup configuration test...")
+        return {
+            "config_success": config_result.get("config_success"),
+            "config_duration_seconds": config_result.get("duration_seconds"),
+            "post_success": success,
+            "post_duration_seconds": duration,
+        }
+
+    def run_configuration_test(self) -> dict:
+        """Validate alert limits configuration."""
+        log.info("🔧 Validating alert limits configuration...")
         start_time = datetime.now()
 
         config_path = str(ALERT_LIMITS_PATH)

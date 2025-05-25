@@ -17,17 +17,17 @@ def patch_datalocker(monkeypatch):
     monkeypatch.setattr(om, "DataLocker", DummyLocker)
 
 
-def test_run_startup_configuration_test_missing_file(tmp_path, monkeypatch):
+def test_run_configuration_test_missing_file(tmp_path, monkeypatch):
     missing = tmp_path / "missing.json"
     monkeypatch.setattr(om, "ALERT_LIMITS_PATH", missing)
     monkeypatch.setattr(SchemaValidationService, "ALERT_LIMITS_FILE", str(missing))
 
     monitor = om.OperationsMonitor()
-    result = monitor.run_startup_configuration_test()
+    result = monitor.run_configuration_test()
     assert result["config_success"] is False
 
 
-def test_run_startup_configuration_test_valid_file(tmp_path, monkeypatch):
+def test_run_configuration_test_valid_file(tmp_path, monkeypatch):
     valid_file = tmp_path / "alert_limits.json"
     valid_data = {
         "alert_ranges": {
@@ -51,5 +51,5 @@ def test_run_startup_configuration_test_valid_file(tmp_path, monkeypatch):
     monkeypatch.setattr(SchemaValidationService, "ALERT_LIMITS_FILE", str(valid_file))
 
     monitor = om.OperationsMonitor()
-    result = monitor.run_startup_configuration_test()
+    result = monitor.run_configuration_test()
     assert result["config_success"] is True
