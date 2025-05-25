@@ -7,6 +7,9 @@ from datetime import datetime
 # Ensure repo root is on path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+import pytest
+from alert_core.TESTER import run_test
+
 from data.data_locker import DataLocker
 from alert_core.alert_core import AlertCore
 from data.alert import AlertType, Condition
