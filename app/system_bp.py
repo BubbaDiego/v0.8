@@ -437,7 +437,7 @@ def hedge_calculator_page():
         modifiers = {"hedge_modifiers": hedge_mods, "heat_modifiers": heat_mods}
 
         return render_template(
-            "hedge_calculator.html",
+            "hedge_modifiers.html",
             theme=theme_config,
             long_positions=long_positions,
             short_positions=short_positions,

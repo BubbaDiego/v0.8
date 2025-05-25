@@ -17,7 +17,7 @@ def client(monkeypatch):
     # Simplify heavy view logic
     app.view_functions["alerts.alert_status_page"] = lambda: render_template("alert_status.html", alerts=[])
     app.view_functions["system.hedge_calculator_page"] = lambda: render_template(
-        "hedge_calculator.html",
+        "hedge_modifiers.html",
         theme={},
         long_positions=[],
         short_positions=[],
