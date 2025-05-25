@@ -26,7 +26,7 @@ sysman = dl.system
 # Monitor Registration
 registry = MonitorRegistry()
 registry.register("price_monitor", PriceMonitor())
-monitor_core = MonitorCore(registry)
+monitor_core = MonitorCore(registry=registry)
 
 # ───────────────────────────────────────────────
 def clear_screen(): os.system("cls" if os.name == "nt" else "clear")

@@ -36,7 +36,7 @@ registry.register("operations_monitor", OperationsMonitor())
 registry.register("latency_monitor", LatencyMonitor())
 registry.register("position_monitor", PositionMonitor())
 
-core = MonitorCore(registry)
+core = MonitorCore(registry=registry)
 
 # ───────────────────────────────────────────────
 
