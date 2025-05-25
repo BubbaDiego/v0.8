@@ -246,6 +246,8 @@ def api_dashboard_cards():
 def cyclone_market_update():
     try:
         asyncio.run(current_app.cyclone.run_market_updates())
+        # Refresh the main DataLocker connection so new data is visible
+        current_app.data_locker.db.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -254,6 +256,7 @@ def cyclone_market_update():
 def cyclone_sync():
     try:
         asyncio.run(current_app.cyclone.run_composite_position_pipeline())
+        current_app.data_locker.db.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -262,6 +265,7 @@ def cyclone_sync():
 def cyclone_full_cycle():
     try:
         asyncio.run(current_app.cyclone.run_cycle())
+        current_app.data_locker.db.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
@@ -270,6 +274,7 @@ def cyclone_full_cycle():
 def cyclone_wipe_all():
     try:
         asyncio.run(current_app.cyclone.run_clear_all_data())
+        current_app.data_locker.db.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
