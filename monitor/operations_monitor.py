@@ -6,8 +6,6 @@ sys.path.insert(0, PROJECT_ROOT)
 from datetime import datetime, timezone
 import logging
 import subprocess
-import threading
-import time
 
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
