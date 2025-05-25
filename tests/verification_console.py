@@ -3,13 +3,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from pathlib import Path
 import webbrowser
-from tests.verification_manager import TestRunnerManager
+from test_core import TestCore
 from core.core_imports import log
 
 
 class VerificationConsole:
     def __init__(self):
-        self.runner = TestRunnerManager()
+        self.core = TestCore()
         self.report_dir = Path("reports")
         self.report_html = self.report_dir / "last_test_report.html"
         self.report_log = self.report_dir / "last_test_log.txt"
@@ -27,19 +27,19 @@ class VerificationConsole:
             choice = input("Enter your choice: ").strip()
 
             if choice == "1":
-                self.runner.run_tests_glob()
+                self.core.run_all()
 
             elif choice == "2":
                 file = input("📄 Enter file name (e.g. test_alerts.py): ").strip()
                 fpath = Path("tests") / file
                 if fpath.exists():
-                    self.runner.run_tests([fpath])
+                    self.core.run_files([fpath])
                 else:
                     log.error(f"❌ File not found: {fpath}", source="VerificationConsole")
 
             elif choice == "3":
                 pattern = input("🧬 Enter glob (e.g. tests/test_eval*.py): ").strip()
-                self.runner.run_tests_glob(pattern)
+                self.core.run_glob(pattern)
 
             elif choice == "4":
                 if self.report_html.exists():
