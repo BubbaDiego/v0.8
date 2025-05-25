@@ -188,6 +188,38 @@ def update_wallet(name):
     return redirect(url_for("system.list_wallets"))
 
 
+# 💵 Deposit collateral via Jupiter
+@system_bp.route("/wallets/jupiter/deposit", methods=["POST"])
+def deposit_collateral():
+    try:
+        wallet_name = request.form.get("wallet_name")
+        market = request.form.get("market")
+        amount = float(request.form.get("amount", 0.0))
+        wallet = get_core().wallets.get_wallet(wallet_name)
+        result = get_core().wallet_core.deposit_collateral(wallet, market, amount)
+        sig = result.get("txSig") if isinstance(result, dict) else result
+        flash(f"✅ Deposit transaction sent: {sig}", "success")
+    except Exception as e:
+        flash(f"❌ Deposit failed: {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+
+# 💸 Withdraw collateral via Jupiter
+@system_bp.route("/wallets/jupiter/withdraw", methods=["POST"])
+def withdraw_collateral():
+    try:
+        wallet_name = request.form.get("wallet_name")
+        market = request.form.get("market")
+        amount = float(request.form.get("amount", 0.0))
+        wallet = get_core().wallets.get_wallet(wallet_name)
+        result = get_core().wallet_core.withdraw_collateral(wallet, market, amount)
+        sig = result.get("txSig") if isinstance(result, dict) else result
+        flash(f"✅ Withdraw transaction sent: {sig}", "success")
+    except Exception as e:
+        flash(f"❌ Withdraw failed: {e}", "danger")
+    return redirect(url_for("system.list_wallets"))
+
+
 # === 🎨 Theme Profile Routes ===
 
 
