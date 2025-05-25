@@ -30,11 +30,11 @@
           <thead>
             <tr>
               <th class="sortable left" data-col-index="0">Asset <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="1">Collateral <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="2">Value <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="3">Leverage <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="4">Travel % <span class="sort-indicator"></span></th>
-              <th class="sortable right size-col" data-col-index="5">Size <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="1">Collateral <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="2">Value <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="3">Leverage <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="4">Travel % <span class="sort-indicator"></span></th>
+              <th class="sortable center size-col" data-col-index="5">Size <span class="sort-indicator"></span></th>
             </tr>
           </thead>
           <tbody>
@@ -57,11 +57,11 @@
                       {{ pos.asset }}
                     </span>
                   </td>
-                  <td class="right">{{ "{:,}".format(pos.collateral|float|round(2)) }}</td>
-                  <td class="right">{{ "{:,}".format(pos.value|float|round(2)) }}</td>
-                  <td class="right">{{ pos.leverage|float|round(2) }}</td>
-                  <td class="right">{{ pos.travel_percent|float|round(2) }}%</td>
-                  <td class="right size-col">{{ "{:,}".format(pos.size|float|round(2)) }}</td>
+                  <td class="center">{{ "{:,}".format(pos.collateral|float|round(2)) }}</td>
+                  <td class="center">{{ "{:,}".format(pos.value|float|round(2)) }}</td>
+                  <td class="center">{{ pos.leverage|float|round(2) }}</td>
+                  <td class="center">{{ pos.travel_percent|float|round(2) }}%</td>
+                  <td class="center size-col">{{ "{:,}".format(pos.size|float|round(2)) }}</td>
                 </tr>
               {% endif %}
             {% endfor %}
@@ -85,11 +85,11 @@
                   {% endif %}
                 </span>
               </td>
-              <td class="right">{{ "{:,}".format(short_totals.get('collateral',0)|float|round(2)) }}</td>
-              <td class="right">{{ "{:,}".format(short_totals.get('value',0)|float|round(2)) }}</td>
-              <td class="right">{{ short_totals.get('leverage',0)|float|round(2) }}</td>
-              <td class="right">{{ short_totals.get('travel_percent',0)|float|round(2) }}%</td>
-              <td class="right size-col">{{ "{:,}".format(short_totals.get('size',0)|float|round(2)) }}</td>
+              <td class="center">{{ "{:,}".format(short_totals.get('collateral',0)|float|round(2)) }}</td>
+              <td class="center">{{ "{:,}".format(short_totals.get('value',0)|float|round(2)) }}</td>
+              <td class="center">{{ short_totals.get('leverage',0)|float|round(2) }}</td>
+              <td class="center">{{ short_totals.get('travel_percent',0)|float|round(2) }}%</td>
+              <td class="center size-col">{{ "{:,}".format(short_totals.get('size',0)|float|round(2)) }}</td>
             </tr>
           </tfoot>
         </table>
@@ -102,11 +102,11 @@
         <table id="long-table" class="positions-table">
           <thead>
             <tr>
-              <th class="sortable right size-col" data-col-index="0">Size <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="1">Travel % <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="2">Leverage <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="3">Value <span class="sort-indicator"></span></th>
-              <th class="sortable right" data-col-index="4">Collateral <span class="sort-indicator"></span></th>
+              <th class="sortable center size-col" data-col-index="0">Size <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="1">Travel % <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="2">Leverage <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="3">Value <span class="sort-indicator"></span></th>
+              <th class="sortable center" data-col-index="4">Collateral <span class="sort-indicator"></span></th>
               <th class="sortable left" data-col-index="5">Asset <span class="sort-indicator"></span></th>
             </tr>
           </thead>
@@ -118,11 +118,11 @@
                 <tr class="no-data-row"><td colspan="6" class="no-data">No data</td></tr>
               {% else %}
                 <tr>
-                  <td class="right size-col">{{ "{:,}".format(pos.size|float|round(2)) }}</td>
-                  <td class="right">{{ pos.travel_percent|float|round(2) }}%</td>
-                  <td class="right">{{ pos.leverage|float|round(2) }}</td>
-                  <td class="right">{{ "{:,}".format(pos.value|float|round(2)) }}</td>
-                  <td class="right">{{ "{:,}".format(pos.collateral|float|round(2)) }}</td>
+                  <td class="center size-col">{{ "{:,}".format(pos.size|float|round(2)) }}</td>
+                  <td class="center">{{ pos.travel_percent|float|round(2) }}%</td>
+                  <td class="center">{{ pos.leverage|float|round(2) }}</td>
+                  <td class="center">{{ "{:,}".format(pos.value|float|round(2)) }}</td>
+                  <td class="center">{{ "{:,}".format(pos.collateral|float|round(2)) }}</td>
                   <td class="left">
                     <span class="icon-inline">
                       {% if pos.asset == "BTC" %}
@@ -142,11 +142,11 @@
           <tfoot>
             <tr class="fw-bold">
               {% set long_totals = hd.get('totals', {}).get('long', {}) %}
-              <td class="right size-col">{{ "{:,}".format(long_totals.get('size',0)|float|round(2)) }}</td>
-              <td class="right">{{ long_totals.get('travel_percent',0)|float|round(2) }}%</td>
-              <td class="right">{{ long_totals.get('leverage',0)|float|round(2) }}</td>
-              <td class="right">{{ "{:,}".format(long_totals.get('value',0)|float|round(2)) }}</td>
-              <td class="right">{{ "{:,}".format(long_totals.get('collateral',0)|float|round(2)) }}</td>
+              <td class="center size-col">{{ "{:,}".format(long_totals.get('size',0)|float|round(2)) }}</td>
+              <td class="center">{{ long_totals.get('travel_percent',0)|float|round(2) }}%</td>
+              <td class="center">{{ long_totals.get('leverage',0)|float|round(2) }}</td>
+              <td class="center">{{ "{:,}".format(long_totals.get('value',0)|float|round(2)) }}</td>
+              <td class="center">{{ "{:,}".format(long_totals.get('collateral',0)|float|round(2)) }}</td>
               <td class="left">
                 {% if long_totals.get('asset') %}
                   <span class="icon-inline">
