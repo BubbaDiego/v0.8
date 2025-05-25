@@ -49,7 +49,14 @@ class DatabaseManager:
         self.connect()
 
     def get_cursor(self):
-        return self.connect().cursor()
+        """Return a database cursor, recovering the DB if corruption is detected."""
+        try:
+            return self.connect().cursor()
+        except sqlite3.DatabaseError as e:
+            if "file is not a database" in str(e) or "database disk image is malformed" in str(e):
+                self.recover_database()
+                return self.conn.cursor()
+            raise
 
     def commit(self):
         self.connect().commit()
