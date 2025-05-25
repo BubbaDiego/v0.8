@@ -1,15 +1,18 @@
 function loadHedges() {
-  fetch('/sonic_labs/api/hedges')
+  return fetch('/sonic_labs/api/hedges')
     .then(resp => resp.json())
     .then(data => {
       const tbody = document.getElementById('hedgeTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      (data.hedges || []).forEach(h => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${h.id}</td><td>${h.positions.join(', ')}</td><td>${h.total_heat_index}</td>`;
-        tbody.appendChild(tr);
-      });
+      if (tbody) {
+        tbody.innerHTML = '';
+        (data.hedges || []).forEach(h => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${h.id}</td><td>${h.positions.join(', ')}</td><td>${h.total_heat_index}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+      window.initialHedges = data.hedges || [];
+      return window.initialHedges;
     });
 }
 
@@ -98,7 +101,14 @@ function updateTable(data) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadHedges();
+  loadHedges().then((hedges) => {
+    const select = document.getElementById('hedgeSelect');
+    if (select && !select.value && hedges && hedges.length) {
+      currentHedgeId = hedges[0].id;
+      select.value = currentHedgeId;
+      loadHedgePositions(currentHedgeId);
+    }
+  });
   const linkBtn = document.getElementById('linkHedgesBtn');
   const unlinkBtn = document.getElementById('unlinkHedgesBtn');
   const testBtn = document.getElementById('testCalcsBtn');
