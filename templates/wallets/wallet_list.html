@@ -114,7 +114,52 @@
     </div>
 </div>
 
-<div class="sonic-section-container sonic-section-middle">
+<div class="sonic-section-container sonic-section-middle mt-3">
+  <div class="sonic-content-panel">
+    <div class="section-title">Jupiter Collateral</div>
+    <form action="{{ url_for('system.deposit_collateral') }}" method="post" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">Wallet</label>
+        <select name="wallet_name" class="form-select">
+          {% for w in wallets %}
+          <option value="{{ w.name }}">{{ w.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Market</label>
+        <input type="text" name="market" class="form-control" placeholder="SOL-PERP">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Amount</label>
+        <input type="number" step="0.0001" name="amount" class="form-control">
+      </div>
+      <div class="col-md-2 text-end">
+        <button type="submit" class="btn btn-success w-100">Deposit</button>
+      </div>
+    </form>
+    <form action="{{ url_for('system.withdraw_collateral') }}" method="post" class="row g-2 align-items-end mt-2">
+      <div class="col-md-4">
+        <label class="form-label">Wallet</label>
+        <select name="wallet_name" class="form-select">
+          {% for w in wallets %}
+          <option value="{{ w.name }}">{{ w.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Market</label>
+        <input type="text" name="market" class="form-control" placeholder="SOL-PERP">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Amount</label>
+        <input type="number" step="0.0001" name="amount" class="form-control">
+      </div>
+      <div class="col-md-2 text-end">
+        <button type="submit" class="btn btn-warning w-100">Withdraw</button>
+      </div>
+    </form>
+  </div>
   <div class="sonic-content-panel">
     {% include "wallets/wallet_form.html" %}
 
