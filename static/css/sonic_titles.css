@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem 1.4rem;
+  padding: 0;
   font-family: 'Orbitron', sans-serif;
   font-size: 1.15rem;
   font-weight: 600;
@@ -17,6 +17,7 @@
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  transform: scale(1.5);
 }
 
 .sonic-title-pill.default {
@@ -30,5 +31,7 @@
 }
 
 .sonic-title-image {
-  height: 1.5rem;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
