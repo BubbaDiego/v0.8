@@ -15,7 +15,7 @@ from core.core_imports import ALERT_LIMITS_PATH
 from core.constants import THEME_CONFIG_PATH, SONIC_SAUCE_PATH
 
 class JsonType(Enum):
-    ALERT_LIMITS = "alert_limitsz.json"
+    ALERT_LIMITS = "alert_limits.json"
     THEME_CONFIG = "theme_config.json"
     SONIC_SAUCE = "sonic_sauce.json"
     SONIC_CONFIG = "sonic_config.json"
