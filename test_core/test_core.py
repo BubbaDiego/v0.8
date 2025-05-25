@@ -49,10 +49,27 @@ class TestCore:
             if importlib.util.find_spec(plugin) is not None:
                 args.extend(["-p", plugin])
 
+        # ``pytest-html`` provides ``--html`` and ``--self-contained-html``.
+        # These options must only be passed when the plugin is available.
+        if importlib.util.find_spec("pytest_html") is not None:
+            args.extend([
+                f"--html={html_report}",
+                "--self-contained-html",
+            ])
+
+        # ``pytest-json-report`` exposes the ``--json-report`` options. Avoid
+        # using them when the plugin cannot be imported.
+        if importlib.util.find_spec("pytest_jsonreport") is not None:
+            args.extend([
+                "--json-report",
+                f"--json-report-file={json_report}",
+            ])
+
         args.extend([
             f"--html={html_report}", "--self-contained-html",
             "--json-report", f"--json-report-file={json_report}",
         ])
+
 
         # Prevent auto-loading of external plugins which may introduce
         # unwanted dependencies (e.g. anchorpy's pytest plugin requiring
