@@ -153,8 +153,10 @@ class AlertCore:
         try:
             log.start_timer("create_all_alerts")
 
-            await self.create_portfolio_alerts()
-            await self.create_position_alerts()
+            # create_portfolio_alerts and create_position_alerts are
+            # synchronous methods, so they should not be awaited.
+            self.create_portfolio_alerts()
+            self.create_position_alerts()
 
             log.end_timer("create_all_alerts", source="AlertCore")
             log.success("🛠 Alert generation complete", source="AlertCore")
