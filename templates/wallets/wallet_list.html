@@ -50,7 +50,10 @@
             {% endif %}
           </td>
           <td>{{ wallet.name }}</td>
-          <td>{{ wallet.public_address }}</td>
+          <td>
+            <span title="{{ wallet.public_address }}">{{ wallet.public_address[:9] }}</span>
+            <i class="fas fa-ellipsis-h ms-1" title="{{ wallet.public_address }}"></i>
+          </td>
           <td>${{ wallet.balance }}</td>
           <td>{{ wallet.tags|join(', ') }}</td>
           <td>{{ wallet.type }}</td>
@@ -187,6 +190,9 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
 <script>
   const modal = new bootstrap.Modal(document.getElementById('editWalletModal'));
   document.querySelectorAll('.edit-btn').forEach(btn => {
