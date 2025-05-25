@@ -7,12 +7,14 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_titles.css') }}">
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'XCom Settings' %}
 {% include "title_bar.html" %}
 <div class="container-fluid pt-4">
-  <h2 class="mb-4"><i class="fas fa-plug text-primary me-2"></i>XCom Settings</h2>
+  <!-- Title moved to bar -->
 
   <div class="row g-4">
 

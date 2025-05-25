@@ -7,12 +7,14 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_titles.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_middle.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/liquidation_bars.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/alert_status.css') }}">
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Alert Status' %}
 {% include "title_bar.html" %}
 <div class="sonic-section-container sonic-section-middle mt-3">
   <div class="sonic-content-panel">

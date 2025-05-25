@@ -6,13 +6,12 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/title_bar.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_dashboard.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_themes.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sonic_titles.css') }}">
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Hedge Labs' %}
 {% include "title_bar.html" %}
-<div class="container-fluid p-3">
-  <h3 class="mb-3">🧪 Hedge Labs</h3>
-</div>
 
 <div class="sonic-section-container sonic-section-middle mt-3">
   <div class="sonic-content-panel">
