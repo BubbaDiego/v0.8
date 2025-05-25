@@ -1,12 +1,12 @@
 <div id="toastContainer" class="toast-container" style="position: fixed; top: 1.5rem; right: 2rem; z-index: 3000;"></div>
 <nav class="title-bar d-flex justify-content-between align-items-center px-3 py-2">
-  <div class="left-buttons d-flex gap-2">
-    <a class="btn btn-light nav-icon-btn" href="/" title="Home"><span>🏠</span></a>
-    <a class="btn btn-light nav-icon-btn" href="{{ url_for('positions.list_positions') }}" title="Positions"><span>📊</span></a>
-    <a class="btn btn-light nav-icon-btn" href="/sonic_labs/hedge_labs" title="Hedge Labs"><span>🧪</span></a>
-    <a class="btn btn-light nav-icon-btn" href="/alerts/status_page" title="Alert Status"><span>🚨</span></a>
-    <a class="btn btn-light nav-icon-btn" href="/sonic_labs/hedge_report" title="Hedge Report"><span>🦔</span></a>
-    <a class="btn btn-light nav-icon-btn" href="/system/wallets" title="Wallet Manager"><span>💼</span></a>
+  <div class="nav-bar d-flex align-items-center gap-2">
+    <a class="btn nav-btn" href="/" title="Home"><span>🏠</span></a>
+    <a class="btn nav-btn" href="{{ url_for('positions.list_positions') }}" title="Positions"><span>📊</span></a>
+    <a class="btn nav-btn" href="/sonic_labs/hedge_labs" title="Hedge Labs"><span>🧪</span></a>
+    <a class="btn nav-btn" href="/alerts/status_page" title="Alert Status"><span>🚨</span></a>
+    <a class="btn nav-btn" href="/sonic_labs/hedge_report" title="Hedge Report"><span>🦔</span></a>
+    <a class="btn nav-btn" href="/system/wallets" title="Wallet Manager"><span>💼</span></a>
   </div>
   <div class="title-bar-center flex-grow-1 text-center" style="font-size:1.3rem;font-weight:bold;letter-spacing:0.04em;">
     <div id="refreshDial" class="refresh-dial" title="UI auto-refresh">
