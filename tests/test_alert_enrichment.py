@@ -74,3 +74,14 @@ async def test_missing_price_data(enrichment_service):
     alert = make_alert(AlertType.TravelPercentLiquid)
     enriched = await enrichment_service._enrich_travel_percent(alert)
     assert enriched.evaluated_value is None
+
+
+@pytest.mark.asyncio
+async def test_missing_heat_index_defaults(enrichment_service, dummy_position):
+    position = dummy_position.copy()
+    position.pop("current_heat_index", None)
+    enrichment_service.data_locker.get_position_by_reference_id.return_value = position
+    alert = make_alert(AlertType.HeatIndex)
+    enriched = await enrichment_service._enrich_heat_index(alert)
+    assert enriched.evaluated_value == 5.0
+    assert "Default heat index applied" in enriched.notes
