@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 from datetime import datetime, timezone
 from core.logging import log
 

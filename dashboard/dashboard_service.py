@@ -10,14 +10,15 @@ from xcom.xcom_core import get_latest_xcom_monitor_entry
 #from monitor.ledger_service import LedgerService
 
 from data.data_locker import DataLocker
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 from alert_core.threshold_service import ThresholdService
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from system.system_core import SystemCore
 from utils.fuzzy_wuzzy import fuzzy_match_key
 from calc_core.calculation_core import CalculationCore
-from core.core_imports import ALERT_LIMITS_PATH, DB_PATH
+from core.core_imports import ALERT_LIMITS_PATH
+from core.constants import DB_PATH
 
 # Mapping of wallet names to icon filenames
 WALLET_IMAGE_MAP = {

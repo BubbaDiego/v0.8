@@ -6,7 +6,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import typer
 from rich.table import Table
 from rich.console import Console
-from core.core_imports import configure_console_log, DB_PATH
+from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
 

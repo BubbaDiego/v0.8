@@ -3,7 +3,8 @@
 import typer
 from rich.console import Console
 from cyclone_engine import Cyclone
-from core.core_imports import configure_console_log, DB_PATH
+from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 
 from cyclone_console.utils.cli_renderer import banner, print_success, print_warning, print_error

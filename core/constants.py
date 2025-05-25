@@ -31,7 +31,8 @@ MONITOR_DIR = BASE_DIR / "monitor"
 # 📁 Core File Paths
 # -----------------------------
 DB_FILENAME = os.getenv("DB_FILENAME", "mother_brain.db")
-DB_PATH = DATA_DIR / DB_FILENAME
+# Allow environment override for the full database path
+DB_PATH = Path(os.getenv("DB_PATH", DATA_DIR / DB_FILENAME))
 
 CONFIG_PATH = CONFIG_DIR / os.getenv("CONFIG_FILENAME", "sonic_config.json")
 ALERT_LIMITS_PATH = CONFIG_DIR / os.getenv("ALERT_LIMITS_FILENAME", "alert_limits.json")

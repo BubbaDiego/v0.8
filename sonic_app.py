@@ -14,7 +14,8 @@ load_dotenv()
 from flask import Flask, redirect, url_for, current_app, jsonify
 from flask_socketio import SocketIO
 
-from core.core_imports import log, configure_console_log, DB_PATH, BASE_DIR, retry_on_locked
+from core.core_imports import log, configure_console_log, BASE_DIR, retry_on_locked
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 from system.system_core import SystemCore
 from dashboard.dashboard_service import get_profit_badge_value

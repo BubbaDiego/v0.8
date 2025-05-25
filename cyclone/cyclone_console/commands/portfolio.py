@@ -5,7 +5,8 @@ from rich.console import Console
 from rich.table import Table
 from cyclone.cyclone_portfolio_service import CyclonePortfolioService
 from positions.position_core_service import PositionCoreService
-from core.core_imports import configure_console_log, DB_PATH
+from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 
 app = typer.Typer(help="📦 Portfolio tools")

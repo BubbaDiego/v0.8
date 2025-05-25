@@ -6,7 +6,7 @@ from monitor.base_monitor import BaseMonitor
 from data.data_locker import DataLocker
 from xcom.xcom_config_service import XComConfigService
 from xcom.check_twilio_heartbeart_service import CheckTwilioHeartbeartService
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 
 
 class TwilioMonitor(BaseMonitor):

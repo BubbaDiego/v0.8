@@ -15,7 +15,7 @@ from wallets.wallet_schema import WalletIn
 WALLETS_JSON_PATH = "wallets.json"
 
 from data.data_locker import DataLocker
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 
 class WalletRepository:
     def __init__(self):

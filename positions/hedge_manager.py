@@ -20,7 +20,7 @@ from typing import List, Optional, TYPE_CHECKING
 if TYPE_CHECKING:  # pragma: no cover - for type hints only
     from data.data_locker import DataLocker
 from data.models import Hedge
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 from hedge_core.hedge_core import HedgeCore
 
 

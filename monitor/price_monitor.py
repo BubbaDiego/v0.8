@@ -7,7 +7,7 @@ from prices.price_sync_service import PriceSyncService
 from data.data_locker import DataLocker
 from monitor.base_monitor import BaseMonitor
 from monitor.monitor_service import MonitorService
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 
 from datetime import datetime, timezone
 from core.logging import log

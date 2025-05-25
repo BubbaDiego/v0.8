@@ -7,7 +7,7 @@ class BaseMonitor:
     def run_cycle(self):
         from core.logging import log
         from data.data_locker import DataLocker
-        from core.core_imports import DB_PATH
+        from core.constants import DB_PATH
 
         log.banner(f"🚀 Running {self.name}")
         result = {}

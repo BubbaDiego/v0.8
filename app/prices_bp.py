@@ -23,7 +23,8 @@ from flask import Blueprint, request, jsonify, render_template, redirect, url_fo
 # Import configuration constants and modules
 from data.data_locker import DataLocker
 from monitor.price_monitor import PriceMonitor
-from core.core_imports import CONFIG_PATH, DB_PATH, retry_on_locked
+from core.core_imports import CONFIG_PATH, retry_on_locked
+from core.constants import DB_PATH
 
 
 # ---------------------------------------------------------------------------

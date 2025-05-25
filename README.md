@@ -84,9 +84,17 @@ To create the SQLite database and all required tables, run:
 python scripts/init_db.py
 ```
 
-The script creates `mother_brain.db` in the `data` directory (or the path set via
-the `DB_PATH` environment variable) and ensures every table exists.  Additional
-flags allow optional seeding and resets:
+The script creates `mother_brain.db` in the `data` directory by default. Set the
+`DB_PATH` environment variable to override this location before running the
+script:
+
+```bash
+export DB_PATH=/path/to/your/mother_brain.db
+python scripts/init_db.py
+```
+
+The initializer ensures every table exists.  Additional flags allow optional
+seeding and resets:
 
 ```bash
 # wipe the DB and seed thresholds and wallets

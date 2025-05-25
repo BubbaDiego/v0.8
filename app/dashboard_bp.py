@@ -7,7 +7,7 @@ from typing import Optional
 from data.models import AlertThreshold
 from data.data_locker import DataLocker
 from positions.position_core import PositionCore
-from core.core_imports import DB_PATH
+from core.constants import DB_PATH
 from cyclone.cyclone_engine import Cyclone
 
 from datetime import datetime

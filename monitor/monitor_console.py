@@ -20,11 +20,10 @@ from core.logging import log
 
 from utils.console_logger import ConsoleLogger as log
 from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 
 from data.data_locker import DataLocker
 
-# ✅ Resolve correct DB path
-DB_PATH = os.getenv("DB_PATH", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "mother_brain.db")))
 configure_console_log()
 data_locker = DataLocker(DB_PATH)
 ledger = data_locker.ledger

@@ -3,7 +3,8 @@
 import typer
 from rich.console import Console
 from rich.table import Table
-from core.core_imports import configure_console_log, DB_PATH
+from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 # HedgeManager lives under positions. Import it from there so the CLI works.
 from positions.hedge_manager import HedgeManager

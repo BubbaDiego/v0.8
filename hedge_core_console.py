@@ -3,7 +3,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from core.core_imports import configure_console_log, DB_PATH
+from core.core_imports import configure_console_log
+from core.constants import DB_PATH
 from data.data_locker import DataLocker
 from hedge_core.hedge_core import HedgeCore
 
