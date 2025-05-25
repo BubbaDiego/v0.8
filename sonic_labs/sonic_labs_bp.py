@@ -98,11 +98,16 @@ def hedge_labs_page():
                 asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
                 wallet_name = ref_pos.get("wallet_name") or ref_pos.get("wallet")
                 wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
+        total_size = abs(h.total_long_size) + abs(h.total_short_size)
+        long_ratio = int(round(abs(h.total_long_size) / total_size * 100)) if total_size else 0
+        short_ratio = int(round(abs(h.total_short_size) / total_size * 100)) if total_size else 0
         return {
             "id": h.id,
             "positions": h.positions,
             "total_long_size": h.total_long_size,
             "total_short_size": h.total_short_size,
+            "long_size_ratio": long_ratio,
+            "short_size_ratio": short_ratio,
             "long_heat_index": h.long_heat_index,
             "short_heat_index": h.short_heat_index,
             "total_heat_index": h.total_heat_index,
@@ -156,11 +161,16 @@ def api_get_hedges():
                 asset_img = ASSET_IMAGE_MAP.get(asset_key, DEFAULT_ASSET_IMAGE)
                 wallet_name = ref_pos.get("wallet_name") or ref_pos.get("wallet")
                 wallet_img = WALLET_IMAGE_MAP.get(wallet_name, DEFAULT_WALLET_IMAGE)
+        total_size = abs(h.total_long_size) + abs(h.total_short_size)
+        long_ratio = int(round(abs(h.total_long_size) / total_size * 100)) if total_size else 0
+        short_ratio = int(round(abs(h.total_short_size) / total_size * 100)) if total_size else 0
         return {
             "id": h.id,
             "positions": h.positions,
             "total_long_size": h.total_long_size,
             "total_short_size": h.total_short_size,
+            "long_size_ratio": long_ratio,
+            "short_size_ratio": short_ratio,
             "total_heat_index": h.total_heat_index,
             "long_leverage": float(long_pos.get("leverage", 0.0)) if long_pos else 0.0,
             "short_leverage": float(short_pos.get("leverage", 0.0)) if short_pos else 0.0,
