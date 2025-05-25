@@ -247,8 +247,18 @@
   font-weight: 600;
   padding: 0.4em 0.75em;
   border-radius: 0.75rem;
+  cursor: pointer;
   animation: bounceIn 1.5s ease, float 3s ease-in-out infinite, pulseGlow 2s infinite;
 }
+
+.profit-badge.dismissed {
+  animation: fadeOut 0.4s forwards;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; transform: scale(0.7); }
+}
+
 
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 0 rgba(40, 167, 69, 0.4); }
