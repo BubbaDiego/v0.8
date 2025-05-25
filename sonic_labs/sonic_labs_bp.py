@@ -214,7 +214,7 @@ def api_test_calcs():
         from calc_core.calculation_core import CalculationCore
 
         dl = current_app.data_locker
-        positions = dl.positions.get_all_positions() or []
+        positions = dl.positions.get_active_positions() or []
         core = CalculationCore(dl)
         totals = core.calculate_totals(positions)
         return jsonify({"totals": totals})

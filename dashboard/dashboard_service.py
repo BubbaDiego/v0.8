@@ -208,7 +208,7 @@ def get_profit_badge_value(data_locker, system_core=None):
             return None
 
         low_limit = profit_threshold.low
-        positions = PositionCore(data_locker).get_all_positions() or []
+        positions = PositionCore(data_locker).get_active_positions() or []
         profits = [float(p.get("pnl_after_fees_usd") or 0.0) for p in positions]
         above = [p for p in profits if p >= low_limit]
         if above:
@@ -221,7 +221,7 @@ def get_dashboard_context(data_locker, system_core=None):
 
     log.info("📊 Assembling dashboard context", source="DashboardContext")
     core = CalculationCore(data_locker)
-    positions = PositionCore(data_locker).get_all_positions() or []
+    positions = PositionCore(data_locker).get_active_positions() or []
     positions = core.aggregate_positions_and_update(positions, DB_PATH)
     totals = core.calc_services.calculate_totals(positions)
 

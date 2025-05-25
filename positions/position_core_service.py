@@ -58,7 +58,7 @@ class PositionCoreService:
 
     def record_positions_snapshot(self):
         try:
-            positions = self.dl.read_positions()
+            positions = self.dl.positions.get_active_positions()
             calc = CalculationCore(self.dl)
             totals = calc.calculate_totals(positions)
             self.dl.portfolio.record_snapshot(totals)

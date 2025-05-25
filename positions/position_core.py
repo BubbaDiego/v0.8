@@ -34,9 +34,9 @@ class PositionCore:
 
     def record_snapshot(self):
         try:
-            raw = self.store.get_all()
+            raw = self.store.get_active_positions()
             totals = CalcServices().calculate_totals(raw)
-            self.dl.portfolio.record_snapshot(totals)  # ✅ HERE
+            self.dl.portfolio.record_snapshot(totals)
             log.success("📸 Position snapshot recorded", source="PositionCore")
         except Exception as e:
             log.error(f"❌ Snapshot recording failed: {e}", source="PositionCore")

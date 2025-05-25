@@ -399,7 +399,7 @@ def hedge_calculator_page():
     """Render the hedge calculator page."""
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions() or []
+        positions = core.get_active_positions() or []
 
         long_positions = [
             p for p in positions if str(p.get("position_type", "")).upper() == "LONG"
@@ -454,7 +454,7 @@ def hedge_report_page():
     """Render the hedge report page with aggregated long/short data."""
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions() or []
+        positions = core.get_active_positions() or []
 
         def build(group_positions, asset_name):
             from calc_core.calc_services import CalcServices

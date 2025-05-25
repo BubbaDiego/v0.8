@@ -40,7 +40,7 @@ def _convert_iso_to_pst(iso_str):
 def list_positions():
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions()
+        positions = core.get_active_positions()
 
         config_data = load_config(str(ALERT_LIMITS_PATH)) or {}
         alert_dict = config_data.get("alert_ranges", {})
@@ -86,7 +86,7 @@ def list_positions():
 def positions_table():
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions()
+        positions = core.get_active_positions()
         totals = CalcServices().calculate_totals(positions)
         return render_template("positions_table.html", positions=positions, totals=totals)
     except Exception as e:
@@ -167,7 +167,7 @@ def update_jupiter():
 def positions_data_api():
     try:
         core = PositionCore(current_app.data_locker)
-        positions = core.get_all_positions()
+        positions = core.get_active_positions()
         mini_prices = []
         for asset in ["BTC", "ETH", "SOL"]:
             row = current_app.data_locker.get_latest_price(asset)
