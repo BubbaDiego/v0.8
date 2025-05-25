@@ -40,7 +40,7 @@ class TestCore:
         log.banner(f"🧪 Test Run Started ({len(files)} file(s))")
         log.info(f"⏱ Running: {[str(f) for f in files]}", source="TestCore")
 
-        args = [*[str(f) for f in files], "-q", "--tb=short"]
+        args = [*[str(f) for f in files], "-vv", "-s", "--tb=short", "-rA"]
 
         # Include optional plugins only if they are installed. This avoids
         # ``pytest`` failing when a plugin is referenced but not available in
@@ -76,6 +76,38 @@ class TestCore:
         with open(txt_log, "w", encoding="utf-8") as f, \
              contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
             result = pytest.main(args)
+
+        # After test run, parse results for a concise summary
+        passed = failed = skipped = 0
+        summary_lines = []
+        try:
+            import re
+            pattern = re.compile(r"(PASSED|FAILED|ERROR|SKIPPED)\s+(\S+::\S+)")
+            with open(txt_log, "r", encoding="utf-8") as lf:
+                for line in lf:
+                    match = pattern.search(line)
+                    if match:
+                        outcome, test_id = match.groups()
+                        summary_lines.append(f"{test_id} {outcome}")
+                        if outcome == "PASSED":
+                            passed += 1
+                        elif outcome in ("FAILED", "ERROR"):
+                            failed += 1
+                        elif outcome == "SKIPPED":
+                            skipped += 1
+        except Exception as e:  # pragma: no cover - summary best effort
+            log.error(f"Failed to parse log summary: {e}", source="TestCore")
+
+        for line in summary_lines:
+            if line.endswith("PASSED"):
+                log.success(f"✅ {line}", source="TestCore")
+            elif line.endswith("FAILED") or line.endswith("ERROR"):
+                log.error(f"❌ {line}", source="TestCore")
+            elif line.endswith("SKIPPED"):
+                log.warning(f"⚠️ {line}", source="TestCore")
+
+        log.banner("Test Summary")
+        log.info(f"✅ Passed: {passed}  ❌ Failed: {failed}  ⚠️ Skipped: {skipped}", source="TestCore")
 
         if result == 0:
             log.success("✅ All tests completed!", source="TestCore")

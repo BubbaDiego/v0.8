@@ -64,4 +64,9 @@ def test_alert_core_create_and_process(tmp_path, monkeypatch):
     assert stored["evaluated_value"] == 150.0
     assert stored["level"].lower() in {"normal", "low", "medium", "high"}
 
+@pytest.mark.asyncio
+async def test_alert_core_basic():
+    await run_test()
+
     dl.db.close()
+

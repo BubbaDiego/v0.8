@@ -109,10 +109,10 @@ async def run_barrage():
 if __name__ == "__main__":
     asyncio.run(run_barrage())
 
-
 import pytest
 
 
 @pytest.mark.asyncio
 async def test_alert_core_barrage():
     await run_barrage()
+
