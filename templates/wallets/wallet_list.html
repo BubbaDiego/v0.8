@@ -284,20 +284,22 @@
 <script src="{{ url_for('static', filename='js/sonic_theme_toggle.js') }}"></script>
 <script src="{{ url_for('static', filename='js/layout_mode.js') }}"></script>
 <script>
-  const modal = new bootstrap.Modal(document.getElementById('editWalletModal'));
-  document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const form = document.getElementById('editWalletForm');
-      form.action = btn.dataset.updateUrl;
-      document.getElementById('edit_name').value = btn.dataset.name;
-      document.getElementById('edit_public').value = btn.dataset.public;
-      document.getElementById('edit_private').value = btn.dataset.private;
-      document.getElementById('edit_balance').value = btn.dataset.balance;
-      document.getElementById('edit_tags').value = btn.dataset.tags;
-      document.getElementById('edit_type').value = btn.dataset.type;
-      document.getElementById('edit_image').value = btn.dataset.image;
-      document.getElementById('edit_active').checked = btn.dataset.active === 'True' || btn.dataset.active === 'true';
-      modal.show();
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = new bootstrap.Modal(document.getElementById('editWalletModal'));
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const form = document.getElementById('editWalletForm');
+        form.action = btn.dataset.updateUrl;
+        document.getElementById('edit_name').value = btn.dataset.name;
+        document.getElementById('edit_public').value = btn.dataset.public;
+        document.getElementById('edit_private').value = btn.dataset.private;
+        document.getElementById('edit_balance').value = btn.dataset.balance;
+        document.getElementById('edit_tags').value = btn.dataset.tags;
+        document.getElementById('edit_type').value = btn.dataset.type;
+        document.getElementById('edit_image').value = btn.dataset.image;
+        document.getElementById('edit_active').checked = btn.dataset.active === 'True' || btn.dataset.active === 'true';
+        modal.show();
+      });
     });
   });
 </script>
