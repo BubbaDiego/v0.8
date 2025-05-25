@@ -11,9 +11,10 @@
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Alert Thresholds' %}
 {% include "title_bar.html" %}
 <div class="container-fluid pt-4">
-  <h2 class="mb-4"><i class="fas fa-ruler me-2"></i>Alert Thresholds</h2>
+  <!-- Title moved to bar -->
   {% set type_icons = {
     'pricethreshold': '💵',
     'deltachange': '📊',

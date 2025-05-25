@@ -10,9 +10,9 @@
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Portfolio History' %}
 {% include "title_bar.html" %}
 <div class="container pt-4">
-  <h1 class="mb-4">📈 Portfolio History</h1>
   {% if percent_change is not none %}
     <p class="lead">Overall Change: {{ percent_change|round(2) }}%</p>
   {% endif %}

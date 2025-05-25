@@ -23,9 +23,9 @@
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Database Viewer' %}
 {% include "title_bar.html" %}
 <div class="container py-4 db-viewer-container">
-  <h2 class="mb-3">Database Viewer</h2>
   <div class="mb-3">
     <label for="tableSelect" class="form-label">Select Table:</label>
     <select id="tableSelect" class="form-select" onchange="showTable(this.value)">

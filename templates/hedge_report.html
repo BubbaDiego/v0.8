@@ -13,15 +13,13 @@
 {% endblock %}
 
 {% block content %}
+{% set title_text = 'Hedge Report' %}
 {% include "title_bar.html" %}
 
 
 {% set hd = heat_data|default({}) %}
 
-<!-- Page Title -->
-<h2 class="text-dark mb-4 icon-inline">
-  <span>🦔</span><span>Hedge Report</span>
-</h2>
+<!-- Page Title Removed -->
 
 <div class="container-fluid px-4">
   <div class="row">
